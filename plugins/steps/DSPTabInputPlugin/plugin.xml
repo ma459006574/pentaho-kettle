@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+
+   id="DSPTabInputPlugin"
+   iconfile="icon.png"
+   description="DSPTableInput"
+   tooltip="Only there for demonstration purposes"
+   category="Demon"
+   classname="plugin.template.DSPTableInputMeta">
+		
+		<libraries>
+    		<library name="DSPTabInputPlugin.jar"/>
+		</libraries>
+		
+</plugin>
