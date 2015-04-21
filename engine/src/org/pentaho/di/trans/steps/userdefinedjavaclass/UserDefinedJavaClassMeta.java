@@ -132,9 +132,10 @@ public class UserDefinedJavaClassMeta extends BaseStepMeta implements StepMetaIn
 
     cbe.setDefaultImports( new String[] {
       "org.pentaho.di.trans.steps.userdefinedjavaclass.*", "org.pentaho.di.trans.step.*",
-      "org.pentaho.di.core.row.*", "org.pentaho.di.core.*", "org.pentaho.di.core.exception.*" } );
+      "org.pentaho.di.core.row.*", "org.pentaho.di.core.*", "org.pentaho.di.core.exception.*",
+      "java.lang.*","java.util.*", "org.pentaho.di.repository.*", "org.pentaho.di.core.database.*",
+      "org.pentaho.di.core.*"} );
     cbe.cook( new Scanner( null, sr ) );
-
     return cbe.getClazz();
   }
 

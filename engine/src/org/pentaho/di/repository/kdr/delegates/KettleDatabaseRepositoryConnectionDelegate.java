@@ -1558,6 +1558,19 @@ public class KettleDatabaseRepositoryConnectionDelegate extends KettleDatabaseRe
   public ObjectId[] getIDs( String sql, ObjectId... objectId ) throws KettleException {
     // Get the prepared statement
     //
+    try {
+		while(database.getConnection().isClosed()){
+			database.disconnect();
+			database.connect();
+			if(!database.getConnection().isClosed()){
+				disconnect();
+				connect();
+				break;
+			}
+		}
+	} catch (Exception e) {
+	      throw new KettleException( "ERROR executing query", e );
+	}
     PreparedStatement ps = sqlMap.get( sql );
     if ( ps == null ) {
       ps = database.prepareSQL( sql );
