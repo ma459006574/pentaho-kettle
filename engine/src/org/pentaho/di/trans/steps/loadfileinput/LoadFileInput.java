@@ -47,6 +47,8 @@ import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 
+import com.sun.corba.se.impl.ior.ByteBuffer;
+
 /**
  * Read files, parse them and convert them to rows and writes these to one or more output streams.
  *
@@ -251,7 +253,7 @@ public class LoadFileInput extends BaseStep implements StepInterface {
 
   private void getFileContent() throws KettleException {
     try {
-      data.filecontent = getTextFileContent( data.file.toString(), meta.getEncoding() );
+      data.filecontent = getTextFileContent( data.file.toString() );
     } catch ( java.lang.OutOfMemoryError o ) {
       logError( "There is no enaugh memory to load the content of the file [" + data.file.getName() + "]" );
       throw new KettleException( o );
@@ -265,32 +267,23 @@ public class LoadFileInput extends BaseStep implements StepInterface {
    *
    * @param vfsFilename
    *          the filename or URL to read from
-   * @param charSetName
-   *          the character set of the string (UTF-8, ISO8859-1, etc)
    * @return The content of the file as a String
    * @throws KettleException
    */
-  public static String getTextFileContent( String vfsFilename, String encoding ) throws KettleException {
+  public static byte[] getTextFileContent( String vfsFilename) throws KettleException {
     InputStream inputStream = null;
     InputStreamReader reader = null;
-
-    String retval = null;
-    try {
+    BufferedInputStream bufInput = null;
+    ByteBuffer byteBuf = null;
+	try {
       inputStream = KettleVFS.getInputStream( vfsFilename );
-
-      if ( !Const.isEmpty( encoding ) ) {
-        reader = new InputStreamReader( new BufferedInputStream( inputStream ), encoding );
-      } else {
-        reader = new InputStreamReader( new BufferedInputStream( inputStream ) );
-      }
-
+	  bufInput =  new BufferedInputStream( inputStream );
+      byteBuf = new ByteBuffer();
       int c;
-      StringBuffer stringBuffer = new StringBuffer();
-      while ( ( c = reader.read() ) != -1 ) {
-        stringBuffer.append( (char) c );
+      while ( ( c = bufInput.read() ) != -1 ) {
+              byteBuf.append((byte)c);
       }
-
-      retval = stringBuffer.toString();
+      byteBuf.trimToSize();
     } catch ( Exception e ) {
       throw new KettleException( BaseMessages.getString(
         PKG, "LoadFileInput.Error.GettingFileContent", vfsFilename, e.toString() ) );
@@ -309,7 +302,7 @@ public class LoadFileInput extends BaseStep implements StepInterface {
       }
     }
 
-    return retval;
+    return byteBuf.toArray();
   }
 
   private void handleMissingFiles() throws KettleException {
@@ -363,41 +356,48 @@ public class LoadFileInput extends BaseStep implements StepInterface {
       for ( int i = 0; i < data.nrInputFields; i++ ) {
         // Get field
         LoadFileInputField loadFileInputField = meta.getInputFields()[i];
-
+        int indexField = data.totalpreviousfields + i;
         String o = null;
-        switch ( loadFileInputField.getElementType() ) {
-          case LoadFileInputField.ELEMENT_TYPE_FILECONTENT:
+    	if(!Const.isEmpty(meta.getEncoding())){
+    		o = new String(data.filecontent,meta.getEncoding());
+    	}else{
+    		o = new String(data.filecontent);
+    	}
+        ValueMetaInterface targetValueMeta = data.outputRowMeta.getValueMeta( indexField );
+        ValueMetaInterface sourceValueMeta = data.convertRowMeta.getValueMeta( indexField );
+        if(targetValueMeta.isBinary()&&LoadFileInputField.ELEMENT_TYPE_FILECONTENT == loadFileInputField.getElementType()){
+        	outputRowData[indexField] = data.filecontent;
+        }else{
+            switch ( loadFileInputField.getElementType() ) {
+              case LoadFileInputField.ELEMENT_TYPE_FILECONTENT:
 
-            // DO Trimming!
-            switch ( loadFileInputField.getTrimType() ) {
-              case LoadFileInputField.TYPE_TRIM_LEFT:
-                data.filecontent = Const.ltrim( data.filecontent );
+                // DO Trimming!
+                switch ( loadFileInputField.getTrimType() ) {
+                  case LoadFileInputField.TYPE_TRIM_LEFT:
+                    o = Const.ltrim( o );
+                    break;
+                  case LoadFileInputField.TYPE_TRIM_RIGHT:
+                    o = Const.ltrim( o );
+                    break;
+                  case LoadFileInputField.TYPE_TRIM_BOTH:
+                    o = Const.ltrim( o );
+                    break;
+                  default:
+                    break;
+                }
                 break;
-              case LoadFileInputField.TYPE_TRIM_RIGHT:
-                data.filecontent = Const.rtrim( data.filecontent );
-                break;
-              case LoadFileInputField.TYPE_TRIM_BOTH:
-                data.filecontent = Const.trim( data.filecontent );
+              case LoadFileInputField.ELEMENT_TYPE_FILESIZE:
+                o = String.valueOf( data.fileSize );
                 break;
               default:
                 break;
             }
-            o = data.filecontent;
-            break;
-          case LoadFileInputField.ELEMENT_TYPE_FILESIZE:
-            o = String.valueOf( data.fileSize );
-            break;
-          default:
-            break;
+
+            // Do conversions
+            outputRowData[indexField] = targetValueMeta.convertData( sourceValueMeta, o );
+        	
         }
-
-        int indexField = data.totalpreviousfields + i;
-        // Do conversions
-        //
-        ValueMetaInterface targetValueMeta = data.outputRowMeta.getValueMeta( indexField );
-        ValueMetaInterface sourceValueMeta = data.convertRowMeta.getValueMeta( indexField );
-        outputRowData[indexField] = targetValueMeta.convertData( sourceValueMeta, o );
-
+        
         // Do we need to repeat this field if it is null?
         if ( loadFileInputField.isRepeated() ) {
           if ( data.previousRow != null && o == null ) {
