@@ -73,6 +73,7 @@ public class JobEntryUnZipDialog extends JobEntryDialog implements JobEntryDialo
 
   private static final String[] FILETYPES = new String[] {
     BaseMessages.getString( PKG, "JobUnZip.Filetype.Zip" ),
+    BaseMessages.getString( PKG, "JobUnZip.Filetype.Rar" ),
     BaseMessages.getString( PKG, "JobUnZip.Filetype.Jar" ),
     BaseMessages.getString( PKG, "JobUnZip.Filetype.All" ) };
 
@@ -377,7 +378,7 @@ public class JobEntryUnZipDialog extends JobEntryDialog implements JobEntryDialo
       public void widgetSelected( SelectionEvent e ) {
         FileDialog dialog = new FileDialog( shell, SWT.OPEN );
         // dialog.setFilterExtensions(new String[] {"*"});
-        dialog.setFilterExtensions( new String[] { "*.zip;*.ZIP", "*.jar;*.JAR", "*" } );
+        dialog.setFilterExtensions( new String[] { "*.zip;*.ZIP", "*.rar;*.RAR", "*.jar;*.JAR", "*" } );
         if ( wZipFilename.getText() != null ) {
           dialog.setFileName( jobMeta.environmentSubstitute( wZipFilename.getText() ) );
         }

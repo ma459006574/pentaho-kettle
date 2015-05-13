@@ -4,7 +4,6 @@
 	<classpathentry kind="src" path="test-src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Kettle Core"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Kettle Engine"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/kettle"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
