@@ -32,7 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -631,7 +630,7 @@ public class JobEntryUnZip extends JobEntryBase implements Cloneable, JobEntryIn
 
           }
           @SuppressWarnings("resource")
-		  Archive a = new Archive(new File(new URI(sourceFileObject.getName().getFriendlyURI())));
+		  Archive a = new Archive(new File(sourceFileObject.getName().getFriendlyURI().substring(8)));
           if (a != null) {
               if ( log.isDetailed() ) {
                 a.getMainHeader().print(); // 打印文件信息.
@@ -724,7 +723,12 @@ public class JobEntryUnZip extends JobEntryBase implements Cloneable, JobEntryIn
                             try {
                               os = KettleVFS.getOutputStream( newFileObject, false );
                               a.extractFile(fh, os);
-                            } finally {
+                              // Add filename to result filenames
+                              addFilenameToResultFilenames( result, parentJob, newFileName );
+                            }catch(Exception e){
+                            	logError(fh.getFileNameString()+",解压失败",e);
+                            }
+                        	finally {
                               if ( os != null ) {
                                 os.close();
                               }
@@ -746,6 +750,7 @@ public class JobEntryUnZip extends JobEntryBase implements Cloneable, JobEntryIn
                               newFileObject.getContent().setLastModifiedTime( fh.getMTime().getTime() );
                             }
                           } catch ( Exception e ) { /* Ignore */
+                        	  logError("",e);
                           } // ignore this
                         }
                       }
@@ -787,7 +792,7 @@ public class JobEntryUnZip extends JobEntryBase implements Cloneable, JobEntryIn
       }
 
       for ( FileObject item : items ) {
-
+    	  
         if ( successConditionBroken ) {
           if ( !successConditionBrokenExit ) {
             logError( BaseMessages.getString( PKG, "JobUnZip.Error.SuccessConditionbroken", "" + NrErrors ) );
@@ -937,7 +942,7 @@ public class JobEntryUnZip extends JobEntryBase implements Cloneable, JobEntryIn
       // Unzip done...
       if ( afterunzip == 1 ) {
         // delete zip file
-        boolean deleted = fileObject.delete();
+        boolean deleted = sourceFileObject.delete();
         if ( !deleted ) {
           updateErrors();
           logError( BaseMessages.getString( PKG, "JobUnZip.Cant_Delete_File.Label", sourceFileObject.toString() ) );
@@ -950,10 +955,10 @@ public class JobEntryUnZip extends JobEntryBase implements Cloneable, JobEntryIn
         FileObject destFile = null;
         // Move File
         try {
-          String destinationFilename = movetodir + Const.FILE_SEPARATOR + fileObject.getName().getBaseName();
+          String destinationFilename = movetodir + Const.FILE_SEPARATOR + sourceFileObject.getName().getBaseName();
           destFile = KettleVFS.getFileObject( destinationFilename, this );
 
-          fileObject.moveTo( destFile );
+          sourceFileObject.moveTo( destFile );
 
           // File moved
           if ( log.isDetailed() ) {
