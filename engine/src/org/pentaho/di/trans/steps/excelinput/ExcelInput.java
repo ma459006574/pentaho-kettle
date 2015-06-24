@@ -22,10 +22,14 @@
 
 package org.pentaho.di.trans.steps.excelinput;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
 
 import org.apache.commons.vfs.FileObject;
@@ -67,6 +71,7 @@ import org.pentaho.di.trans.steps.excelinput.staxpoi.StaxPoiCell;
  * @since 19-NOV-2003
  */
 public class ExcelInput extends BaseStep implements StepInterface {
+  public static Set<String> DATE_FORMAT = new HashSet<String>(Arrays.asList("yyyyMMdd","yyyyMMddHHmmss"));
   private static Class<?> PKG = ExcelInputMeta.class; // for i18n purposes, needed by Translator2!!
 
   private ExcelInputMeta meta;
@@ -111,7 +116,18 @@ public class ExcelInput extends BaseStep implements StepInterface {
           Double dateValue = Double.valueOf( cell.getContents() );
           Calendar calendar = DateUtil.getJavaCalendarUTC( dateValue, false );
           cell = new StaxPoiCell( calendar.getTime(), KCellType.DATE, cell.getRow() );
-        }
+        }else if ( DATE_FORMAT.contains(targetMeta.getConversionMask()) ) {
+            try {
+				Double dateValue = Double.valueOf( cell.getContents() );
+				Calendar calendar = DateUtil.getJavaCalendarUTC( dateValue, false );
+	            long time = calendar.getTime().getTime();
+	            int offset = TimeZone.getDefault().getOffset( time );
+				SimpleDateFormat sdf = new SimpleDateFormat(targetMeta.getConversionMask());
+				cell = new StaxPoiCell( sdf.format(new Date( time - offset )), KCellType.STRING_FORMULA, cell.getRow() );
+			} catch (NumberFormatException e) {
+				cell = new StaxPoiCell( cell.getContents(), KCellType.STRING_FORMULA, cell.getRow() );
+			}
+          }
       }
 
       try {

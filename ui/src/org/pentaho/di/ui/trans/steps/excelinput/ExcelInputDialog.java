@@ -25,6 +25,7 @@ package org.pentaho.di.ui.trans.steps.excelinput;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.vfs.FileObject;
@@ -1887,16 +1888,16 @@ public class ExcelInputDialog extends BaseStepDialog implements StepDialogInterf
           WorkbookFactory.getWorkbook( info.getSpreadSheetType(), KettleVFS.getFilename( fileObject ), info
             .getEncoding() );
 
-        int nrSheets = workbook.getNumberOfSheets();
-        for ( int j = 0; j < nrSheets; j++ ) {
-          KSheet sheet = workbook.getSheet( j );
-          String sheetname = sheet.getName();
-
-          if ( Const.indexOfString( sheetname, sheetnames ) < 0 ) {
-            sheetnames.add( sheetname );
-          }
-        }
-
+//        int nrSheets = workbook.getNumberOfSheets();
+//        for ( int j = 0; j < nrSheets; j++ ) {
+//          KSheet sheet = workbook.getSheet( j );
+//          String sheetname = sheet.getName();
+//
+//          if ( Const.indexOfString( sheetname, sheetnames ) < 0 ) {
+//            sheetnames.add( sheetname );
+//          }
+//        }
+        sheetnames.addAll(Arrays.asList(workbook.getSheetNames()));
         workbook.close();
       } catch ( Exception e ) {
         new ErrorDialog(
@@ -1950,15 +1951,16 @@ public class ExcelInputDialog extends BaseStepDialog implements StepDialogInterf
             .getEncoding() );
 
         int nrSheets = workbook.getNumberOfSheets();
+		String[] sheets = workbook.getSheetNames();
         for ( int j = 0; j < nrSheets; j++ ) {
-          KSheet sheet = workbook.getSheet( j );
+//          KSheet sheet = workbook.getSheet( j );
 
           // See if it's a selected sheet:
           int sheetIndex;
           if ( info.readAllSheets() ) {
             sheetIndex = 0;
           } else {
-            sheetIndex = Const.indexOfString( sheet.getName(), info.getSheetName() );
+            sheetIndex = Const.indexOfString( sheets[j], info.getSheetName() );
           }
           if ( sheetIndex >= 0 ) {
             // We suppose it's the complete range we're looking for...
@@ -1979,6 +1981,7 @@ public class ExcelInputDialog extends BaseStepDialog implements StepDialogInterf
             }
 
             boolean stop = false;
+            KSheet sheet = workbook.getSheet( j );
             for ( int colnr = startcol; colnr < 256 && !stop; colnr++ ) {
               try {
                 String fieldname = null;

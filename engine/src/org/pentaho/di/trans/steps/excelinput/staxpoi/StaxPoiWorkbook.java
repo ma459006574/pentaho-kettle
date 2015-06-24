@@ -4,6 +4,7 @@
 
 package org.pentaho.di.trans.steps.excelinput.staxpoi;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,6 +30,10 @@ public class StaxPoiWorkbook implements KWorkbook {
 
   // mapping of the sheet object with its ID/Name
   private Map<String, StaxPoiSheet> openSheetsMap;
+  /**
+   * (用一句话描述这个变量表示什么)
+   */
+  private OPCPackage pkg;
 
   public StaxPoiWorkbook() {
     openSheetsMap = new HashMap<String, StaxPoiSheet>();
@@ -37,7 +42,7 @@ public class StaxPoiWorkbook implements KWorkbook {
   public StaxPoiWorkbook( String filename, String encoding ) throws KettleException {
     this();
     try {
-      OPCPackage pkg = OPCPackage.open( filename );
+      pkg = OPCPackage.open( filename );
       openFile( pkg, encoding );
     } catch ( Exception e ) {
       throw new KettleException( e );
@@ -48,7 +53,7 @@ public class StaxPoiWorkbook implements KWorkbook {
   public StaxPoiWorkbook( InputStream inputStream, String encoding ) throws KettleException {
     this();
     try {
-      OPCPackage pkg = OPCPackage.open( inputStream );
+      pkg = OPCPackage.open( inputStream );
       openFile( pkg, encoding );
     } catch ( Exception e ) {
       throw new KettleException( e );
@@ -111,6 +116,13 @@ public class StaxPoiWorkbook implements KWorkbook {
         e.printStackTrace();
       }
     }
+    try {
+    	if(pkg!=null){
+    		pkg.close();
+    	}
+	} catch (IOException e) {
+		e.printStackTrace();
+	}
   }
 
   @Override
