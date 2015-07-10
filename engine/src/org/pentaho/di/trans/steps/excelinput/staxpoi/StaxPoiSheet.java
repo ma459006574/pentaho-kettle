@@ -104,19 +104,24 @@ public class StaxPoiSheet implements KSheet {
           }
 
           KCell[] cells = new StaxPoiCell[numCols];
-          for ( int i = 0; i < numCols; i++ ) {
+          int columnIndex = 0;
+          for ( ; columnIndex < numCols; columnIndex++ ) {
             // go to the "c" <cell> tag
             while ( sheetReader.hasNext() ) {
               if ( event == XMLStreamConstants.START_ELEMENT && sheetReader.getLocalName().equals( "c" ) ) {
                 break;
               }
+              if ( event == XMLStreamConstants.END_ELEMENT && sheetReader.getLocalName().equals( "row" ) ) {
+                  return cells;
+              }
               event = sheetReader.next();
             }
             String cellLocation = sheetReader.getAttributeValue( null, "r" );
-            int columnIndex = StaxUtil.extractColumnNumber( cellLocation ) - 1;
+            columnIndex = StaxUtil.extractColumnNumber( cellLocation ) - 1;
             String cellType = sheetReader.getAttributeValue( null, "t" );
 
             // go to the "v" <value> tag
+            boolean flag = false;
             while ( sheetReader.hasNext() ) {
               event = sheetReader.next();
               if ( event == XMLStreamConstants.START_ELEMENT && sheetReader.getLocalName().equals( "v" ) ) {
@@ -125,9 +130,12 @@ public class StaxPoiSheet implements KSheet {
               if ( event == XMLStreamConstants.END_ELEMENT && sheetReader.getLocalName().equals( "c" ) ) {
                 // we have encountered an empty/incomplete row, so we set the max rows to current row number
                 // TODO: accept empty row is option is check and go till the end of the xml (need to detect the end)
-                numRows = currentRow;
-                return new KCell[] {};
+            	  flag = true;
+                  break;
               }
+            }
+            if(flag){
+            	continue;
             }
             String content = null;
             if ( cellType != null && cellType.equals( "s" ) ) {
