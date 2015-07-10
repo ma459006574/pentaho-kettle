@@ -24,7 +24,6 @@ package org.pentaho.di.trans.steps.insertupdate;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.pentaho.di.core.Const;
@@ -137,6 +136,7 @@ public class InsertUpdate extends BaseStep implements StepInterface {
 
             if ( retMeta.compare( retvalue, valueMeta, rowvalue ) != 0 ) {
               update = true;
+              break;
             }
           }
         }
@@ -285,12 +285,12 @@ public class InsertUpdate extends BaseStep implements StepInterface {
           .getTableName() ) );
 
       if ( !meta.isUpdateBypassed() ) {
-        List<String> updateColumns = new ArrayList<String>();
-        for ( int i = 0; i < meta.getUpdate().length; i++ ) {
-          if ( meta.getUpdate()[i].booleanValue() ) {
-            updateColumns.add( meta.getUpdateLookup()[i] );
-          }
-        }
+//        List<String> updateColumns = new ArrayList<String>();
+//        for ( int i = 0; i < meta.getUpdate().length; i++ ) {
+//          if ( meta.getUpdate()[i].booleanValue() ) {
+//            updateColumns.add( meta.getUpdateLookup()[i] );
+//          }
+//        }
         prepareUpdate( getInputRowMeta() );
       }
     }
