@@ -22,9 +22,6 @@
 
 package org.pentaho.di.ui.job.dialog;
 
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.CTabFolder;
@@ -35,6 +32,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
@@ -76,8 +74,8 @@ import org.pentaho.di.job.entry.JobEntryInterface;
 import org.pentaho.di.repository.KettleRepositoryLostException;
 import org.pentaho.di.repository.ObjectId;
 import org.pentaho.di.repository.Repository;
-import org.pentaho.di.repository.RepositoryDirectory;
 import org.pentaho.di.repository.RepositoryDirectoryInterface;
+import org.pentaho.di.ui.core.ConstUI;
 import org.pentaho.di.ui.core.PropsUI;
 import org.pentaho.di.ui.core.database.dialog.DatabaseDialog;
 import org.pentaho.di.ui.core.database.dialog.SQLEditor;
@@ -89,9 +87,12 @@ import org.pentaho.di.ui.core.widget.ComboVar;
 import org.pentaho.di.ui.core.widget.FieldDisabledListener;
 import org.pentaho.di.ui.core.widget.TableView;
 import org.pentaho.di.ui.core.widget.TextVar;
-import org.pentaho.di.ui.repository.dialog.SelectDirectoryDialog;
+import org.pentaho.di.ui.repository.RepositoryDirectoryUI;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 import org.pentaho.di.ui.util.HelpUtils;
+
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 
 /**
  * Allows you to edit the Job settings. Just pass a JobInfo object.
@@ -547,22 +548,14 @@ public class JobDialog extends Dialog {
     wbDirectory.addSelectionListener( new SelectionAdapter() {
       public void widgetSelected( SelectionEvent arg0 ) {
         RepositoryDirectoryInterface directoryFrom = jobMeta.getRepositoryDirectory();
-        if ( directoryFrom == null ) {
-          directoryFrom = new RepositoryDirectory();
+        RepositoryDirectoryInterface rd = RepositoryDirectoryUI.chooseDirectory( shell, rep, directoryFrom );
+        if ( rd == null ) {
+          return;
         }
-        ObjectId idDirectoryFrom = directoryFrom.getObjectId();
-
-        SelectDirectoryDialog sdd = new SelectDirectoryDialog( shell, SWT.NONE, rep );
-        RepositoryDirectoryInterface rd = sdd.open();
-        if ( rd != null ) {
-          if ( idDirectoryFrom != rd.getObjectId() ) {
-            // We need to change this in the repository as well!!
-            // We do this when the user pressed OK
-            newDirectory = rd;
-            wDirectory.setText( rd.getPath() );
-          }
-          // Else same directory!
-        }
+        // We need to change this in the repository as well!!
+        // We do this when the user pressed OK
+        newDirectory = rd;
+        wDirectory.setText( rd.getPath() );
       }
     } );
 
@@ -1638,20 +1631,32 @@ public class JobDialog extends Dialog {
     return sharedObjectsFileChanged;
   }
 
-  public static final void setShellImage( Shell shell, JobEntryInterface jobEntryInterface ) {
+  public static final Button setShellImage( Shell shell, JobEntryInterface jobEntryInterface ) {
+    Button helpButton = null;
     try {
-      final PluginInterface plugin =
-        PluginRegistry.getInstance().getPlugin( JobEntryPluginType.class, jobEntryInterface );
+      final PluginInterface plugin = getPlugin( jobEntryInterface );
 
-      HelpUtils.createHelpButton( shell, HelpUtils.getHelpDialogTitle( plugin ), plugin );
+      helpButton = HelpUtils.createHelpButton( shell, HelpUtils.getHelpDialogTitle( plugin ), plugin );
 
-      String id = plugin.getIds()[0];
-      if ( id != null ) {
-        shell.setImage( GUIResource.getInstance().getImagesJobentries().get( id ).getAsBitmap( shell.getDisplay() ) );
-      }
+      shell.setImage( getImage( shell, plugin ) );
+
     } catch ( Throwable e ) {
       // Ignore unexpected errors, not worth it
     }
+    return helpButton;
+  }
+
+  public static PluginInterface getPlugin( JobEntryInterface jobEntryInterface ) {
+    return PluginRegistry.getInstance().getPlugin( JobEntryPluginType.class, jobEntryInterface );
+  }
+
+  public static Image getImage( Shell shell, PluginInterface plugin ) {
+    String id = plugin.getIds()[0];
+    if ( id != null ) {
+      return GUIResource.getInstance().getImagesJobentries().get( id ).getAsBitmapForSize(
+        shell.getDisplay(), ConstUI.ICON_SIZE, ConstUI.ICON_SIZE );
+    }
+    return null;
   }
 
   public void setDirectoryChangeAllowed( boolean directoryChangeAllowed ) {

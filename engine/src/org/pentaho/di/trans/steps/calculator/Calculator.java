@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2013 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2015 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -33,7 +33,6 @@ import org.pentaho.di.core.row.RowDataUtil;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueDataUtil;
 import org.pentaho.di.core.row.ValueMetaInterface;
-import org.pentaho.di.core.row.value.ValueMetaFactory;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.Trans;
 import org.pentaho.di.trans.TransMeta;
@@ -63,7 +62,7 @@ public class Calculator extends BaseStep implements StepInterface {
   private CalculatorData data;
 
   public Calculator( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-    Trans trans ) {
+                     Trans trans ) {
     super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
   }
 
@@ -74,6 +73,7 @@ public class Calculator extends BaseStep implements StepInterface {
     Object[] r = getRow(); // get row, set busy!
     if ( r == null ) { // no more input to be expected...
       setOutputDone();
+      data.clearValuesMetaMapping();
       return false;
     }
 
@@ -296,6 +296,12 @@ public class Calculator extends BaseStep implements StepInterface {
             break;
           case CalculatorMetaFunction.CALC_ROUND_2: // ROUND( A , B )
             calcData[index] = ValueDataUtil.round( metaA, dataA, metaB, dataB );
+            break;
+          case CalculatorMetaFunction.CALC_ROUND_CUSTOM_1: // ROUND( A , B )
+            calcData[index] = ValueDataUtil.round( metaA, dataA, metaB.getNumber( dataB ).intValue() );
+            break;
+          case CalculatorMetaFunction.CALC_ROUND_CUSTOM_2: // ROUND( A , B, C )
+            calcData[index] = ValueDataUtil.round( metaA, dataA, metaB, dataB, metaC.getNumber( dataC ).intValue() );
             break;
           case CalculatorMetaFunction.CALC_ROUND_STD_1: // ROUND( A )
             calcData[index] = ValueDataUtil.round( metaA, dataA, java.math.BigDecimal.ROUND_HALF_UP );
@@ -594,7 +600,8 @@ public class Calculator extends BaseStep implements StepInterface {
           if ( targetMeta.getType() != resultType ) {
             ValueMetaInterface resultMeta;
             try {
-              resultMeta = ValueMetaFactory.createValueMeta( "result", resultType );
+              // clone() is not necessary as one data instance belongs to one step instance and no race condition occurs
+              resultMeta = data.getValueMetaFor( resultType, "result" );
             } catch ( Exception exception ) {
               throw new KettleValueException( "Error creating value" );
             }

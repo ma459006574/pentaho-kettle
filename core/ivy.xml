@@ -33,7 +33,7 @@
     
     <dependency org="org.apache.commons"  name="commons-compress"    rev="1.4"              transitive="false"/>
     <dependency org="dom4j"               name="dom4j"               rev="1.6.1"            transitive="false"/>
-    <dependency org="org.mortbay.jetty"   name="jetty"               rev="6.1.21"           transitive="false"/>
+    <dependency org="org.eclipse.jetty" name="jetty-util" rev="8.1.15.v20140411" transitive="false"/>
     <dependency org="jug-lgpl"            name="jug-lgpl"            rev="2.0.0"            transitive="false"/>
     <dependency org="com.jcraft"          name="jsch"                rev="0.1.46"           transitive="false"/>
     <dependency org="ognl"                name="ognl"                rev="2.6.9"            transitive="false"/>
@@ -54,5 +54,21 @@
     <dependency org="org.apache.xmlgraphics" name="batik-transcoder" rev="${dependency.batik.revision}" transitive="false"/>
     <dependency org="org.apache.xmlgraphics" name="batik-codec" rev="${dependency.batik.revision}" transitive="false"/>
     <dependency org="org.apache.xmlgraphics" name="batik-util" rev="${dependency.batik.revision}" transitive="false"/>
+    <dependency org="org.apache.xmlgraphics" name="batik-ext" rev="${dependency.batik.revision}" transitive="false"/>
+    <dependency org="org.apache.xmlgraphics" name="batik-xml" rev="${dependency.batik.revision}" transitive="false"/>
+    <dependency org="org.apache.xmlgraphics" name="batik-anim" rev="${dependency.batik.revision}" transitive="false"/>
+    <dependency org="org.apache.xmlgraphics" name="batik-parser" rev="${dependency.batik.revision}" transitive="false"/>
+    <dependency org="org.apache.xmlgraphics" name="batik-script" rev="${dependency.batik.revision}" transitive="false"/>
+    <dependency org="org.apache.xmlgraphics" name="batik-awt-util" rev="${dependency.batik.revision}" transitive="false"/>
+
+    <dependency org="xml-apis" name="xml-apis-ext" rev="${dependency.xml-apis-ext.revision}" transitive="false"/>
+
+    <dependency org="org.apache.karaf" name="org.apache.karaf.main" rev="3.0.3" transitive="false"/>
+
+    <dependency org="org.springframework" name="spring-test"         rev="2.5.6"      transitive="true" conf="test->default"/>
+    <dependency org="org.springframework" name="spring"              rev="2.5.6"      transitive="true" conf="test->default"/>
+    <dependency org="pentaho"             name="simple-jndi"         rev="1.0.0"      transitive="true" conf="test->default"/>
+    
+
   </dependencies>
 </ivy-module>
