@@ -144,14 +144,14 @@ public class EnterOptionsDialog extends Dialog {
   private Text wMiddlePct;
 
   private Text wGridSize;
-  
-  private Button wShowCanvasGrid;
 
   private Button wAntiAlias;
 
   private Button wOriginalLook;
 
   private Button wBranding;
+
+  private Button wShowTips;
 
   private Button wShowWelcome;
 
@@ -356,7 +356,7 @@ public class EnterOptionsDialog extends Dialog {
     fddFFont.right = new FormAttachment( 100, 0 );
     fddFFont.top = new FormAttachment( 0, nr * h + margin );
     fddFFont.bottom = new FormAttachment( 0, ( nr + 1 ) * h + margin );
-
+    
     wdFFont.setLayoutData( fddFFont );
     wdFFont.addSelectionListener( new SelectionAdapter() {
       public void widgetSelected( SelectionEvent arg0 ) {
@@ -834,33 +834,14 @@ public class EnterOptionsDialog extends Dialog {
     fdGridSize.right = new FormAttachment( 100, -margin );
     fdGridSize.top = new FormAttachment( wMiddlePct, margin );
     wGridSize.setLayoutData( fdGridSize );
-    
-    // Show Canvas Grid
-    Label wlShowCanvasGrid = new Label( wLookComp, SWT.RIGHT );
-    wlShowCanvasGrid.setText( BaseMessages.getString( PKG, "EnterOptionsDialog.ShowCanvasGrid.Label" ) );
-    wlShowCanvasGrid.setToolTipText( BaseMessages.getString( PKG, "EnterOptionsDialog.ShowCanvasGrid.ToolTip" ) );
-    props.setLook( wlShowCanvasGrid );
-    FormData fdlShowCanvasGrid = new FormData();
-    fdlShowCanvasGrid.left = new FormAttachment( 0, 0 );
-    fdlShowCanvasGrid.right = new FormAttachment( middle, -margin );
-    fdlShowCanvasGrid.top = new FormAttachment( wGridSize, margin );
-    wlShowCanvasGrid.setLayoutData( fdlShowCanvasGrid );
-    wShowCanvasGrid = new Button( wLookComp, SWT.CHECK );
-    props.setLook( wShowCanvasGrid );
-    wShowCanvasGrid.setSelection( props.isShowCanvasGridEnabled() );
-    FormData fdShowCanvasGrid = new FormData();
-    fdShowCanvasGrid.left = new FormAttachment( middle, 0 );
-    fdShowCanvasGrid.right = new FormAttachment( 100, -margin );
-    fdShowCanvasGrid.top = new FormAttachment( wGridSize, margin );
-    wShowCanvasGrid.setLayoutData( fdShowCanvasGrid );
-    
+
     // Enable anti-aliasing
     Label wlAntiAlias = new Label( wLookComp, SWT.RIGHT );
     wlAntiAlias.setText( BaseMessages.getString( PKG, "EnterOptionsDialog.CanvasAntiAliasing.Label" ) );
     props.setLook( wlAntiAlias );
     FormData fdlAntiAlias = new FormData();
     fdlAntiAlias.left = new FormAttachment( 0, 0 );
-    fdlAntiAlias.top = new FormAttachment( wShowCanvasGrid, margin );
+    fdlAntiAlias.top = new FormAttachment( wGridSize, margin );
     fdlAntiAlias.right = new FormAttachment( middle, -margin );
     wlAntiAlias.setLayoutData( fdlAntiAlias );
     wAntiAlias = new Button( wLookComp, SWT.CHECK );
@@ -868,7 +849,7 @@ public class EnterOptionsDialog extends Dialog {
     wAntiAlias.setSelection( props.isAntiAliasingEnabled() );
     FormData fdAntiAlias = new FormData();
     fdAntiAlias.left = new FormAttachment( middle, 0 );
-    fdAntiAlias.top = new FormAttachment( wShowCanvasGrid, margin );
+    fdAntiAlias.top = new FormAttachment( wGridSize, margin );
     fdAntiAlias.right = new FormAttachment( 100, 0 );
     wAntiAlias.setLayoutData( fdAntiAlias );
 
@@ -1091,13 +1072,31 @@ public class EnterOptionsDialog extends Dialog {
     fdMaxNrHistLines.top = new FormAttachment( wMaxLogLineTimeout, margin );
     wMaxNrHistLines.setLayoutData( fdMaxNrHistLines );
 
+    // Show tips on startup?
+    Label wlShowTips = new Label( wGeneralComp, SWT.RIGHT );
+    wlShowTips.setText( BaseMessages.getString( PKG, "EnterOptionsDialog.ShowTipsStartup.Label" ) );
+    props.setLook( wlShowTips );
+    FormData fdlShowTips = new FormData();
+    fdlShowTips.left = new FormAttachment( 0, 0 );
+    fdlShowTips.top = new FormAttachment( wMaxNrHistLines, margin );
+    fdlShowTips.right = new FormAttachment( middle, -margin );
+    wlShowTips.setLayoutData( fdlShowTips );
+    wShowTips = new Button( wGeneralComp, SWT.CHECK );
+    props.setLook( wShowTips );
+    wShowTips.setSelection( props.showTips() );
+    FormData fdShowTips = new FormData();
+    fdShowTips.left = new FormAttachment( middle, 0 );
+    fdShowTips.top = new FormAttachment( wMaxNrHistLines, margin );
+    fdShowTips.right = new FormAttachment( 100, 0 );
+    wShowTips.setLayoutData( fdShowTips );
+
     // Show welcome page on startup?
     Label wlShowWelcome = new Label( wGeneralComp, SWT.RIGHT );
     wlShowWelcome.setText( BaseMessages.getString( PKG, "EnterOptionsDialog.ShowWelcomePage.Label" ) );
     props.setLook( wlShowWelcome );
     FormData fdlShowWelcome = new FormData();
     fdlShowWelcome.left = new FormAttachment( 0, 0 );
-    fdlShowWelcome.top = new FormAttachment( wMaxNrHistLines, margin );
+    fdlShowWelcome.top = new FormAttachment( wShowTips, margin );
     fdlShowWelcome.right = new FormAttachment( middle, -margin );
     wlShowWelcome.setLayoutData( fdlShowWelcome );
     wShowWelcome = new Button( wGeneralComp, SWT.CHECK );
@@ -1105,7 +1104,7 @@ public class EnterOptionsDialog extends Dialog {
     wShowWelcome.setSelection( props.showWelcomePageOnStartup() );
     FormData fdShowWelcome = new FormData();
     fdShowWelcome.left = new FormAttachment( middle, 0 );
-    fdShowWelcome.top = new FormAttachment( wMaxNrHistLines, margin );
+    fdShowWelcome.top = new FormAttachment( wShowTips, margin );
     fdShowWelcome.right = new FormAttachment( 100, 0 );
     wShowWelcome.setLayoutData( fdShowWelcome );
 
@@ -1623,6 +1622,7 @@ public class EnterOptionsDialog extends Dialog {
       wMaxLogLineTimeout.getText(), Const.MAX_LOG_LINE_TIMEOUT_MINUTES ) );
     props.setMaxNrLinesInHistory( Const.toInt( wMaxNrHistLines.getText(), Const.MAX_NR_HISTORY_LINES ) );
 
+    props.setShowTips( wShowTips.getSelection() );
     props.setShowWelcomePageOnStartup( wShowWelcome.getSelection() );
     props.setUseDBCache( wUseCache.getSelection() );
     props.setOpenLastFile( wOpenLast.getSelection() );
@@ -1636,7 +1636,6 @@ public class EnterOptionsDialog extends Dialog {
     props.setShowCopyOrDistributeWarning( wCopyDistrib.getSelection() );
     props.setRepositoriesDialogAtStartupShown( wShowRep.getSelection() );
     props.setAntiAliasingEnabled( wAntiAlias.getSelection() );
-    props.setShowCanvasGridEnabled( wShowCanvasGrid.getSelection() );
     props.setExitWarningShown( wExitWarning.getSelection() );
     props.setOSLookShown( wOriginalLook.getSelection() );
     props.setBrandingActive( wBranding.getSelection() );

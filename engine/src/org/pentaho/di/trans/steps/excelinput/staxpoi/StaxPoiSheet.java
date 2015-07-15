@@ -1,25 +1,3 @@
-/*! ******************************************************************************
- *
- * Pentaho Data Integration
- *
- * Copyright (C) 2002-2015 by Pentaho : http://www.pentaho.com
- *
- *******************************************************************************
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- ******************************************************************************/
-
 /**
  * Author = Shailesh Ahuja
  */
@@ -112,6 +90,9 @@ public class StaxPoiSheet implements KSheet {
 
   @Override
   public KCell[] getRow( int rownr ) {
+
+    // convert 0 based index to 1 based
+    rownr += 1;
     try {
       while ( sheetReader.hasNext() ) {
         int event = sheetReader.next();
@@ -123,22 +104,13 @@ public class StaxPoiSheet implements KSheet {
           }
 
           KCell[] cells = new StaxPoiCell[numCols];
-          boolean richedRowEnd = false;
           for ( int i = 0; i < numCols; i++ ) {
             // go to the "c" <cell> tag
             while ( sheetReader.hasNext() ) {
               if ( event == XMLStreamConstants.START_ELEMENT && sheetReader.getLocalName().equals( "c" ) ) {
                 break;
               }
-              //if we have empty cell than we could reach and of row before fill all cells, so break all cycle
-              if ( event == XMLStreamConstants.END_ELEMENT && sheetReader.getLocalName().equals( "row" ) ) {
-                richedRowEnd = true;
-                break;
-              }
               event = sheetReader.next();
-            }
-            if ( richedRowEnd ) {
-              break;
             }
             String cellLocation = sheetReader.getAttributeValue( null, "r" );
             int columnIndex = StaxUtil.extractColumnNumber( cellLocation ) - 1;
@@ -197,7 +169,7 @@ public class StaxPoiSheet implements KSheet {
   }
 
   public void close() throws IOException, XMLStreamException {
-    sheetReader.close();
     sheetStream.close();
+    sheetReader.close();
   }
 }

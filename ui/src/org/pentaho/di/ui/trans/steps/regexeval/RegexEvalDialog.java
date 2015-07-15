@@ -709,24 +709,15 @@ public class RegexEvalDialog extends BaseStepDialog implements StepDialogInterfa
   }
 
   private void getPreviousFields() {
-    // Save user-selected value, if applicable
-    String selectedValue = wfieldevaluate.getText();
-
-    // Clear the existing list, and reload
-    wfieldevaluate.removeAll();
     try {
       RowMetaInterface r = transMeta.getPrevStepFields( stepname );
       if ( r != null ) {
-        for ( String item : r.getFieldNames() ) {
-            wfieldevaluate.add(  item );
-        }
-      }
+        r.getFieldNames();
 
-      // Re-select the user-selected value, if applicable
-      if ( !Const.isEmpty( selectedValue ) ) {
-        wfieldevaluate.select( wfieldevaluate.indexOf( selectedValue ) );
-      } else {
-        wfieldevaluate.select( 0 );
+        for ( int i = 0; i < r.getFieldNames().length; i++ ) {
+          wfieldevaluate.add( r.getFieldNames()[i] );
+
+        }
       }
     } catch ( KettleException ke ) {
       new ErrorDialog(

@@ -51,7 +51,6 @@ import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.gui.PrimitiveGCInterface.EImage;
 import org.pentaho.di.core.svg.SvgImage;
 import org.pentaho.di.core.svg.SvgSupport;
-import org.pentaho.di.core.util.SwingSvgImageUtil;
 import org.pentaho.di.job.entry.JobEntryCopy;
 import org.pentaho.di.laf.BasePropertyHandler;
 import org.pentaho.di.trans.step.StepMeta;
@@ -128,7 +127,7 @@ public class SwingDirectGC implements GCInterface {
   private Graphics2D gc;
 
   private int iconsize;
-
+  
   //TODO should be changed to PropsUI usage
   private int small_icon_size = 16;
 
@@ -158,7 +157,7 @@ public class SwingDirectGC implements GCInterface {
   private boolean drawingPixelatedImages;
 
   public SwingDirectGC( ImageObserver observer, Point area, int iconsize, int xOffset, int yOffset ) throws KettleException {
-    this.image = new BufferedImage( area.x, area.y, BufferedImage.TYPE_INT_ARGB );
+    this.image = new BufferedImage( area.x, area.y, BufferedImage.TYPE_INT_RGB );
     this.gc = image.createGraphics();
     this.observer = observer;
     this.stepImages = SwingGUIResource.getInstance().getStepImages();
@@ -256,13 +255,11 @@ public class SwingDirectGC implements GCInterface {
       try {
         inputStream = new FileInputStream( fileName );
       } catch ( FileNotFoundException ex ) {
-        // no need to fail
       }
       if ( inputStream == null ) {
         try {
           inputStream = new FileInputStream( "/" + fileName );
         } catch ( FileNotFoundException ex ) {
-          // no need to fail
         }
       }
       if ( inputStream == null ) {
@@ -289,13 +286,11 @@ public class SwingDirectGC implements GCInterface {
       try {
         inputStream = new FileInputStream( fileName );
       } catch ( FileNotFoundException ex ) {
-        // no need to fail
       }
       if ( inputStream == null ) {
         try {
           inputStream = new FileInputStream( "/" + fileName );
         } catch ( FileNotFoundException ex ) {
-          // no need to fail
         }
       }
       if ( inputStream == null ) {
@@ -332,13 +327,7 @@ public class SwingDirectGC implements GCInterface {
   public void drawLine( int x, int y, int x2, int y2 ) {
     gc.drawLine( x + xOffset, y + yOffset, x2 + xOffset, y2 + yOffset );
   }
-
-  @Override
-  public void drawImage( String location, ClassLoader classLoader, int x, int y ) {
-    SwingUniversalImage img = SwingSvgImageUtil.getUniversalImage( classLoader, location );
-    drawImage( img, x, y, small_icon_size );
-  }
-
+  
   @Override
   public void drawImage( EImage image, int x, int y ) {
     drawImage( image, x, y, 0.0f );
@@ -361,7 +350,7 @@ public class SwingDirectGC implements GCInterface {
 
   private void drawImage( SwingUniversalImage img, int locationX, int locationY, int imageSize ) {
     if ( isDrawingPixelatedImages() && img.isBitmap() ) {
-      BufferedImage bi = new BufferedImage( imageSize, imageSize, BufferedImage.TYPE_INT_ARGB );
+      BufferedImage bi = new BufferedImage( imageSize, imageSize, BufferedImage.TYPE_INT_RGB );
       Graphics2D g2 = (Graphics2D) bi.getGraphics();
       g2.setColor( Color.WHITE );
       g2.fillRect( 0, 0, imageSize, imageSize );
@@ -673,11 +662,16 @@ public class SwingDirectGC implements GCInterface {
   }
 
   public void drawStepIcon( int x, int y, StepMeta stepMeta, float magnification ) {
+    // Draw a blank rectangle to prevent alpha channel problems...
+    //
+    gc.fillRect( x + xOffset, y + yOffset, iconsize, iconsize );
     String steptype = stepMeta.getStepID();
     SwingUniversalImage im = stepImages.get( steptype );
     if ( im != null ) { // Draw the icon!
 
       drawImage( im, x + xOffset, y + xOffset, iconsize );
+
+      // gc.drawImage(im, x+xOffset, y+yOffset, observer);
     }
   }
 
@@ -708,7 +702,7 @@ public class SwingDirectGC implements GCInterface {
     drawImage( image, x + xOffset, y + xOffset, iconsize );
     // gc.drawImage(image, x+xOffset, y+yOffset, observer);
   }
-
+  
   @Override
   public void drawJobEntryIcon( int x, int y, JobEntryCopy jobEntryCopy ) {
     drawJobEntryIcon( x, y , jobEntryCopy, 1.0f );

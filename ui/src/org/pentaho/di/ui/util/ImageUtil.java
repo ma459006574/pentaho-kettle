@@ -74,11 +74,6 @@ public class ImageUtil {
   public static InputStream getImageInputStream( Display display, String location ) {
     // assume the classloader for the active thread
     ClassLoader cl = Thread.currentThread().getContextClassLoader();
-    if ( cl == null ) {
-      // Can't count on Thread.currentThread().getContextClassLoader() being non-null on Mac
-      // Have to provide some fallback
-      cl = ImageUtil.class.getClassLoader();
-    }
     URL res = cl.getResource( location );
     if ( res != null ) {
       try {
@@ -94,8 +89,8 @@ public class ImageUtil {
     } catch ( FileSystemException e ) {
       throw new RuntimeException( "Unable to load image with name [" + location + "]", e );
     }
-  }
-
+  }  
+  
   /**
    * TODO: Load splash and common images.
    */

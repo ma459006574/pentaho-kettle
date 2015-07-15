@@ -44,6 +44,7 @@ import org.pentaho.di.core.row.ValueMetaInterface;
  * completed.
  *
  * @author matt
+ *
  */
 public class StringEvaluator {
 
@@ -62,8 +63,6 @@ public class StringEvaluator {
   private static final String[] DEFAULT_NUMBER_FORMATS = new String[] {
     "#,###,###.#", "#.#", " #.#", "#", "#.0", "#.00", "#.000", "#.0000", "#.00000", "#.000000", " #.0#", };
 
-  protected static final Pattern PRECISION_PATTERN = Pattern.compile( "[^0-9#]" );
-
   public StringEvaluator() {
     this( true );
   }
@@ -73,8 +72,8 @@ public class StringEvaluator {
   }
 
   public StringEvaluator( boolean tryTrimming, List<String> numberFormats, List<String> dateFormats ) {
-    this( tryTrimming, numberFormats.toArray( new String[ numberFormats.size() ] ), dateFormats
-      .toArray( new String[ dateFormats.size() ] ) );
+    this( tryTrimming, numberFormats.toArray( new String[numberFormats.size()] ), dateFormats
+      .toArray( new String[dateFormats.size()] ) );
   }
 
   public StringEvaluator( boolean tryTrimming, String[] numberFormats, String[] dateFormats ) {
@@ -107,7 +106,6 @@ public class StringEvaluator {
 
   private void challengeConversions( String value ) {
     List<StringEvaluationResult> all = new ArrayList<StringEvaluationResult>( evaluationResults );
-    ValueMetaInterface stringMetaClone = null;
     for ( StringEvaluationResult cmm : all ) {
       if ( cmm.getConversionMeta().isBoolean() ) {
         // Boolean conversion never fails.
@@ -121,7 +119,7 @@ public class StringEvaluator {
         }
         if ( !( "Y".equalsIgnoreCase( string )
           || "N".equalsIgnoreCase( string ) || "TRUE".equalsIgnoreCase( string ) || "FALSE"
-          .equalsIgnoreCase( string ) ) ) {
+            .equalsIgnoreCase( string ) ) ) {
           evaluationResults.remove( cmm );
         }
       } else {
@@ -176,14 +174,10 @@ public class StringEvaluator {
             }
 
           }
-
-          if ( stringMetaClone == null ) {
-            // avoid cloning each time
-            stringMetaClone = stringMeta.clone();
-          }
-          stringMetaClone.setConversionMetadata( cmm.getConversionMeta() );
-          stringMetaClone.setTrimType( cmm.getConversionMeta().getTrimType() );
-          Object object = stringMetaClone.convertDataUsingConversionMetaData( value );
+          ValueMetaInterface meta = stringMeta.clone();
+          meta.setConversionMetadata( cmm.getConversionMeta() );
+          meta.setTrimType( cmm.getConversionMeta().getTrimType() );
+          Object object = meta.convertDataUsingConversionMetaData( value );
 
           // Still here? Evaluate the data...
           // Keep track of null values, min, max, etc.
@@ -337,9 +331,6 @@ public class StringEvaluator {
       ValueMetaInterface conversionMeta = result.getConversionMeta();
       if ( conversionMeta.isNumber() && conversionMeta.getCurrencySymbol() == null ) {
         conversionMeta.setPrecision( maxPrecision );
-        if ( maxPrecision > 0 && maxLength > 0 ) {
-          conversionMeta.setLength( maxLength );
-        }
       }
 
       return result;
@@ -373,11 +364,6 @@ public class StringEvaluator {
         evaluationResults.add( new StringEvaluationResult( conversionMeta ) );
       }
 
-      EvalResultBuilder numberUsBuilder =
-        new EvalResultBuilder( "number-us", ValueMetaInterface.TYPE_NUMBER, 15, trimType, ".", "," );
-      EvalResultBuilder numberEuBuilder =
-        new EvalResultBuilder( "number-eu", ValueMetaInterface.TYPE_NUMBER, 15, trimType, ",", "." );
-
       for ( String format : getNumberFormats() ) {
 
         if ( format.equals( "#" ) || format.equals( "0" ) ) {
@@ -385,9 +371,25 @@ public class StringEvaluator {
           continue;
         }
 
+        ValueMetaInterface conversionMeta = new ValueMeta( "number-us", ValueMetaInterface.TYPE_NUMBER );
+
         int precision = determinePrecision( format );
-        evaluationResults.add( numberUsBuilder.format( format, precision ).build() );
-        evaluationResults.add( numberEuBuilder.format( format, precision ).build() );
+        conversionMeta.setConversionMask( format );
+        conversionMeta.setTrimType( trimType );
+        conversionMeta.setDecimalSymbol( "." );
+        conversionMeta.setGroupingSymbol( "," );
+        conversionMeta.setLength( 15 );
+        conversionMeta.setPrecision( precision );
+        evaluationResults.add( new StringEvaluationResult( conversionMeta ) );
+
+        conversionMeta = new ValueMeta( "number-eu", ValueMetaInterface.TYPE_NUMBER );
+        conversionMeta.setConversionMask( format );
+        conversionMeta.setTrimType( trimType );
+        conversionMeta.setDecimalSymbol( "," );
+        conversionMeta.setGroupingSymbol( "." );
+        conversionMeta.setLength( 15 );
+        conversionMeta.setPrecision( precision );
+        evaluationResults.add( new StringEvaluationResult( conversionMeta ) );
       }
 
       // Try the locale's Currency
@@ -405,16 +407,9 @@ public class StringEvaluator {
         .getDecimalFormatSymbols().getGroupingSeparator() ) );
       conversionMeta.setCurrencySymbol( currencyFormat.getCurrency().getSymbol() );
       conversionMeta.setLength( 15 );
-      int currencyPrecision = currencyFormat.getCurrency().getDefaultFractionDigits();
-      conversionMeta.setPrecision( currencyPrecision );
+      conversionMeta.setPrecision( currencyFormat.getCurrency().getDefaultFractionDigits() );
 
       evaluationResults.add( new StringEvaluationResult( conversionMeta ) );
-
-      // add same mask w/o currency symbol
-      String currencyMaskAsNumeric =
-        currencyMask.replaceAll( Pattern.quote( currencyFormat.getCurrency().getSymbol() ), "" );
-      evaluationResults.add( numberUsBuilder.format( currencyMaskAsNumeric, currencyPrecision ).build() );
-      evaluationResults.add( numberEuBuilder.format( currencyMaskAsNumeric, currencyPrecision ).build() );
 
       // Integer
       //
@@ -455,12 +450,14 @@ public class StringEvaluator {
   }
 
   protected static int determinePrecision( String numericFormat ) {
+    char decimalSymbol =
+      ( (DecimalFormat) NumberFormat.getInstance() ).getDecimalFormatSymbols().getDecimalSeparator();
+    Pattern p = Pattern.compile( "[^0-9#]" );
+    Matcher m = null;
     if ( numericFormat != null ) {
-      char decimalSymbol =
-        ( (DecimalFormat) NumberFormat.getInstance() ).getDecimalFormatSymbols().getDecimalSeparator();
       int loc = numericFormat.lastIndexOf( decimalSymbol );
       if ( loc >= 0 && loc < numericFormat.length() ) {
-        Matcher m = PRECISION_PATTERN.matcher( numericFormat.substring( loc + 1 ) );
+        m = p.matcher( numericFormat.substring( loc + 1 ) );
         int nonDigitLoc = numericFormat.length();
         if ( m.find() ) {
           nonDigitLoc = loc + 1 + m.start();
@@ -500,45 +497,5 @@ public class StringEvaluator {
    */
   public int getMaxLength() {
     return maxLength;
-  }
-
-
-  private static class EvalResultBuilder {
-    private final String name;
-    private final int type;
-    private final int length;
-    private final int trimType;
-    private final String decimalSymbol;
-    private final String groupingSymbol;
-
-    private String format;
-    private int precision;
-
-    public StringEvaluationResult build() {
-      ValueMetaInterface meta = new ValueMeta( name, type );
-      meta.setConversionMask( format );
-      meta.setTrimType( trimType );
-      meta.setDecimalSymbol( decimalSymbol );
-      meta.setGroupingSymbol( groupingSymbol );
-      meta.setLength( length );
-      meta.setPrecision( precision );
-      return new StringEvaluationResult( meta );
-    }
-
-    public EvalResultBuilder( String name, int type, int length, int trimType, String decimalSymbol,
-                              String groupingSymbol ) {
-      this.name = name;
-      this.type = type;
-      this.length = length;
-      this.trimType = trimType;
-      this.decimalSymbol = decimalSymbol;
-      this.groupingSymbol = groupingSymbol;
-    }
-
-    public EvalResultBuilder format( String format, int precision ) {
-      this.format = format;
-      this.precision = precision;
-      return this;
-    }
   }
 }

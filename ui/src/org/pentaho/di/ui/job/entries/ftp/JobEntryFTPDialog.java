@@ -56,6 +56,7 @@ import org.pentaho.di.job.entries.ftp.JobEntryFTP;
 import org.pentaho.di.job.entry.JobEntryDialogInterface;
 import org.pentaho.di.job.entry.JobEntryInterface;
 import org.pentaho.di.repository.Repository;
+import org.pentaho.di.ui.core.database.dialog.DatabaseDialog;
 import org.pentaho.di.ui.core.gui.WindowProperty;
 import org.pentaho.di.ui.core.widget.LabelText;
 import org.pentaho.di.ui.core.widget.LabelTextVar;
@@ -410,14 +411,21 @@ public class JobEntryFTPDialog extends JobEntryDialog implements JobEntryDialogI
     wPassword =
       new LabelTextVar(
         jobMeta, wServerSettings, BaseMessages.getString( PKG, "JobFTP.Password.Label" ), BaseMessages
-          .getString( PKG, "JobFTP.Password.Tooltip" ), true );
+          .getString( PKG, "JobFTP.Password.Tooltip" ) );
     props.setLook( wPassword );
+    wPassword.setEchoChar( '*' );
     wPassword.addModifyListener( lsMod );
     fdPassword = new FormData();
     fdPassword.left = new FormAttachment( 0, 0 );
     fdPassword.top = new FormAttachment( wUserName, margin );
     fdPassword.right = new FormAttachment( 100, 0 );
     wPassword.setLayoutData( fdPassword );
+
+    wPassword.getTextWidget().addModifyListener( new ModifyListener() {
+      public void modifyText( ModifyEvent e ) {
+        DatabaseDialog.checkPasswordVisible( wPassword.getTextWidget() );
+      }
+    } );
 
     // Proxy host line
     wProxyHost =
@@ -462,14 +470,21 @@ public class JobEntryFTPDialog extends JobEntryDialog implements JobEntryDialogI
     wProxyPassword =
       new LabelTextVar(
         jobMeta, wServerSettings, BaseMessages.getString( PKG, "JobFTP.ProxyPassword.Label" ), BaseMessages
-          .getString( PKG, "JobFTP.ProxyPassword.Tooltip" ), true );
+          .getString( PKG, "JobFTP.ProxyPassword.Tooltip" ) );
     props.setLook( wProxyPassword );
+    wProxyPassword.setEchoChar( '*' );
     wProxyPassword.addModifyListener( lsMod );
     fdProxyPasswd = new FormData();
     fdProxyPasswd.left = new FormAttachment( 0, 0 );
     fdProxyPasswd.top = new FormAttachment( wProxyUsername, margin );
     fdProxyPasswd.right = new FormAttachment( 100, 0 );
     wProxyPassword.setLayoutData( fdProxyPasswd );
+
+    wProxyPassword.getTextWidget().addModifyListener( new ModifyListener() {
+      public void modifyText( ModifyEvent e ) {
+        DatabaseDialog.checkPasswordVisible( wProxyPassword.getTextWidget() );
+      }
+    } );
 
     // Test connection button
     wTest = new Button( wServerSettings, SWT.PUSH );
@@ -1228,14 +1243,21 @@ public class JobEntryFTPDialog extends JobEntryDialog implements JobEntryDialogI
     wSocksProxyPassword =
       new LabelTextVar(
         jobMeta, wSocksProxy, BaseMessages.getString( PKG, "JobFTP.SocksProxyPassword.Label" ), BaseMessages
-          .getString( PKG, "JobFTP.SocksProxyPassword.Tooltip" ), true );
+          .getString( PKG, "JobFTP.SocksProxyPassword.Tooltip" ) );
     props.setLook( wSocksProxyPort );
+    wSocksProxyPassword.setEchoChar( '*' );
     wSocksProxyPassword.addModifyListener( lsMod );
     fdSocksProxyPassword = new FormData();
     fdSocksProxyPassword.left = new FormAttachment( 0, 0 );
     fdSocksProxyPassword.top = new FormAttachment( wSocksProxyUsername, margin );
     fdSocksProxyPassword.right = new FormAttachment( 100, margin );
     wSocksProxyPassword.setLayoutData( fdSocksProxyPassword );
+
+    wSocksProxyPassword.getTextWidget().addModifyListener( new ModifyListener() {
+      public void modifyText( ModifyEvent e ) {
+        DatabaseDialog.checkPasswordVisible( wSocksProxyPassword.getTextWidget() );
+      }
+    } );
 
     // ///////////////////////////////////////////////////////////////
     // End of socks proxy group
@@ -1365,6 +1387,11 @@ public class JobEntryFTPDialog extends JobEntryDialog implements JobEntryDialogI
         MessageBox mb = new MessageBox( shell, SWT.OK | SWT.ICON_INFORMATION );
         mb.setMessage( BaseMessages.getString( PKG, "JobFTP.FolderExists.OK", foldername ) + Const.CR );
         mb.setText( BaseMessages.getString( PKG, "JobFTP.FolderExists.Title.Ok" ) );
+        mb.open();
+      } else {
+        MessageBox mb = new MessageBox( shell, SWT.OK | SWT.ICON_ERROR );
+        mb.setMessage( BaseMessages.getString( PKG, "JobFTP.FolderExists.NOK", foldername ) + Const.CR );
+        mb.setText( BaseMessages.getString( PKG, "JobFTP.FolderExists.Title.Bad" ) );
         mb.open();
       }
     }

@@ -28,21 +28,19 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
-import static org.pentaho.di.core.util.Assert.assertFalse;
 import static org.pentaho.di.core.util.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.vfs.FileObject;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -63,7 +61,6 @@ import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.steps.mock.StepMockHelper;
-import org.pentaho.di.utils.TestUtils;
 
 /**
  * User: Dzmitry Stsiapanau Date: 10/18/13 Time: 2:23 PM
@@ -208,7 +205,6 @@ public class TextFileOutputTest {
     when( stepMockHelper.processRowsStepMetaInterface.getSeparator() ).thenReturn( " " );
     when( stepMockHelper.processRowsStepMetaInterface.getEnclosure() ).thenReturn( "\"" );
     when( stepMockHelper.processRowsStepMetaInterface.getNewline() ).thenReturn( "\n" );
-    when( stepMockHelper.transMeta.listVariables() ).thenReturn( new String[ 0 ] );
   }
 
   @After
@@ -216,21 +212,21 @@ public class TextFileOutputTest {
     stepMockHelper.cleanUp();
   }
 
-  private FileObject createTemplateFile() throws IOException {
-    String path = TestUtils.createRamFile(
-      getClass().getSimpleName() + "/" + TEXT_FILE_OUTPUT_PREFIX + new Random().nextLong()
-        + TEXT_FILE_OUTPUT_EXTENSION );
-    return TestUtils.getFileObject( path );
+  private File createTemplateFile() throws IOException {
+    File f = File.createTempFile( TEXT_FILE_OUTPUT_PREFIX, TEXT_FILE_OUTPUT_EXTENSION );
+    // comment deletion for debugging
+    f.deleteOnExit();
+    return f;
   }
 
-  private FileObject createTemplateFile( String content ) throws IOException {
-    FileObject f2 = createTemplateFile();
+  private File createTemplateFile( String content ) throws IOException {
+    File f2 = createTemplateFile();
     if ( content == null ) {
       f2.delete();
     } else {
-      OutputStreamWriter fw = null;
+      FileWriter fw = null;
       try {
-        fw = new OutputStreamWriter( f2.getContent().getOutputStream() );
+        fw = new FileWriter( f2 );
         fw.write( content );
       } finally {
         if ( fw != null ) {
@@ -243,8 +239,8 @@ public class TextFileOutputTest {
 
   @Test
   public void testsIterate() {
-    FileObject resultFile = null;
-    FileObject contentFile;
+    File resultFile = null;
+    File contentFile;
     String content = null;
     Boolean[] bool = new Boolean[] { false, true };
     int i = 0;
@@ -258,12 +254,7 @@ public class TextFileOutputTest {
                   helpTestInit( fileExists, dataReceived, isDoNotOpenNewFileInit, endLineExists, append );
                 content = (String) contents.toArray()[ i++ ];
                 contentFile = createTemplateFile( content );
-                if ( resultFile.exists() ) {
-                  assertTrue( IOUtils.contentEquals( resultFile.getContent().getInputStream(),
-                    contentFile.getContent().getInputStream() ) );
-                } else {
-                  assertFalse( contentFile.exists() );
-                }
+                assertTrue( FileUtils.contentEquals( resultFile, contentFile ) );
               } catch ( Exception e ) {
                 Assert.fail( e.getMessage()
                   + "\n FileExists = " + fileExists + "\n DataReceived = " + dataReceived
@@ -315,9 +306,9 @@ public class TextFileOutputTest {
     verify( textFileoutputSpy ).setOutputDone();
   }
 
-  private FileObject helpTestInit( Boolean fileExists, Boolean dataReceived, Boolean isDoNotOpenNewFileInit,
+  private File helpTestInit( Boolean fileExists, Boolean dataReceived, Boolean isDoNotOpenNewFileInit,
                              Boolean endLineExists, Boolean append ) throws Exception {
-    FileObject f;
+    File f;
     String endLine = null;
     List<Object[]> rows;
 
@@ -339,7 +330,7 @@ public class TextFileOutputTest {
     }
 
     List<Throwable> errors =
-      doOutput( textFileFields, rows, f.getName().getURI(), endLine, false, isDoNotOpenNewFileInit, append );
+      doOutput( textFileFields, rows, f.getPath(), endLine, false, isDoNotOpenNewFileInit, append );
     if ( !errors.isEmpty() ) {
       StringBuilder str = new StringBuilder();
       for ( Throwable thr : errors ) {
@@ -444,7 +435,7 @@ public class TextFileOutputTest {
 
     data.writer = new ByteArrayOutputStream();
 
-    if ( field != null ) {
+    if (field != null) {
       meta.setOutputFields( new TextFileField[] { field } );
     }
 

@@ -27,7 +27,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -618,10 +617,6 @@ public abstract class BaseDatabaseMeta implements Cloneable, DatabaseInterface {
   @Override
   public int getDefaultDatabasePort() {
     return -1; // No default port or not used.
-  }
-
-  @Override public Map<String, String> getDefaultOptions() {
-    return Collections.emptyMap();
   }
 
   /**
@@ -2228,7 +2223,6 @@ public abstract class BaseDatabaseMeta implements Cloneable, DatabaseInterface {
     return true;
   }
 
-
   /**
    * Customizes the ValueMetaInterface defined in the base
    *
@@ -2238,18 +2232,8 @@ public abstract class BaseDatabaseMeta implements Cloneable, DatabaseInterface {
    * @return ValueMetaInterface customized with the data base specific types
    */
   @Override
-  public ValueMetaInterface customizeValueFromSQLType( ValueMetaInterface v, java.sql.ResultSetMetaData rm, int index )
-    throws SQLException {
+  public ValueMetaInterface customizeValueFromSQLType( ValueMetaInterface v, java.sql.ResultSetMetaData rm, int index ) 
+    throws SQLException{
     return null;
-  }
-
-  /**
-   * Customizes the ValueMetaInterface defined in the base
-   *
-   * @return String the create table statement
-   */
-  @Override
-  public String getCreateTableStatement() {
-    return "CREATE TABLE ";
   }
 }

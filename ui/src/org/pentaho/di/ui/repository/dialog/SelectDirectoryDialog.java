@@ -22,9 +22,6 @@
 
 package org.pentaho.di.ui.repository.dialog;
 
-import java.util.Collections;
-import java.util.Set;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MenuDetectEvent;
 import org.eclipse.swt.events.MenuDetectListener;
@@ -86,16 +83,6 @@ public class SelectDirectoryDialog extends Dialog {
   private RepositoryDirectoryInterface repositoryTree;
 
   private boolean readOnly;
-
-  private Set<String> restrictedPaths = Collections.<String>emptySet();
-
-  public void setRestrictedPaths( Set<String> restrictedPaths ) {
-    this.restrictedPaths = restrictedPaths;
-  }
-
-  private boolean isRestrictedPath( String path ) {
-    return restrictedPaths.contains( path );
-  }
 
   public SelectDirectoryDialog( Shell parent, int style, Repository rep ) {
     super( parent, style );
@@ -189,33 +176,8 @@ public class SelectDirectoryDialog extends Dialog {
     } );
 
     wTree.addSelectionListener( new SelectionAdapter() {
-      private String getSelectedPath( SelectionEvent selectionEvent ) {
-        TreeItem treeItem = (TreeItem) selectionEvent.item;
-        String path;
-        if ( treeItem.getParentItem() == null ) {
-          path = treeItem.getText();
-        } else {
-          path = ConstUI.getTreePath( treeItem, 0 );
-        }
-        return path;
-      }
-
-      private boolean isSelectedPathRestricted( SelectionEvent selectionEvent ) {
-        String path = getSelectedPath( selectionEvent );
-        boolean isRestricted = isRestrictedPath( path );
-        return isRestricted;
-      }
-
-      public void widgetDefaultSelected( SelectionEvent selectionEvent ) {
-        if ( isSelectedPathRestricted( selectionEvent ) ) {
-          return;
-        }
+      public void widgetDefaultSelected( SelectionEvent arg0 ) {
         handleOK();
-      }
-
-      public void widgetSelected( SelectionEvent selectionEvent ) {
-        boolean restricted = isSelectedPathRestricted( selectionEvent );
-        wOK.setEnabled( !restricted );
       }
     } );
 

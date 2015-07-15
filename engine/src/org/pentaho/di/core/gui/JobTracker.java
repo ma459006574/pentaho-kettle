@@ -22,11 +22,8 @@
 
 package org.pentaho.di.core.gui;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.util.EnvUtil;
@@ -42,11 +39,8 @@ import org.pentaho.di.job.entry.JobEntryCopy;
  *
  */
 public class JobTracker {
-  /**
-   * The trackers for each individual job entry.
-   * Since we invoke LinkedList.removeFirst() there is no sense in lurking the field behind the interface
-   */
-  private LinkedList<JobTracker> jobTrackers;
+  /** The trackers for each individual job entry */
+  private List<JobTracker> jobTrackers;
 
   /** If the jobTrackers list is empty, then this is the result */
   private JobEntryResult result;
@@ -60,14 +54,18 @@ public class JobTracker {
 
   private int maxChildren;
 
-  private final ReentrantReadWriteLock lock;
-
   /**
    * @param jobMeta
    *          the job metadata to keep track of (with maximum 5000 children)
    */
   public JobTracker( JobMeta jobMeta ) {
-    this( jobMeta, Const.toInt( EnvUtil.getSystemProperty( Const.KETTLE_MAX_JOB_TRACKER_SIZE ), 5000 ) );
+    if ( jobMeta != null ) {
+      this.jobName = jobMeta.getName();
+      this.jobFilename = jobMeta.getFilename();
+    }
+
+    jobTrackers = new LinkedList<JobTracker>();
+    maxChildren = Const.toInt( EnvUtil.getSystemProperty( Const.KETTLE_MAX_JOB_TRACKER_SIZE ), 5000 );
   }
 
   /**
@@ -82,9 +80,8 @@ public class JobTracker {
       this.jobFilename = jobMeta.getFilename();
     }
 
-    this.jobTrackers = new LinkedList<JobTracker>();
+    jobTrackers = new LinkedList<JobTracker>();
     this.maxChildren = maxChildren;
-    this.lock = new ReentrantReadWriteLock();
   }
 
   /**
@@ -116,48 +113,28 @@ public class JobTracker {
   }
 
   public void addJobTracker( JobTracker jobTracker ) {
-    lock.writeLock().lock();
-    try {
+    synchronized ( this ) {
       jobTrackers.add( jobTracker );
       while ( jobTrackers.size() > maxChildren ) {
         // Use remove instead of subList
-        jobTrackers.removeFirst();
+        ( (LinkedList<JobTracker>) jobTrackers ).removeFirst();
       }
-    } finally {
-      lock.writeLock().unlock();
     }
   }
 
   public JobTracker getJobTracker( int i ) {
-    lock.readLock().lock();
-    try {
-      return jobTrackers.get( i );
-    } finally {
-      lock.readLock().unlock();
-    }
+    return jobTrackers.get( i );
   }
 
   public int nrJobTrackers() {
-    lock.readLock().lock();
-    try {
-      return jobTrackers.size();
-    } finally {
-      lock.readLock().unlock();
-    }
+    return jobTrackers.size();
   }
 
   /**
-   * Returns a list that contains all job trackers. The list is created as a defensive copy of internal trackers'
-   * storage.
-   * @return  list of job trackers
+   * @return Returns the jobTrackers.
    */
   public List<JobTracker> getJobTrackers() {
-    lock.readLock().lock();
-    try {
-      return new ArrayList<JobTracker>( jobTrackers );
-    } finally {
-      lock.readLock().unlock();
-    }
+    return jobTrackers;
   }
 
   /**
@@ -165,13 +142,7 @@ public class JobTracker {
    *          The jobTrackers to set.
    */
   public void setJobTrackers( List<JobTracker> jobTrackers ) {
-    lock.writeLock().lock();
-    try {
-      this.jobTrackers.clear();
-      this.jobTrackers.addAll( jobTrackers );
-    } finally {
-      lock.writeLock().unlock();
-    }
+    this.jobTrackers = jobTrackers;
   }
 
   /**
@@ -190,13 +161,8 @@ public class JobTracker {
   }
 
   public void clear() {
-    lock.writeLock().lock();
-    try {
-      jobTrackers.clear();
-      result = null;
-    } finally {
-      lock.writeLock().unlock();
-    }
+    jobTrackers.clear();
+    result = null;
   }
 
   /**
@@ -207,25 +173,16 @@ public class JobTracker {
    * @return The JobTracker of null if none could be found...
    */
   public JobTracker findJobTracker( JobEntryCopy jobEntryCopy ) {
-    if ( jobEntryCopy.getName() == null ) {
-      return null;
-    }
-
-    lock.readLock().lock();
-    try {
-      ListIterator<JobTracker> it = jobTrackers.listIterator( jobTrackers.size() );
-      while ( it.hasPrevious() ) {
-        JobTracker tracker = it.previous();
-        JobEntryResult result = tracker.getJobEntryResult();
-        if ( result != null ) {
-          if ( jobEntryCopy.getName().equals( result.getJobEntryName() )
-            && jobEntryCopy.getNr() == result.getJobEntryNr() ) {
-            return tracker;
-          }
+    for ( int i = jobTrackers.size() - 1; i >= 0; i-- ) {
+      JobTracker tracker = getJobTracker( i );
+      JobEntryResult result = tracker.getJobEntryResult();
+      if ( result != null ) {
+        if ( jobEntryCopy.getName() != null
+          && jobEntryCopy.getName().equals( result.getJobEntryName() )
+          && jobEntryCopy.getNr() == result.getJobEntryNr() ) {
+          return tracker;
         }
       }
-    } finally {
-      lock.readLock().unlock();
     }
     return null;
   }
@@ -246,18 +203,13 @@ public class JobTracker {
   }
 
   public int getTotalNumberOfItems() {
-    lock.readLock().lock();
-    try {
-      int total = 1; // 1 = this one
+    int total = 1; // 1 = this one
 
-      for ( JobTracker jobTracker : jobTrackers ) {
-        total += jobTracker.getTotalNumberOfItems();
-      }
-
-      return total;
-    } finally {
-      lock.readLock().unlock();
+    for ( int i = 0; i < nrJobTrackers(); i++ ) {
+      total += getJobTracker( i ).getTotalNumberOfItems();
     }
+
+    return total;
   }
 
   /**

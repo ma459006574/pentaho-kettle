@@ -22,13 +22,19 @@
 
 package org.pentaho.di.base;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.pentaho.di.cluster.SlaveServer;
 import org.pentaho.di.core.AttributesInterface;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.EngineMetaInterface;
 import org.pentaho.di.core.NotePadMeta;
 import org.pentaho.di.core.Props;
-import org.pentaho.di.core.attributes.metastore.EmbeddedMetaStore;
 import org.pentaho.di.core.changed.ChangedFlag;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
@@ -69,13 +75,6 @@ import org.pentaho.metastore.api.IMetaStoreElement;
 import org.pentaho.metastore.api.IMetaStoreElementType;
 import org.pentaho.metastore.api.exceptions.MetaStoreException;
 import org.pentaho.metastore.util.PentahoDefaults;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public abstract class AbstractMeta extends ChangedFlag implements UndoInterface, HasDatabasesInterface, VariableSpace,
     EngineMetaInterface, NamedParams, HasSlaveServersInterface, AttributesInterface, HasRepositoryInterface,
@@ -131,8 +130,6 @@ public abstract class AbstractMeta extends ChangedFlag implements UndoInterface,
   protected List<TransAction> undo;
 
   protected Map<String, Map<String, String>> attributesMap;
-
-  protected EmbeddedMetaStore embeddedMetaStore = new EmbeddedMetaStore( this );
 
   protected VariableSpace variables = new Variables();
 
@@ -397,7 +394,7 @@ public abstract class AbstractMeta extends ChangedFlag implements UndoInterface,
   public DatabaseMeta getDatabase( int i ) {
     return databases.get( i );
   }
-
+  
   public void importFromMetaStore() throws MetaStoreException, KettlePluginException {
     // Read the databases...
     //
@@ -412,11 +409,11 @@ public abstract class AbstractMeta extends ChangedFlag implements UndoInterface,
             metaStore, databaseElement ) );
         }
       }
-
+      
       // TODO: do the same for slaves, clusters, partition schemas
     }
-  }
-
+  }  
+  
   /**
    * Adds the name changed listener.
    * 
@@ -775,10 +772,6 @@ public abstract class AbstractMeta extends ChangedFlag implements UndoInterface,
       return 0;
     }
     return undo.size();
-  }
-
-  public EmbeddedMetaStore getEmbeddedMetaStore() {
-    return embeddedMetaStore;
   }
 
   @Override
@@ -1479,7 +1472,7 @@ public abstract class AbstractMeta extends ChangedFlag implements UndoInterface,
     if ( sharedObjects == null ) {
       try {
         String soFile = environmentSubstitute( sharedObjectsFile );
-        sharedObjects = new SharedObjects( soFile );
+        sharedObjects = new SharedObjects( soFile );	  
       } catch ( KettleException e ) {
         LogChannel.GENERAL.logDebug( e.getMessage(), e );
       }

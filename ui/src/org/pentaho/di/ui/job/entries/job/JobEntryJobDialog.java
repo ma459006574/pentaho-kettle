@@ -1140,8 +1140,7 @@ public class JobEntryJobDialog extends JobEntryDialog implements JobEntryDialogI
   protected void newJob() {
     JobMeta newJobMeta = new JobMeta();
     newJobMeta.getDatabases().addAll( jobMeta.getDatabases() );
-    newJobMeta.setRepository( jobMeta.getRepository() );
-    newJobMeta.setRepositoryDirectory( jobMeta.getRepositoryDirectory() );
+    newJobMeta.setRepository( rep );
     newJobMeta.setMetaStore( metaStore );
 
     JobDialog jobDialog = new JobDialog( shell, SWT.NONE, newJobMeta, rep );

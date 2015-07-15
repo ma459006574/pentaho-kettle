@@ -23,7 +23,6 @@
 package org.pentaho.di.ui.trans.steps.multimerge;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +56,6 @@ import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
-import org.pentaho.di.trans.step.StepIOMetaInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.errorhandling.Stream;
 import org.pentaho.di.trans.step.errorhandling.StreamIcon;
@@ -86,35 +84,13 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
 
   private MultiMergeJoinMeta joinMeta;
 
+  private String[] inputSteps;
+
   public MultiMergeJoinDialog( Shell parent, Object in, TransMeta tr, String sname ) {
     super( parent, (BaseStepMeta) in, tr, sname );
     joinMeta = (MultiMergeJoinMeta) in;
-
-    String[] inputStepNames = getInputStepNames();
-    wInputStepArray = new CCombo[inputStepNames.length];
-    keyValTextBox = new Text[inputStepNames.length];
-  }
-
-  private String[] getInputStepNames() {
-    String[] inputStepNames = joinMeta.getInputSteps();
-    ArrayList<String> nameList = new ArrayList<String>();
-    if ( inputStepNames != null ) {
-      Collections.addAll( nameList, inputStepNames );
-    }
-
-    String[] prevStepNames = transMeta.getPrevStepNames( stepname );
-    if ( prevStepNames != null ) {
-      String prevStepName;
-      for ( int i = 0; i < prevStepNames.length; i++ ) {
-        prevStepName = prevStepNames[i];
-        if ( nameList.contains( prevStepName ) ) {
-          continue;
-        }
-        nameList.add( prevStepName );
-      }
-    }
-
-    return nameList.toArray( new String[nameList.size()] );
+    wInputStepArray = new CCombo[tr.getPrevStepNames( stepname ).length];
+    keyValTextBox = new Text[wInputStepArray.length];
   }
 
   /*
@@ -176,7 +152,7 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
     wCancel = new Button( shell, SWT.PUSH );
     wCancel.setText( BaseMessages.getString( PKG, "System.Button.Cancel" ) );
 
-    setButtonPositions( new Button[] { wOK, wCancel }, margin, null );
+    setButtonPositions( new Button[] { wOK, wCancel }, margin, joinTypeCombo );
 
     // Add listeners
     lsCancel = new Listener() {
@@ -264,7 +240,8 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
    */
   private void createInputStreamWidgets( final ModifyListener lsMod ) {
     // Get the previous steps ...
-    String[] inputSteps = getInputStepNames();
+    inputSteps = transMeta.getPrevStepNames( stepname );
+
     for ( int index = 0; index < inputSteps.length; index++ ) {
       Label wlStep;
       FormData fdlStep, fdStep1;
@@ -286,7 +263,9 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
       wInputStepArray[index] = new CCombo( shell, SWT.BORDER );
       props.setLook( wInputStepArray[index] );
 
-      wInputStepArray[index].setItems( inputSteps );
+      if ( inputSteps != null ) {
+        wInputStepArray[index].setItems( inputSteps );
+      }
 
       wInputStepArray[index].addModifyListener( lsMod );
       fdStep1 = new FormData();
@@ -393,13 +372,13 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
 
     final Runnable runnable = new Runnable() {
       public void run() {
+        StepMeta stepMeta = transMeta.getStep( inputStreamIndex );
         try {
-          CCombo wInputStep = wInputStepArray[inputStreamIndex];
-          String stepName = wInputStep.getText();
-          StepMeta stepMeta = transMeta.findStep( stepName );
+
           if ( stepMeta != null ) {
             prev = transMeta.getStepFields( stepMeta );
             if ( prev != null ) {
+
               // Remember these fields...
               for ( int i = 0; i < prev.size(); i++ ) {
                 inputFields.put( prev.getValueMeta( i ).getName(), Integer.valueOf( i ) );
@@ -412,7 +391,7 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
         }
       }
     };
-    Display.getDefault().asyncExec( runnable );
+    new Thread( runnable ).start();
 
     Button getKeyButton = new Button( subShell, SWT.PUSH );
     getKeyButton.setText( BaseMessages.getString( PKG, "MultiMergeJoinDialog.KeyFields.Button" ) );
@@ -495,25 +474,21 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
    * Copy information from the meta-data input to the dialog fields.
    */
   public void getData() {
-    String[] inputStepNames = joinMeta.getInputSteps();
-    if ( inputStepNames != null ) {
-      String inputStepName;
-      String[] keyFields = joinMeta.getKeyFields();
-      String keyField;
-      for ( int i = 0; i < inputStepNames.length; i++ ) {
-        inputStepName = Const.NVL( inputStepNames[i], "" );
-        wInputStepArray[i].setText( inputStepName );
+    List<StreamInterface> infoStreams = joinMeta.getStepIOMeta().getInfoStreams();
 
-        keyField = Const.NVL( keyFields[i], "" );
-        keyValTextBox[i].setText( keyField );
-      }
+    for ( int i = 0; i < infoStreams.size(); i++ ) {
+      wInputStepArray[i].setText( joinMeta.getInputSteps()[i] );
+    }
+    String joinType = joinMeta.getJoinType();
+    if ( joinType != null && joinType.length() > 0 ) {
+      joinTypeCombo.setText( joinType );
+    } else {
+      joinTypeCombo.setText( MultiMergeJoinMeta.join_types[0] );
+    }
 
-      String joinType = joinMeta.getJoinType();
-      if ( joinType != null && joinType.length() > 0 ) {
-        joinTypeCombo.setText( joinType );
-      } else {
-        joinTypeCombo.setText( MultiMergeJoinMeta.join_types[0] );
-      }
+    String[] keyFields = joinMeta.getKeyFields();
+    for ( int i = 0; i < keyFields.length; i++ ) {
+      keyValTextBox[i].setText( Const.NVL( keyFields[i], "" ) );
     }
     wStepname.selectAll();
     wStepname.setFocus();
@@ -531,47 +506,37 @@ public class MultiMergeJoinDialog extends BaseStepDialog implements StepDialogIn
    * @param meta
    */
   private void getMeta( MultiMergeJoinMeta meta ) {
-    StepIOMetaInterface stepIOMeta = meta.getStepIOMeta();
-    List<StreamInterface> infoStreams = stepIOMeta.getInfoStreams();
-    StreamInterface stream;
-    String streamDescription;
-    ArrayList<String> inputStepNameList = new ArrayList<String>();
-    ArrayList<String> keyList = new ArrayList<String>();
-    CCombo wInputStep;
-    String inputStepName;
-    for ( int i = 0; i < wInputStepArray.length; i++ ) {
-      wInputStep = wInputStepArray[i];
-      inputStepName = wInputStep.getText();
+    List<StreamInterface> infoStreams = meta.getStepIOMeta().getInfoStreams();
 
-      if ( Const.isEmpty( inputStepName ) ) {
-        continue;
+    if ( infoStreams.size() == 0 ) {
+      if ( inputSteps != null && inputSteps.length != 0 ) {
+        for ( int i = 0; i < inputSteps.length; i++ ) {
+          meta.getStepIOMeta().addStream(
+            new Stream( StreamType.INFO, null, BaseMessages.getString(
+              PKG, "MultiMergeJoin.InfoStream.Description" ), StreamIcon.INFO, null ) );
+        }
+        infoStreams = meta.getStepIOMeta().getInfoStreams();
       }
+    } else if ( inputSteps != null && infoStreams.size() < inputSteps.length ) {
+      int requiredStreams = inputSteps.length - infoStreams.size();
 
-      inputStepNameList.add( inputStepName );
-      keyList.add( keyValTextBox[i].getText() );
-
-      if ( infoStreams.size() < inputStepNameList.size() ) {
-        streamDescription = BaseMessages.getString( PKG, "MultiMergeJoin.InfoStream.Description" );
-        stream = new Stream( StreamType.INFO, null, streamDescription, StreamIcon.INFO, null );
-        stepIOMeta.addStream( stream );
+      for ( int i = 0; i < requiredStreams; i++ ) {
+        meta.getStepIOMeta().addStream(
+          new Stream( StreamType.INFO, null, BaseMessages.getString(
+            PKG, "MultiMergeJoin.InfoStream.Description" ), StreamIcon.INFO, null ) );
       }
+      infoStreams = meta.getStepIOMeta().getInfoStreams();
     }
+    int streamCount = infoStreams.size();
+    meta.allocateInputSteps( streamCount );
+    meta.allocateKeys( streamCount );
 
-    int inputStepCount = inputStepNameList.size();
-    meta.allocateInputSteps( inputStepCount );
-    meta.allocateKeys( inputStepCount );
-
-    String[] inputSteps = meta.getInputSteps();
-    String[] keyFields = meta.getKeyFields();
-    infoStreams = stepIOMeta.getInfoStreams();
-    for ( int i = 0; i < inputStepCount; i++ ) {
-      inputStepName = inputStepNameList.get( i );
-      inputSteps[i] = inputStepName;
-      stream = infoStreams.get( i );
-      stream.setStepMeta( transMeta.findStep( inputStepName ) );
-      keyFields[i] = keyList.get( i );
+    //CHECKSTYLE:Indentation:OFF
+    for ( int i = 0; i < streamCount; i++ ) {
+      meta.getInputSteps()[i] = wInputStepArray[i].getText();
+      infoStreams.get( i ).setStepMeta( transMeta.findStep( wInputStepArray[i].getText() ) );
+      meta.getKeyFields()[i] = keyValTextBox[i].getText();
     }
-
     meta.setJoinType( joinTypeCombo.getText() );
   }
 

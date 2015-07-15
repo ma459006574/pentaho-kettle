@@ -35,18 +35,10 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import org.apache.commons.io.IOUtils;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.ToolItem;
 import org.pentaho.di.core.exception.KettleException;
-import org.pentaho.di.core.logging.LogChannel;
-import org.pentaho.di.core.logging.LogChannelInterface;
 import org.pentaho.di.i18n.LanguageChoice;
-import org.pentaho.di.ui.core.ConstUI;
-import org.pentaho.di.ui.core.PropsUI;
-import org.pentaho.di.ui.core.gui.GUIResource;
 import org.pentaho.ui.xul.XulComponent;
 import org.pentaho.ui.xul.XulDomContainer;
 import org.pentaho.ui.xul.XulException;
@@ -58,7 +50,6 @@ import org.pentaho.ui.xul.dom.Document;
 import org.pentaho.ui.xul.impl.XulEventHandler;
 import org.pentaho.ui.xul.swt.tags.SwtDeck;
 import org.pentaho.ui.xul.swt.tags.SwtToolbarbutton;
-import org.pentaho.ui.xul.swt.tags.SwtToolbaritem;
 
 /**
  * Singleton Object controlling SpoonPerspectives.
@@ -88,8 +79,6 @@ public class SpoonPerspectiveManager {
 
   private String startupPerspective = null;
 
-  private final LogChannelInterface log = new LogChannel( this );
-
   public String getStartupPerspective() {
     return startupPerspective;
   }
@@ -112,18 +101,13 @@ public class SpoonPerspectiveManager {
     private final XulToolbar mainToolbar;
 
     private final SwtToolbarbutton btn;
-    private final ToolItem item;
-    private final String name;
 
-    public PerspectiveInitializer( SpoonPerspective per, XulVbox box, XulToolbar mainToolbar, SwtToolbarbutton btn,
-        ToolItem item, String name ) {
+    public PerspectiveInitializer( SpoonPerspective per, XulVbox box, XulToolbar mainToolbar, SwtToolbarbutton btn ) {
       super();
       this.per = per;
       this.box = box;
       this.mainToolbar = mainToolbar;
       this.btn = btn;
-      this.item = item;
-      this.name = name;
     }
 
     public void initialize() {
@@ -133,18 +117,11 @@ public class SpoonPerspectiveManager {
 
       per.addPerspectiveListener( new SpoonPerspectiveListener() {
         public void onActivation() {
-          if ( btn != null ) {
-            btn.setSelected( true );
-          }
-          if ( item != null ) {
-            item.setText( name );
-          }
+          btn.setSelected( true );
         }
 
         public void onDeactication() {
-          if ( btn != null ) {
-            btn.setSelected( false );
-          }
+          btn.setSelected( false );
         }
       } );
     }
@@ -219,7 +196,7 @@ public class SpoonPerspectiveManager {
         try {
           domContainer.removeOverlay( overlay.getOverlayUri() );
         } catch ( XulException e ) {
-          log.logError( "Error unload perspective", e );
+          e.printStackTrace();
         }
       }
     }
@@ -277,7 +254,7 @@ public class SpoonPerspectiveManager {
           }
           domContainer.loadOverlay( overlay.getOverlayUri(), res );
         } catch ( XulException e ) {
-          log.logError( "Error activate perspective", e );
+          e.printStackTrace();
         }
       }
     }
@@ -355,28 +332,7 @@ public class SpoonPerspectiveManager {
       }
     }
 
-    ToolItem perspectivesItem = null;
-    MenuManager menu = null;
-
-    if ( PropsUI.getInstance().isLegacyPerspectiveMode() ) {
-      log.logDebug( "Use legacy perspective switcher" );
-      // remove new button
-      mainToolbar.removeChild( domContainer.getDocumentRoot().getElementById( "toolbar-perspectives" ) );
-    } else {
-      log.logDebug( "Use new perspective switcher" );
-      // render dropdown perspectives
-      perspectivesItem =
-          (ToolItem) domContainer.getDocumentRoot().getElementById( "toolbar-perspectives" ).getManagedObject();
-      menu =
-          (MenuManager) domContainer.getDocumentRoot().getElementById( "toolbar-perspectives-popup" )
-              .getManagedObject();
-      // and remove old button
-      SwtToolbaritem oldLabel =
-          (SwtToolbaritem) domContainer.getDocumentRoot().getElementById( "toolbar-perspectives-old" );
-      oldLabel.getItem().dispose();
-    }
-
-    for ( final SpoonPerspective per : getPerspectives() ) {
+    for ( SpoonPerspective per : getPerspectives() ) {
       if ( installedPerspectives.contains( per ) ) {
         y++;
         continue;
@@ -384,70 +340,48 @@ public class SpoonPerspectiveManager {
       String name = per.getDisplayName( LanguageChoice.getInstance().getDefaultLocale() );
 
       SwtToolbarbutton btn = null;
-      if ( PropsUI.getInstance().isLegacyPerspectiveMode() ) {
-        // old button
-        try {
-          btn = (SwtToolbarbutton) domContainer.getDocumentRoot().createElement( "toolbarbutton" );
-        } catch ( XulException e ) {
-          log.logError( "Error create toolbarbutton", e );
-        }
-        btn.setType( "toggle" );
-        btn.setLabel( name );
-        btn.setTooltiptext( name );
-        btn.setOnclick( "spoon.loadPerspective(" + y + ")" );
-        btn.setId( "perspective-btn-" + per.getId() );
-        mainToolbar.addChild( btn );
-
-        boolean iconSet = false;
-        if ( SpoonPerspectiveImageProvider.class.isAssignableFrom( per.getClass() ) ) {
-          String location = ( (SpoonPerspectiveImageProvider) per ).getPerspectiveIconPath();
-          Image image =
-              GUIResource.getInstance().getImage( location, per.getClass().getClassLoader(), ConstUI.SMALL_ICON_SIZE,
-                  ConstUI.SMALL_ICON_SIZE );
-          if ( image != null ) {
-            btn.setImage( image );
-            iconSet = true;
-          }
-        }
-        if ( !iconSet ) {
-          InputStream in = per.getPerspectiveIcon();
-          if ( in != null ) {
-            try {
-              btn.setImageFromStream( in );
-            } finally {
-              IOUtils.closeQuietly( in );
-            }
-          }
-        }
-      } else {
-        // new button
-        menu.add( new Action( name ) {
-          @Override
-          public void run() {
-            Spoon.getInstance().loadPerspective( per.getId() );
-          }
-
-          @Override
-          public String getId() {
-            return per.getId();
-          }
-        } );
+      try {
+        btn = (SwtToolbarbutton) domContainer.getDocumentRoot().createElement( "toolbarbutton" );
+      } catch ( XulException e ) {
+        e.printStackTrace();
       }
+      btn.setType( "toggle" );
+      btn.setLabel( name );
+      btn.setTooltiptext( name );
+      btn.setOnclick( "spoon.loadPerspective(" + y + ")" );
+      btn.setId( "perspective-btn-" + per.getId() );
+      mainToolbar.addChild( btn );
 
+      boolean iconSet = false;
+      if ( AbstractSpoonPerspective.class.isAssignableFrom( per.getClass() ) ) {
+        Image ic = ( (AbstractSpoonPerspective) per ).getIcon();
+        if ( ic != null ) {
+          btn.setImage( ic );
+          iconSet = true;
+        }
+      }
+      if ( !iconSet ) {
+        InputStream in = per.getPerspectiveIcon();
+        if ( in != null ) {
+          try {
+            btn.setImageFromStream( in );
+          } finally {
+            IOUtils.closeQuietly( in );
+          }
+        }        
+      }
+      
       XulVbox box = deck.createVBoxCard();
       box.setId( "perspective-" + per.getId() );
       box.setFlex( 1 );
       deck.addChild( box );
 
-      PerspectiveInitializer perspectiveInitializer =
-          new PerspectiveInitializer( per, box, mainToolbar, btn, perspectivesItem, name );
+      PerspectiveInitializer perspectiveInitializer = new PerspectiveInitializer( per, box, mainToolbar, btn );
       // Need to force init for main perspective even if it won't be shown
       if ( perspectiveIdx == y || y == 0 ) {
         if ( perspectiveIdx == y ) {
           // we have a startup perspective. Hold onto the class
-          if ( btn != null ) {
-            btn.setSelected( true );
-          }
+          btn.setSelected( true );
           perClass = per.getClass();
         }
         // force init

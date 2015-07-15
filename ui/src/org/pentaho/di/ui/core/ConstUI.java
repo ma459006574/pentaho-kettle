@@ -42,11 +42,11 @@ public class ConstUI {
    * Default icon size
    */
   public static final int ICON_SIZE = 32;
-
+  
   public static final int SMALL_ICON_SIZE = 16;
 
   public static final int MEDIUM_ICON_SIZE = 24;
-
+  
   /**
    * Default line width for arrows & around icons
    */
@@ -55,7 +55,7 @@ public class ConstUI {
   /**
    * Default grid size to which the graphical views snap.
    */
-  public static final int GRID_SIZE = 16;
+  public static final int GRID_SIZE = 20;
 
   /**
    * The minimal size of a note on a graphical view (width & height)
@@ -116,16 +116,6 @@ public class ConstUI {
    * the default canvas refresh interval for running transformations
    */
   public static final int INTERVAL_MS_TRANS_CANVAS_REFRESH = 1000;
-  
-  /**
-   * margin between points of controls
-   */
-  public static final int SMALL_MARGIN = 5;
-  
-  /**
-   * margin between points of controls
-   */
-  public static final int MEDUIM_MARGIN = 10;
 
   /**
    * Determine the level of where the TreeItem is position in a tree.

@@ -202,12 +202,8 @@ public class SpoonJobDelegate extends SpoonDelegate {
       Object[] paramArgs = new Object[] { spoon.getShell(), jobEntryInterface, spoon.getRepository(), jobMeta };
       Constructor<?> dialogConstructor;
 
-      try {
-        PluginInterface plugin = registry.getPlugin( JobEntryPluginType.class, jobEntryInterface );
-        dialogClass = PluginRegistry.getInstance().getClass( plugin, dialogClassName );
-      } catch ( Exception e ) {
-        dialogClass = Class.forName( dialogClassName, true, jobEntryInterface.getClass().getClassLoader() );
-      }
+      PluginInterface plugin = registry.getPlugin( JobEntryPluginType.class, jobEntryInterface );
+      dialogClass = PluginRegistry.getInstance().getClass( plugin, dialogClassName );
       dialogConstructor = dialogClass.getConstructor( paramClasses );
       JobEntryDialogInterface entryDialogInterface =
         (JobEntryDialogInterface) dialogConstructor.newInstance( paramArgs );

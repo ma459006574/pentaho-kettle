@@ -46,9 +46,6 @@
     <copy todir="${classes.dir}">
         <fileset dir="package-res" />
     </copy>
-    <copy todir="${classes.dir}/ui">
-        <fileset dir="${ui}" includes="laf.properties"/>
-    </copy>
 
     <if>
       <not>

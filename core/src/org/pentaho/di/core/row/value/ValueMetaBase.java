@@ -232,7 +232,7 @@ public class ValueMetaBase implements ValueMetaInterface {
         }
         break;
       case TYPE_BIGNUMBER:
-        String alternativeBigNumberMask = EnvUtil.getSystemProperty( Const.KETTLE_DEFAULT_BIGNUMBER_FORMAT );
+        String alternativeBigNumberMask = EnvUtil.getSystemProperty( Const.KETTLE_DEFAULT_NUMBER_FORMAT );
         if ( Const.isEmpty( alternativeBigNumberMask ) ) {
           setConversionMask( "#.###############################################;"
               + "-#.###############################################" );
@@ -2708,7 +2708,7 @@ public class ValueMetaBase implements ValueMetaInterface {
       writeString( outputStream, dateFormatLocale != null ? dateFormatLocale.toString() : null );
 
       // date time zone?
-      writeString( outputStream, dateFormatTimeZone != null ? dateFormatTimeZone.getID() : null );
+      writeString( outputStream, dateFormatTimeZone != null ? dateFormatTimeZone.toString() : null );
 
       // string to number conversion lenient?
       outputStream.writeBoolean( lenientStringToNumber );
@@ -4486,7 +4486,7 @@ public class ValueMetaBase implements ValueMetaInterface {
               precision = -1;
             }
           }
-
+          
           break;
 
         case java.sql.Types.TIMESTAMP:
@@ -4579,14 +4579,13 @@ public class ValueMetaBase implements ValueMetaInterface {
           throw new SQLException( e );
         }
       }
-
-      ValueMetaInterface newV = null;
-      try {
-        newV = databaseMeta.getDatabaseInterface().customizeValueFromSQLType( v, rm, index );
-      } catch ( SQLException e ) {
-        throw new SQLException( e );
+      
+      ValueMetaInterface newValueMetaInterface = databaseMeta.getDatabaseInterface().customizeValueFromSQLType( v, rm, index );
+      if( newValueMetaInterface != null ) {
+        return newValueMetaInterface;
+      } else {
+        return v;
       }
-      return newV == null ? v : newV;
     } catch ( Exception e ) {
       throw new KettleDatabaseException( "Error determining value metadata from SQL resultset metadata", e );
     }

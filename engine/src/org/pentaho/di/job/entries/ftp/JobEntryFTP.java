@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2015 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2013 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.vfs.FileObject;
 import org.pentaho.di.cluster.SlaveServer;
 import org.pentaho.di.core.CheckResultInterface;
@@ -1067,6 +1066,8 @@ public class JobEntryFTP extends JobEntryBase implements Cloneable, JobEntryInte
         // Get all the files in the current directory...
         FTPFile[] ftpFiles = ftpclient.dirDetails( null );
 
+        // if(isDetailed()) logDetailed(BaseMessages.getString(PKG, "JobEntryFTP.FoundNFiles",
+        // String.valueOf(filelist.length)));
         if ( isDetailed() ) {
           logDetailed( BaseMessages.getString( PKG, "JobEntryFTP.FoundNFiles", String.valueOf( ftpFiles.length ) ) );
         }
@@ -1316,8 +1317,7 @@ public class JobEntryFTP extends JobEntryBase implements Cloneable, JobEntryInte
    *
    * @return the calculated target filename
    */
-  @VisibleForTesting
-  String returnTargetFilename( String filename ) {
+  private String returnTargetFilename( String filename ) {
     String retval = null;
     // Replace possible environment variables...
     if ( filename != null ) {
@@ -1331,8 +1331,6 @@ public class JobEntryFTP extends JobEntryBase implements Cloneable, JobEntryInte
     if ( lastindexOfDot == -1 ) {
       lastindexOfDot = lenstring;
     }
-
-    String fileExtension = retval.substring( lastindexOfDot, lenstring );
 
     if ( isAddDateBeforeExtension() ) {
       retval = retval.substring( 0, lastindexOfDot );
@@ -1359,7 +1357,7 @@ public class JobEntryFTP extends JobEntryBase implements Cloneable, JobEntryInte
     }
 
     if ( isAddDateBeforeExtension() ) {
-      retval += fileExtension;
+      retval += retval.substring( lastindexOfDot, lenstring );
     }
 
     // Add foldername to filename

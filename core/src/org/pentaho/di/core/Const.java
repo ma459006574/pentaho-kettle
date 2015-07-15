@@ -3,7 +3,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2015 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2013 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -142,11 +141,6 @@ public class Const {
    * Sort size: how many rows do we sort in memory at once?
    */
   public static final int SORT_SIZE = 5000;
-
-  /**
-   * job/trans heartbeat scheduled executor periodic interval ( in seconds )
-   */
-  public static final int HEARTBEAT_PERIODIC_INTERVAL_IN_SECS = 10;
 
   /**
    * What's the file systems file separator on this operating system?
@@ -344,15 +338,6 @@ public class Const {
   public static final String NULL_NONE = "";
 
   /**
-   * Rounding mode, not implemented in {@code BigDecimal}. Method java.lang.Math.round(double) processes this way. <br/>
-   * Rounding mode to round towards {@literal "nearest neighbor"} unless both neighbors are equidistant, in which case
-   * round ceiling. <br/>
-   * Behaves as for {@code ROUND_CEILING} if the discarded fraction is &ge; 0.5; otherwise, behaves as for
-   * {@code ROUND_FLOOR}. Note that this is the most common arithmetical rounding mode.
-   */
-  public static final int ROUND_HALF_CEILING = -1;
-
-  /**
    * The base name of the Chef logfile
    */
   public static final String CHEF_LOG_FILE = "chef";
@@ -366,6 +351,11 @@ public class Const {
    * The base name of the Menu logfile
    */
   public static final String MENU_LOG_FILE = "menu";
+
+  /**
+   * A number of tips that are shown when the application first starts.
+   */
+  private static String[] tips;
 
   /**
    * An array of date conversion formats
@@ -417,9 +407,6 @@ public class Const {
   /** Name of the kettle parameters file */
   public static final String KETTLE_PROPERTIES = "kettle.properties";
 
-  /** Name of the kettle shared data file */
-  public static final String SHARED_DATA_FILE = "shared.xml";
-
   /** The prefix that all internal kettle variables should have */
   public static final String INTERNAL_VARIABLE_PREFIX = "Internal";
 
@@ -452,12 +439,6 @@ public class Const {
 
   /** The job run attempt nr */
   public static final String INTERNAL_VARIABLE_JOB_RUN_ATTEMPTNR = INTERNAL_VARIABLE_PREFIX + ".Job.Run.AttemptNr";
-
-  /** job/trans heartbeat scheduled executor periodic interval ( in seconds ) */
-  public static final String VARIABLE_HEARTBEAT_PERIODIC_INTERVAL_SECS = "heartbeat.periodic.interval.seconds";
-
-  /** comma-separated list of extension point plugins for which snmp traps should be sent */
-  public static final String VARIABLE_MONITORING_SNMP_TRAPS_ENABLED = "monitoring.snmp.traps.enabled";
 
   /**
    * All the internal transformation variables
@@ -947,16 +928,6 @@ public class Const {
   public static final String XML_FILE_KETTLE_EXTENSION_POINTS = "kettle-extension-points.xml";
 
   /**
-   * The XML file that contains the list of native extension points (None by default, this is mostly for OEM purposes)
-   */
-  public static final String XML_FILE_KETTLE_REGISTRY_EXTENSIONS = "kettle-registry-extensions.xml";
-
-  /**
-   * The XML file that contains the list of lifecycle listeners
-   */
-  public static final String XML_FILE_KETTLE_LIFECYCLE_LISTENERS = "kettle-lifecycle-listeners.xml";
-
-  /**
    * the value the Pan JVM should return on exit.
    */
   public static final String KETTLE_TRANS_PAN_JVM_EXIT_CODE = "KETTLE_TRANS_PAN_JVM_EXIT_CODE";
@@ -1042,15 +1013,15 @@ public class Const {
   public static final String KETTLE_CARTE_JETTY_RES_MAX_IDLE_TIME = "KETTLE_CARTE_JETTY_RES_MAX_IDLE_TIME";
 
   /**
-   * rounds double f to any number of places after decimal point Does arithmetic using BigDecimal class to avoid integer
-   * overflow while rounding
-   *
-   * @param f
-   *          The value to round
-   * @param places
-   *          The number of decimal places
-   * @return The rounded floating point value
-   */
+  * rounds double f to any number of places after decimal point Does arithmetic using BigDecimal class to avoid integer
+  * overflow while rounding
+  *
+  * @param f
+  *          The value to round
+  * @param places
+  *          The number of decimal places
+  * @return The rounded floating point value
+  */
 
   public static final double round( double f, int places ) {
     return round( f, places, java.math.BigDecimal.ROUND_HALF_EVEN );
@@ -1068,6 +1039,7 @@ public class Const {
    *          The mode for rounding, e.g. java.math.BigDecimal.ROUND_HALF_EVEN
    * @return The rounded floating point value
    */
+
   public static final double round( double f, int places, int roundingMode ) {
     // We can't round non-numbers or infinite values
     //
@@ -1077,32 +1049,9 @@ public class Const {
 
     // Do the rounding...
     //
-    java.math.BigDecimal bdtemp = round( java.math.BigDecimal.valueOf( f ), places, roundingMode );
+    java.math.BigDecimal bdtemp = java.math.BigDecimal.valueOf( f );
+    bdtemp = bdtemp.setScale( places, roundingMode );
     return bdtemp.doubleValue();
-  }
-
-  /**
-   * rounds BigDecimal f to any number of places after decimal point Does arithmetic using BigDecimal class to avoid
-   * integer overflow while rounding
-   *
-   * @param f
-   *          The value to round
-   * @param places
-   *          The number of decimal places
-   * @param roundingMode
-   *          The mode for rounding, e.g. java.math.BigDecimal.ROUND_HALF_EVEN
-   * @return The rounded floating point value
-   */
-  public static final BigDecimal round( BigDecimal f, int places, int roundingMode ) {
-    if ( roundingMode == ROUND_HALF_CEILING ) {
-      if ( f.signum() >= 0 ) {
-        return round( f, places, BigDecimal.ROUND_HALF_UP );
-      } else {
-        return round( f, places, BigDecimal.ROUND_HALF_DOWN );
-      }
-    } else {
-      return f.setScale( places, roundingMode );
-    }
   }
 
   /*
@@ -1477,13 +1426,6 @@ public class Const {
     return getOS().toUpperCase().contains( "OS X" );
   }
 
-  /**
-   * @return True if KDE is in use.
-   */
-  public static final boolean isKDE() {
-    return StringUtils.isNotBlank( System.getenv( "KDE_SESSION_VERSION" ) );
-  }
-
   private static String cachedHostname;
 
   /**
@@ -1746,21 +1688,12 @@ public class Const {
   }
 
   /**
-   * Determines the Kettle absolute directory in the user's home directory.
-   *
-   * @return The Kettle absolute directory.
-   */
-  public static final String getKettleDirectory() {
-    return getUserHomeDirectory() + FILE_SEPARATOR + getUserBaseDir();
-  }
-
-  /**
    * Determines the Kettle directory in the user's home directory.
    *
    * @return The Kettle directory.
    */
-  public static final String getUserBaseDir() {
-    return BasePropertyHandler.getProperty( "userBaseDir", ".kettle" );
+  public static final String getKettleDirectory() {
+    return getUserHomeDirectory() + FILE_SEPARATOR + BasePropertyHandler.getProperty( "userBaseDir", ".kettle" );
   }
 
   /**
@@ -1776,7 +1709,7 @@ public class Const {
    * @return the name of the shared objects file
    */
   public static final String getSharedObjectsFile() {
-    return getKettleDirectory() + FILE_SEPARATOR + SHARED_DATA_FILE;
+    return getKettleDirectory() + FILE_SEPARATOR + "shared.xml";
   }
 
   /**
@@ -2586,6 +2519,23 @@ public class Const {
       }
     }
 
+  }
+
+  /**
+   * Returning the internationalized tips of the days. They get created once on first request.
+   *
+   * @return
+   */
+  public static String[] getTips() {
+    if ( tips == null ) {
+      int tipsOfDayCount = toInt( BaseMessages.getString( PKG, "Const.TipOfDay.Count" ), 0 );
+      tips = new String[tipsOfDayCount];
+      for ( int i = 1; i <= tipsOfDayCount; i++ ) {
+        tips[i - 1] = BaseMessages.getString( PKG, "Const.TipOfDay" + Integer.toString( i ) );
+      }
+    }
+
+    return tips;
   }
 
   /**

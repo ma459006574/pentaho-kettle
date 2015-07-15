@@ -44,12 +44,8 @@ setPentahoEnv
 LIBPATH="NONE"
 STARTUP="$BASEDIR/launcher/launcher.jar"
 
-if [ -z "$IS_YARN" ]; then
-	# Go to directory where spoon.sh located
-	cd $BASEDIR
-else
-	cd "$BASEDIR"
-fi
+# Go to directory where spoon.sh located
+cd $BASEDIR
 
 case `uname -s` in 
 	AIX)
@@ -206,12 +202,7 @@ OPT="$OPT $PENTAHO_DI_JAVA_OPTIONS -Djava.library.path=$LIBPATH -DKETTLE_HOME=$K
 # ***************
 # ** Run...    **
 # ***************
-OS=`uname -s | tr '[:upper:]' '[:lower:]'`
-if [ $OS = "linux" ]; then
-    "$_PENTAHO_JAVA" $OPT -jar "$STARTUP" -lib $LIBPATH "${1+$@}" 2>&1 | grep -viE "Gtk-WARNING|GLib-GObject|GLib-CRITICAL|^$"
-else
-    "$_PENTAHO_JAVA" $OPT -jar "$STARTUP" -lib $LIBPATH "${1+$@}"
-fi
+"$_PENTAHO_JAVA" $OPT -jar "$STARTUP" -lib $LIBPATH "${1+$@}"
 
 # return to the catalog from which spoon.sh has been started
 cd $INITIALDIR

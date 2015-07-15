@@ -35,17 +35,17 @@ public abstract class SwingUniversalImage {
 
   private Map<String, BufferedImage> cache = new TreeMap<String, BufferedImage>();
 
-  public abstract boolean isBitmap();
+  abstract public boolean isBitmap();
 
   /**
    * Just scale for area's size.
    */
-  protected abstract void renderSimple( BufferedImage area );
+  abstract protected void renderSimple( BufferedImage area );
 
   /**
    * Render with scale, at specified position, with possible rotation.
    */
-  protected abstract void render( Graphics2D gc, int centerX, int centerY, int width, int height, double angleRadians );
+  abstract protected void render( Graphics2D gc, int centerX, int centerY, int width, int height, double angleRadians );
 
   /**
    * Get scaled image.

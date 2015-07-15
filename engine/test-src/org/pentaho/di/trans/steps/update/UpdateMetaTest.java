@@ -1,25 +1,3 @@
-/*! ******************************************************************************
- *
- * Pentaho Data Integration
- *
- * Copyright (C) 2002-2015 by Pentaho : http://www.pentaho.com
- *
- *******************************************************************************
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- ******************************************************************************/
-
 package org.pentaho.di.trans.steps.update;
 
 import static org.mockito.Matchers.anyString;
@@ -56,8 +34,8 @@ public class UpdateMetaTest extends TestCase {
   private Update upd;
   private UpdateData ud;
   private UpdateMeta umi;
-
-  public static final String databaseXML =
+  
+  public static final String databaseXML = 
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
         + "<connection>" + "<name>lookup</name>" + "<server>127.0.0.1</server>" + "<type>H2</type>"
         + "<access>Native</access>" + "<database>mem:db</database>" + "<port></port>" + "<username>sa</username>"
@@ -108,7 +86,7 @@ public class UpdateMetaTest extends TestCase {
     } catch ( Exception ex ) {
     }
   }
-
+  
   @Test
   public void testUseDefaultSchemaName() throws Exception {
     String schemaName = "";

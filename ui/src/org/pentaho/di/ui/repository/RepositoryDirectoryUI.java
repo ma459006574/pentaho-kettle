@@ -24,20 +24,16 @@ package org.pentaho.di.ui.repository;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TreeItem;
-
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleDatabaseException;
 import org.pentaho.di.core.exception.KettleException;
-import org.pentaho.di.repository.ObjectId;
 import org.pentaho.di.repository.Repository;
 import org.pentaho.di.repository.RepositoryDirectory;
 import org.pentaho.di.repository.RepositoryDirectoryInterface;
@@ -45,8 +41,6 @@ import org.pentaho.di.repository.RepositoryElementMetaInterface;
 import org.pentaho.di.repository.RepositoryObject;
 import org.pentaho.di.repository.RepositoryObjectType;
 import org.pentaho.di.ui.core.gui.GUIResource;
-import org.pentaho.di.ui.repository.dialog.SelectDirectoryDialog;
-
 
 public class RepositoryDirectoryUI {
 
@@ -77,14 +71,13 @@ public class RepositoryDirectoryUI {
     RepositoryDirectoryInterface dir, String filterString, Pattern pattern ) throws KettleDatabaseException {
     ti.setText( dir.getName() );
     ti.setData( dir );
-    ti.setData( "isFolder", true );
+    ti.setForeground( dircolor );
 
     // First, we draw the directories
     for ( int i = 0; i < dir.getNrSubdirectories(); i++ ) {
       RepositoryDirectory subdir = dir.getSubdirectory( i );
       TreeItem subti = new TreeItem( ti, SWT.NONE );
       subti.setImage( GUIResource.getInstance().getImageArrow() );
-      subti.setData( "isFolder", true );
       getTreeWithNames(
         subti, rep, dircolor, sortPosition, includeDeleted, ascending, getTransformations, getJobs, subdir,
         filterString, pattern );
@@ -176,7 +169,7 @@ public class RepositoryDirectoryUI {
 
           SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "yyyy/MM/dd HH:mm:ss" );
           tiObject.setText( 0, Const.NVL( repositoryObject.getName(), "" ) );
-          tiObject.setText( 1, Const.NVL( repositoryObject.getObjectType().getTypeDescription(), "" ).toUpperCase() );
+          tiObject.setText( 1, Const.NVL( repositoryObject.getObjectType().getTypeDescription(), "" ) );
           tiObject.setText( 2, Const.NVL( repositoryObject.getModifiedUser(), "" ) );
           tiObject.setText( 3, repositoryObject.getModifiedDate() != null ? simpleDateFormat
             .format( repositoryObject.getModifiedDate() ) : "" );
@@ -231,36 +224,6 @@ public class RepositoryDirectoryUI {
       subti.setImage( GUIResource.getInstance().getImageArrow() );
       getDirectoryTree( subti, dircolor, subdir );
     }
-  }
-
-  public static RepositoryDirectoryInterface chooseDirectory( Shell shell, Repository rep, RepositoryDirectoryInterface directoryFrom ) {
-    if ( rep == null ) {
-      return null;
-    }
-
-    if ( directoryFrom == null ) {
-      try {
-        directoryFrom = rep.getUserHomeDirectory();
-      } catch ( KettleException ex ) {
-        directoryFrom = new RepositoryDirectory();
-      }
-    }
-    ObjectId idDirectoryFrom = directoryFrom.getObjectId();
-
-    SelectDirectoryDialog sdd = new SelectDirectoryDialog( shell, SWT.NONE, rep );
-
-    //PDI-13867: root dir is restricted.
-    HashSet<String> restrictedPaths = new HashSet<String>();
-    restrictedPaths.add( directoryFrom.findRoot().getPath() );
-    sdd.setRestrictedPaths( restrictedPaths );
-
-    //TODO: expand and select directoryFrom in the dialog.
-
-    RepositoryDirectoryInterface rd = sdd.open();
-    if ( rd == null || idDirectoryFrom == rd.getObjectId() ) {
-      return null;
-    }
-    return rd;
   }
 
 }

@@ -26,26 +26,24 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.junit.*;
+import junit.framework.TestCase;
+
 import org.pentaho.di.core.plugins.PluginInterface;
 import org.pentaho.di.core.plugins.PluginRegistry;
 import org.pentaho.di.core.plugins.PluginTypeInterface;
 import org.pentaho.di.core.row.ValueMetaInterface;
-import org.pentaho.di.core.row.value.ValueMetaBase;
 import org.pentaho.di.core.row.value.ValueMetaPluginType;
 
-import static org.junit.Assert.*;
+public class StringEvaluatorTest extends TestCase {
 
-public class StringEvaluatorTest {
+  private String[] series1 = new String[] { "Foo", "Bar", "One", "", "Two", "Three", };
 
-  @Test
   public void testSeries1() throws Exception {
-    String[] series1 = new String[] { "Foo", "Bar", "One", "", "Two", "Three", };
     StringEvaluator evaluator = new StringEvaluator( false );
     for ( String string : series1 ) {
       evaluator.evaluateString( string );
@@ -59,9 +57,9 @@ public class StringEvaluatorTest {
     assertEquals( evaluator.getStringEvaluationResults().size(), 0 );
   }
 
-  @Test
+  private String[] series2 = new String[] { "2009/12/31 12:34:56", "2010/02/14 23:22:01", };
+
   public void testSeries2() throws Exception {
-    String[] series2 = new String[] { "2009/12/31 12:34:56", "2010/02/14 23:22:01", };
     StringEvaluator evaluator = new StringEvaluator( false );
     for ( String string : series2 ) {
       evaluator.evaluateString( string );
@@ -81,9 +79,9 @@ public class StringEvaluatorTest {
     assertEquals( evaluator.getValues().size(), series2.length );
   }
 
-  @Test
+  private String[] series3 = new String[] { "1234,56", "12394,26", "1934,34", "19245,23", "" };
+
   public void testSeries3() throws Exception {
-    String[] series3 = new String[] { "1234,56", "12394,26", "1934,34", "19245,23", "" };
     StringEvaluator evaluator = new StringEvaluator( false );
     for ( String string : series3 ) {
       evaluator.evaluateString( string );
@@ -99,11 +97,11 @@ public class StringEvaluatorTest {
     assertEquals( evaluator.getValues().size(), series3.length );
   }
 
-  @Test
+  private String[] series4 = new String[] {
+    "01234,56     ", "             ", "98765,43     ", "12394,26     ", "01934,34     ", "19245,23     ",
+    "00045,67     ", };
+
   public void testSeries4() throws Exception {
-    String[] series4 = new String[] {
-      "01234,56     ", "             ", "98765,43     ", "12394,26     ", "01934,34     ", "19245,23     ",
-      "00045,67     ", };
     StringEvaluator evaluator = new StringEvaluator( true );
     for ( String string : series4 ) {
       evaluator.evaluateString( string );
@@ -119,7 +117,6 @@ public class StringEvaluatorTest {
     assertEquals( evaluator.getValues().size(), series4.length );
   }
 
-  @Test
   public void testCurrencyData() {
     StringEvaluator eval = new StringEvaluator( true );
     String[] values = new String[] { "$300.00", "$3,400", "$23.00", "($0.50)" };
@@ -134,37 +131,34 @@ public class StringEvaluatorTest {
       .getConversionMeta().getConversionMask() );
   }
 
-  @Test
   public void testCurrencyData_UK() {
     Locale orig = Locale.getDefault();
-    try {
-      Locale.setDefault( Locale.UK );
-      StringEvaluator eval = new StringEvaluator( true );
+    Locale.setDefault( Locale.UK );
+    StringEvaluator eval = new StringEvaluator( true );
 
-      DecimalFormat currencyFormat = ( (DecimalFormat) NumberFormat.getCurrencyInstance() );
-      try {
-        currencyFormat.parse( "-£400.059" );
-      } catch ( ParseException e ) {
-        fail();
-      }
-      String[] values = new String[] { "£400.019", "£3,400.029", "£23.00", "-£400.059" };
-      for ( String value : values ) {
-        eval.evaluateString( value );
-      }
-      assertEquals( values.length, eval.getCount() );
-      StringEvaluationResult result = eval.getAdvicedResult();
-      assertEquals( "Not a number detected", ValueMetaInterface.TYPE_NUMBER, result.getConversionMeta().getType() );
-      assertEquals( "Precision not correct", 2, result.getConversionMeta().getPrecision() );
-      assertEquals( "Currency format mask is incorrect", "£#,##0.00", result.getConversionMeta().getConversionMask() );
-    } finally {
-      Locale.setDefault( orig );
+    DecimalFormat currencyFormat = ( (DecimalFormat) NumberFormat.getCurrencyInstance() );
+    try {
+      currencyFormat.parse( "-£400.059" );
+    } catch ( ParseException e ) {
+      fail();
     }
+    String[] values = new String[] { "£400.019", "£3,400.029", "£23.00", "-£400.059" };
+    for ( String value : values ) {
+      eval.evaluateString( value );
+    }
+    assertEquals( values.length, eval.getCount() );
+    StringEvaluationResult result = eval.getAdvicedResult();
+
+    Locale.setDefault( orig );
+
+    assertEquals( "Not a number detected", ValueMetaInterface.TYPE_NUMBER, result.getConversionMeta().getType() );
+    assertEquals( "Precision not correct", 2, result.getConversionMeta().getPrecision() );
+    assertEquals( "Currency format mask is incorrect", "£#,##0.00", result.getConversionMeta().getConversionMask() );
   }
 
-  @Test
   public void testCustomDateFormats() {
-    List<String> dates = Collections.singletonList( "MM/dd/yyyy" );
-    List<String> numbers = Collections.singletonList( "#,##0.###" );
+    List<String> dates = Arrays.asList( "MM/dd/yyyy" );
+    List<String> numbers = Arrays.asList( "#,##0.###" );
 
     StringEvaluator eval = new StringEvaluator( true, numbers, dates );
     String[] goodDateValues = new String[] { "01/01/2000", "02/02/2000", "03/03/2000" };
@@ -186,63 +180,7 @@ public class StringEvaluatorTest {
     assertFalse( "Date detected", result.getConversionMeta().getType() == ValueMetaInterface.TYPE_DATE );
   }
 
-  @Test
   public void testCustomNumberFormats() {
-    loadValueMetaPlugins();
-
-    // Now get to the real testing
-    Locale orig = Locale.getDefault();
-    try {
-      Locale.setDefault( Locale.US );
-
-      StringEvaluator eval = new StringEvaluator();
-      String[] goodValues = new String[] { "200.00", "999.99", "4,309.88" };
-      String[] badValues = new String[] { "9 00", "$30.00", "3.999,00" };
-
-      for ( String value : goodValues ) {
-        eval.evaluateString( value );
-      }
-      assertEquals( goodValues.length, eval.getCount() );
-      StringEvaluationResult result = eval.getAdvicedResult();
-      assertEquals( "Not a number detected", result.getConversionMeta().getTypeDesc(), "Number" );
-
-      eval = new StringEvaluator();
-      for ( String value : badValues ) {
-        eval.evaluateString( value );
-      }
-      assertEquals( badValues.length, eval.getCount() );
-      result = eval.getAdvicedResult();
-      assertFalse( "Number detected", result.getConversionMeta().getType() == ValueMetaInterface.TYPE_NUMBER );
-    } finally {
-      Locale.setDefault( orig );
-    }
-  }
-
-  @Test
-  public void testDeterminePrecision() {
-    assertEquals( 4, StringEvaluator.determinePrecision( "#.0000" ) );
-    assertEquals( 4, StringEvaluator.determinePrecision( "0.#### $" ) );
-    assertEquals( 0, StringEvaluator.determinePrecision( null ) );
-    assertEquals( 4, StringEvaluator.determinePrecision( "0.##00 $" ) );
-    assertEquals( 4, StringEvaluator.determinePrecision( "##,##0.#0## $" ) );
-  }
-
-  @Test
-  public void testLength_IfEvaluationResultIsNumber() {
-    loadValueMetaPlugins();
-    StringEvaluator eval = new StringEvaluator();
-
-    String[] numbers = new String[] { "1010.10101010", "10.01", "4,309.88" };
-    for ( String value : numbers ) {
-      eval.evaluateString( value );
-    }
-    StringEvaluationResult result = eval.getAdvicedResult();
-    assertEquals( "Number", result.getConversionMeta().getTypeDesc() );
-    assertEquals( 8, result.getConversionMeta().getPrecision() );
-    assertEquals( 13, result.getConversionMeta().getLength() );
-  }
-
-  private void loadValueMetaPlugins() {
     // Need to load the ValueMeta plugins
     PluginRegistry registry = PluginRegistry.getInstance();
     assertNotNull( "Registry singleton was not found!", registry );
@@ -268,48 +206,38 @@ public class StringEvaluatorTest {
     // ... and have at least 1 ValueMetaPlugin
     List<PluginInterface> valueMetaPlugins = registry.getPlugins( ValueMetaPluginType.class );
     assertTrue( "Size of plugins list expected to be >1", valueMetaPlugins.size() > 1 );
+
+    // Now get to the real testing
+    Locale orig = Locale.getDefault();
+    Locale.setDefault( Locale.US );
+
+    StringEvaluator eval = new StringEvaluator();
+    String[] goodValues = new String[] { "200.00", "999.99", "4,309.88" };
+    String[] badValues = new String[] { "9 00", "$30.00", "3.999,00" };
+
+    for ( String value : goodValues ) {
+      eval.evaluateString( value );
+    }
+    assertEquals( goodValues.length, eval.getCount() );
+    StringEvaluationResult result = eval.getAdvicedResult();
+    assertEquals( "Not a number detected", result.getConversionMeta().getTypeDesc(), "Number" );
+
+    eval = new StringEvaluator();
+    for ( String value : badValues ) {
+      eval.evaluateString( value );
+    }
+    assertEquals( badValues.length, eval.getCount() );
+    result = eval.getAdvicedResult();
+    assertFalse( "Number detected", result.getConversionMeta().getType() == ValueMetaInterface.TYPE_NUMBER );
+
+    Locale.setDefault( orig );
   }
 
-
-  @Test
-  public void recognisesNumeric_WhenParenthesesMeanNegative_Integer() throws Exception {
-    String[] samples = { "1,234,567,890", "(1,234,567,890)" };
-
-    final Locale environmentLocale = Locale.getDefault();
-    try {
-      Locale.setDefault( Locale.US );
-
-      StringEvaluationResult numericResult = doEvaluation( new StringEvaluator(), samples );
-      ValueMetaInterface meta = numericResult.getConversionMeta();
-      assertTrue( Integer.toString( meta.getType() ), ValueMetaBase.isNumeric( meta.getType() ) );
-      assertEquals( "#,##0.00;(#,##0.00)", meta.getConversionMask() );
-    } finally {
-      Locale.setDefault( environmentLocale );
-    }
-  }
-
-  @Test
-  public void recognisesNumeric_WhenParenthesesMeanNegative_Double() throws Exception {
-    String[] samples = { "1,234,567,890.12", "(1,234,567,890.12)" };
-
-    final Locale environmentLocale = Locale.getDefault();
-    try {
-      Locale.setDefault( Locale.US );
-
-      StringEvaluationResult numericResult = doEvaluation( new StringEvaluator(), samples );
-      ValueMetaInterface meta = numericResult.getConversionMeta();
-      assertTrue( Integer.toString( meta.getType() ), ValueMetaBase.isNumeric( meta.getType() ) );
-      assertEquals( "#,##0.00;(#,##0.00)", meta.getConversionMask() );
-    } finally {
-      Locale.setDefault( environmentLocale );
-    }
-  }
-
-  private StringEvaluationResult doEvaluation( StringEvaluator evaluator, String[] samples ) {
-    for ( String sample : samples ) {
-      evaluator.evaluateString( sample );
-    }
-    assertEquals( evaluator.getCount(), samples.length );
-    return evaluator.getAdvicedResult();
+  public void testDeterminePrecision() {
+    assertEquals( 4, StringEvaluator.determinePrecision( "#.0000" ) );
+    assertEquals( 4, StringEvaluator.determinePrecision( "0.#### $" ) );
+    assertEquals( 0, StringEvaluator.determinePrecision( null ) );
+    assertEquals( 4, StringEvaluator.determinePrecision( "0.##00 $" ) );
+    assertEquals( 4, StringEvaluator.determinePrecision( "##,##0.#0## $" ) );
   }
 }

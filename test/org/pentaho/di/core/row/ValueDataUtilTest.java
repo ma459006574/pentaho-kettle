@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2015 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2013 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -27,7 +27,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.apache.commons.lang.StringUtils;
@@ -460,118 +459,37 @@ public class ValueDataUtilTest extends TestCase {
       "100", "50", ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_COMBINATION_2 ) ) );
   }
 
-  public void testRound() {
-
-    // Test Kettle number types
-    assertEquals( Double.valueOf( "1.0" ), calculate( "1", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_1 ) );
-    assertEquals( Double.valueOf( "103.0" ), calculate( "103.01", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_1 ) );
-    assertEquals( Double.valueOf( "1235.0" ), calculate( "1234.6", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_1 ) );
-    // half
-    assertEquals( Double.valueOf( "1235.0" ), calculate( "1234.5", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_1 ) );
-    assertEquals( Double.valueOf( "1236.0" ), calculate( "1235.5", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_1 ) );
-    assertEquals( Double.valueOf( "-1234.0" ), calculate( "-1234.5", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_1 ) );
-    assertEquals( Double.valueOf( "-1235.0" ), calculate( "-1235.5", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_1 ) );
-
-    // Test Kettle Integer (Java Long) types
-    assertEquals( Long.valueOf( "1" ), calculate( "1", ValueMetaInterface.TYPE_INTEGER,
-        CalculatorMetaFunction.CALC_ROUND_1 ) );
-    assertEquals( Long.valueOf( "2" ), calculate( "2", ValueMetaInterface.TYPE_INTEGER,
-        CalculatorMetaFunction.CALC_ROUND_1 ) );
-    assertEquals( Long.valueOf( "-103" ), calculate( "-103", ValueMetaInterface.TYPE_INTEGER,
-        CalculatorMetaFunction.CALC_ROUND_1 ) );
-
-    // Test Kettle big Number types
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "1.0" ) ), calculate( "1", ValueMetaInterface.TYPE_BIGNUMBER,
-        CalculatorMetaFunction.CALC_ROUND_1 ) );
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "103.0" ) ), calculate( "103.01",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_1 ) );
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "1235.0" ) ), calculate( "1234.6",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_1 ) );
-    // half
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "1235.0" ) ), calculate( "1234.5",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_1 ) );
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "1236.0" ) ), calculate( "1235.5",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_1 ) );
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "-1234.0" ) ), calculate( "-1234.5",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_1 ) );
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "-1235.0" ) ), calculate( "-1235.5",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_1 ) );
-  }
-
   public void testRound2() {
 
     // Test Kettle number types
-    assertEquals( Double.valueOf( "1.0" ), calculate( "1", "1", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( Double.valueOf( "2.1" ), calculate( "2.06", "1", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( Double.valueOf( "103.0" ), calculate( "103.01", "1", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( Double.valueOf( "12.35" ), calculate( "12.346", "2", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_2 ) );
-    // scale < 0
-    assertEquals( Double.valueOf( "10.0" ), calculate( "12.0", "-1", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_2 ) );
-    // half
-    assertEquals( Double.valueOf( "12.35" ), calculate( "12.345", "2", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( Double.valueOf( "12.36" ), calculate( "12.355", "2", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( Double.valueOf( "-12.34" ), calculate( "-12.345", "2", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( Double.valueOf( "-12.35" ), calculate( "-12.355", "2", ValueMetaInterface.TYPE_NUMBER,
-        CalculatorMetaFunction.CALC_ROUND_2 ) );
+    assertEquals( Double.valueOf( "1.0" ), calculate(
+      "1", "1", ValueMetaInterface.TYPE_NUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
+    assertEquals( Double.valueOf( "2.1" ), calculate(
+      "2.06", "1", ValueMetaInterface.TYPE_NUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
+    assertEquals( Double.valueOf( "103.0" ), calculate(
+      "103.01", "1", ValueMetaInterface.TYPE_NUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
+    assertEquals( Double.valueOf( "12.35" ), calculate(
+      "12.346", "2", ValueMetaInterface.TYPE_NUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
 
     // Test Kettle Integer (Java Long) types
-    assertEquals( Long.valueOf( "1" ), calculate( "1", "1", ValueMetaInterface.TYPE_INTEGER,
-        CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( Long.valueOf( "2" ), calculate( "2", "2", ValueMetaInterface.TYPE_INTEGER,
-        CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( Long.valueOf( "103" ), calculate( "103", "3", ValueMetaInterface.TYPE_INTEGER,
-        CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( Long.valueOf( "12" ), calculate( "12", "4", ValueMetaInterface.TYPE_INTEGER,
-        CalculatorMetaFunction.CALC_ROUND_2 ) );
-    // scale < 0
-    //assertEquals( Long.valueOf( "100" ), calculate( "120", "-2", ValueMetaInterface.TYPE_INTEGER,
-    //    CalculatorMetaFunction.CALC_ROUND_2 ) );
-    // half
-    //assertEquals( Long.valueOf( "12350" ), calculate( "12345", "-1", ValueMetaInterface.TYPE_INTEGER,
-    //    CalculatorMetaFunction.CALC_ROUND_2 ) );
-    //assertEquals( Long.valueOf( "12360" ), calculate( "12355", "-1", ValueMetaInterface.TYPE_INTEGER,
-    //    CalculatorMetaFunction.CALC_ROUND_2 ) );
-    //assertEquals( Long.valueOf( "-12340" ), calculate( "-12345", "-1", ValueMetaInterface.TYPE_INTEGER,
-    //    CalculatorMetaFunction.CALC_ROUND_2 ) );
-    //assertEquals( Long.valueOf( "-12350" ), calculate( "-12355", "-1", ValueMetaInterface.TYPE_INTEGER,
-    //    CalculatorMetaFunction.CALC_ROUND_2 ) );
+    assertEquals( Long.valueOf( "1" ), calculate(
+      "1", "1", ValueMetaInterface.TYPE_INTEGER, CalculatorMetaFunction.CALC_ROUND_2 ) );
+    assertEquals( Long.valueOf( "2" ), calculate(
+      "2", "2", ValueMetaInterface.TYPE_INTEGER, CalculatorMetaFunction.CALC_ROUND_2 ) );
+    assertEquals( Long.valueOf( "103" ), calculate(
+      "103", "3", ValueMetaInterface.TYPE_INTEGER, CalculatorMetaFunction.CALC_ROUND_2 ) );
+    assertEquals( Long.valueOf( "12" ), calculate(
+      "12", "4", ValueMetaInterface.TYPE_INTEGER, CalculatorMetaFunction.CALC_ROUND_2 ) );
 
     // Test Kettle big Number types
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "1.0" ) ), calculate( "1", "1",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "2.1" ) ), calculate( "2.06", "1",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "103.0" ) ), calculate( "103.01", "1",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "12.35" ) ), calculate( "12.346", "2",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
-    // scale < 0
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "10.0" ) ), calculate( "12.0", "-1",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
-    // half
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "12.35" ) ), calculate( "12.345", "2",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "12.36" ) ), calculate( "12.355", "2",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "-12.34" ) ), calculate( "-12.345", "2",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
-    assertEquals( BigDecimal.valueOf( Double.valueOf( "-12.35" ) ), calculate( "-12.355", "2",
-        ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
+    assertEquals( BigDecimal.valueOf( Double.valueOf( "1.0" ) ), calculate(
+      "1", "1", ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
+    assertEquals( BigDecimal.valueOf( Double.valueOf( "2.1" ) ), calculate(
+      "2.06", "1", ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
+    assertEquals( BigDecimal.valueOf( Double.valueOf( "103.0" ) ), calculate(
+      "103.01", "1", ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
+    assertEquals( BigDecimal.valueOf( Double.valueOf( "12.35" ) ), calculate(
+      "12.346", "2", ValueMetaInterface.TYPE_BIGNUMBER, CalculatorMetaFunction.CALC_ROUND_2 ) );
   }
 
   public void testNVL() {
@@ -663,15 +581,10 @@ public class ValueDataUtilTest extends TestCase {
     }
   }
 
-  private Object calculate( String string_dataA, int valueMetaInterfaceType,
-      int calculatorMetaFunction ) {
-      return calculate( string_dataA, null, null, valueMetaInterfaceType, calculatorMetaFunction );
-    }
-
   private Object calculate( String string_dataA, String string_dataB, int valueMetaInterfaceType,
-      int calculatorMetaFunction ) {
-      return calculate( string_dataA, string_dataB, null, valueMetaInterfaceType, calculatorMetaFunction );
-    }
+    int calculatorMetaFunction ) {
+    return calculate( string_dataA, string_dataB, null, valueMetaInterfaceType, calculatorMetaFunction );
+  }
 
   private Object calculate( String string_dataA, String string_dataB, String string_dataC,
     int valueMetaInterfaceType, int calculatorMetaFunction ) {
@@ -769,8 +682,6 @@ public class ValueDataUtilTest extends TestCase {
         return ValueDataUtil.combination1( valueMetaA, dataA, valueMetaB, dataB, valueMetaC, dataC );
       } else if ( calculatorMetaFunction == CalculatorMetaFunction.CALC_COMBINATION_2 ) {
         return ValueDataUtil.combination2( valueMetaA, dataA, valueMetaB, dataB );
-      } else if ( calculatorMetaFunction == CalculatorMetaFunction.CALC_ROUND_1 ) {
-        return ValueDataUtil.round( valueMetaA, dataA );
       } else if ( calculatorMetaFunction == CalculatorMetaFunction.CALC_ROUND_2 ) {
         return ValueDataUtil.round( valueMetaA, dataA, valueMetaB, dataB );
       } else if ( calculatorMetaFunction == CalculatorMetaFunction.CALC_NVL ) {
@@ -792,18 +703,5 @@ public class ValueDataUtilTest extends TestCase {
   private ValueMeta createValueMeta( String name, int valueType ) {
     ValueMeta valueMeta = new ValueMeta( name, valueType );
     return valueMeta;
-  }
-  
-  public static void assertEquals(Object expected, Object actual) {
-    assertEquals("", expected, actual);
-  }
-  public static void assertEquals(String msg, Object expected, Object actual) {
-    if (expected instanceof BigDecimal && actual instanceof BigDecimal) {
-      if (((BigDecimal)expected).compareTo( (BigDecimal)actual ) != 0) {
-        Assert.assertEquals( msg, expected, actual );
-      }
-    } else {
-      Assert.assertEquals( msg, expected, actual );
-    }
   }
 }
