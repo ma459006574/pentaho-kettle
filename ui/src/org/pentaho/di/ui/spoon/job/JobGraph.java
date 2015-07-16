@@ -133,7 +133,6 @@ import org.pentaho.di.shared.SharedObjects;
 import org.pentaho.di.trans.Trans;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.TransPainter;
-import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.ui.core.ConstUI;
 import org.pentaho.di.ui.core.PropsUI;
 import org.pentaho.di.ui.core.dialog.EnterTextDialog;
@@ -1858,8 +1857,7 @@ public class JobGraph extends AbstractGraph implements XulEventHandler, Redrawab
         item = (XulMenuitem) doc.getElementById( "job-graph-entry-align-snap" );
 
         item.setAcceltext( "ALT-HOME" );
-        item.setLabel( BaseMessages.getString( PKG, "JobGraph.PopupMenu.JobEntry.AllignDistribute.SnapToGrid" )
-          + ConstUI.GRID_SIZE + ")" );
+        item.setLabel( BaseMessages.getString( PKG, "JobGraph.PopupMenu.JobEntry.AllignDistribute.SnapToGrid" ) );
         item.setAccesskey( "alt-home" );
 
         XulMenu aMenu = (XulMenu) doc.getElementById( "job-graph-entry-align" );
@@ -2762,11 +2760,14 @@ public class JobGraph extends AbstractGraph implements XulEventHandler, Redrawab
   public Image getJobImage( Device device, int x, int y, float magnificationFactor ) {
     GCInterface gc = new SWTGC( device, new Point( x, y ), iconsize );
 
+    int gridSize = 
+        PropsUI.getInstance().isShowCanvasGridEnabled() ? PropsUI.getInstance().getCanvasGridSize() : 1;  
+    
     JobPainter jobPainter =
       new JobPainter(
         gc, jobMeta, new Point( x, y ), new SwtScrollBar( hori ), new SwtScrollBar( vert ), hop_candidate,
         drop_candidate, selectionRegion, areaOwners, mouseOverEntries, PropsUI.getInstance().getIconSize(),
-        PropsUI.getInstance().getLineWidth(), PropsUI.getInstance().getCanvasGridSize(), PropsUI
+        PropsUI.getInstance().getLineWidth(), gridSize, PropsUI
           .getInstance().getShadowSize(), PropsUI.getInstance().isAntiAliasingEnabled(), PropsUI
           .getInstance().getNoteFont().getName(), PropsUI.getInstance().getNoteFont().getHeight() );
 

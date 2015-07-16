@@ -282,7 +282,7 @@ public class TransMeta extends AbstractMeta implements XMLInterface, Comparator<
 
   /** The log channel interface. */
   protected LogChannelInterface log;
-  
+
   /** The list of StepChangeListeners */
   protected List<StepMetaChangeListenerInterface> stepChangeListeners;
 
@@ -899,8 +899,8 @@ public class TransMeta extends AbstractMeta implements XMLInterface, Comparator<
     StepMetaInterface iface = removeStep.getStepMetaInterface();
     if ( iface instanceof StepMetaChangeListenerInterface ) {
       removeStepChangeListener( (StepMetaChangeListenerInterface) iface );
-    } 
-    
+    }
+
     steps.remove( i );
     changed_steps = true;
   }
@@ -967,7 +967,7 @@ public class TransMeta extends AbstractMeta implements XMLInterface, Comparator<
   public int nrDependencies() {
     return dependencies.size();
   }
-  
+
   /**
    * Gets the number of stepChangeListeners in the transformation.
    * 
@@ -2023,7 +2023,9 @@ public class TransMeta extends AbstractMeta implements XMLInterface, Comparator<
     RowMetaInterface before = row.clone();
     compatibleGetStepFields( stepint, row, name, inform, nextStep, this );
     if ( !isSomethingDifferentInRow( before, row ) ) {
-      stepint.getFields( row, name, inform, nextStep, this, repository, metaStore );
+      stepint.getFields( before, name, inform, nextStep, this, repository, metaStore );
+      // pass the clone object to prevent from spoiling data by other steps
+      row = before;
     }
 
     return row;
@@ -4370,6 +4372,9 @@ public class TransMeta extends AbstractMeta implements XMLInterface, Comparator<
         steps = selectedSteps.toArray( new StepMeta[selectedSteps.size()] );
       }
 
+      ExtensionPointHandler.callExtensionPoint( getLogChannel(), KettleExtensionPoint.BeforeCheckSteps.id,
+        new CheckStepsExtension( remarks, space, this, steps, repository, metaStore ) );
+
       boolean stop_checking = false;
 
       if ( monitor != null ) {
@@ -4429,7 +4434,11 @@ public class TransMeta extends AbstractMeta implements XMLInterface, Comparator<
           String[] output = getNextStepNames( stepMeta );
 
           // Check step specific info...
+          ExtensionPointHandler.callExtensionPoint( getLogChannel(), KettleExtensionPoint.BeforeCheckStep.id,
+            new CheckStepsExtension( remarks, space, this, new StepMeta[]{ stepMeta }, repository, metaStore ) );
           stepMeta.check( remarks, this, prev, input, output, info, space, repository, metaStore );
+          ExtensionPointHandler.callExtensionPoint( getLogChannel(), KettleExtensionPoint.AfterCheckStep.id,
+            new CheckStepsExtension( remarks, space, this, new StepMeta[]{ stepMeta }, repository, metaStore ) );
 
           // See if illegal characters etc. were used in field-names...
           if ( prev != null ) {
@@ -4591,10 +4600,13 @@ public class TransMeta extends AbstractMeta implements XMLInterface, Comparator<
       if ( monitor != null ) {
         monitor.worked( 1 );
       }
+      ExtensionPointHandler.callExtensionPoint( getLogChannel(), KettleExtensionPoint.AfterCheckSteps.id,
+        new CheckStepsExtension( remarks, space, this, steps, repository, metaStore ) );
     } catch ( Exception e ) {
       log.logError( Const.getStackTracker( e ) );
       throw new RuntimeException( e );
     }
+
   }
 
   /**
@@ -6146,7 +6158,7 @@ public class TransMeta extends AbstractMeta implements XMLInterface, Comparator<
   public void saveMetaStoreObjects( Repository repository, IMetaStore metaStore ) throws MetaStoreException {
 
   }
-  
+
   public void addStepChangeListener( StepMetaChangeListenerInterface listener ) {
     stepChangeListeners.add( listener );
   }
@@ -6188,5 +6200,4 @@ public class TransMeta extends AbstractMeta implements XMLInterface, Comparator<
       listener.onStepChange( this, oldMeta, newMeta );
     }
   }
-    
 }

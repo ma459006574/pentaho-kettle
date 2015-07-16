@@ -46,6 +46,7 @@ import org.pentaho.di.ui.core.ConstUI;
 import org.pentaho.di.ui.core.PropsUI;
 import org.pentaho.di.ui.core.gui.GUIResource;
 import org.pentaho.di.ui.util.ImageUtil;
+import org.pentaho.di.ui.util.SwtSvgImageUtil;
 
 /**
  * SWTGC draws on an Image. This class draws directly on an SWT GC. getImage() returns null as a consequence of not
@@ -76,11 +77,13 @@ public class SWTDirectGC implements GCInterface {
   private GC gc;
 
   private int iconsize;
-  
+
   //TODO should be changed to PropsUI usage
   private int small_icon_size = ConstUI.SMALL_ICON_SIZE;
 
   private Map<String, SwtUniversalImage> images;
+
+  private float currentMagnification = 1.0f;
 
   private List<Color> colors;
   private List<Font> fonts;
@@ -133,6 +136,21 @@ public class SWTDirectGC implements GCInterface {
     gc.drawLine( x, y, x2, y2 );
   }
 
+  public void drawImage( String location, ClassLoader classLoader, int x, int y ) {
+    Image img = SwtSvgImageUtil.getImage( PropsUI.getDisplay(), classLoader, location,
+      Math.round( small_icon_size * currentMagnification ),
+      Math.round( small_icon_size * currentMagnification ) );
+    if ( img != null ) {
+      Rectangle bounds = img.getBounds();
+      gc.drawImage( img, 0, 0, bounds.width, bounds.height, x, y, small_icon_size, small_icon_size );
+    }
+  }
+
+  @Override
+  public void drawImage( EImage image, int x, int y ) {
+    drawImage( image, x, y, currentMagnification );
+  }
+
   public void drawImage( EImage image, int x, int y, float magnification ) {
     Image img =
         getNativeImage( image ).getAsBitmapForSize( gc.getDevice(), Math.round( small_icon_size * magnification ),
@@ -142,7 +160,7 @@ public class SWTDirectGC implements GCInterface {
       gc.drawImage( img, 0, 0, bounds.width, bounds.height, x, y, small_icon_size, small_icon_size );
     }
   }
- 
+
   @Override
   public void drawImage( EImage image, int x, int y, float magnification, double angle ) {
     Image img =
@@ -156,7 +174,7 @@ public class SWTDirectGC implements GCInterface {
     }
   }
 
-  public Point getImageBounds( EImage image, float magnification ) {
+  public Point getImageBounds( EImage image ) {
     return new Point( small_icon_size, small_icon_size );
   }
 
@@ -366,6 +384,7 @@ public class SWTDirectGC implements GCInterface {
     transform.translate( translationX + shadowsize * magnification, translationY + shadowsize * magnification );
     transform.scale( magnification, magnification );
     gc.setTransform( transform );
+    currentMagnification = magnification;
   }
 
   public Point textExtent( String text ) {
@@ -374,9 +393,6 @@ public class SWTDirectGC implements GCInterface {
   }
 
   public void drawStepIcon( int x, int y, StepMeta stepMeta, float magnification ) {
-    // Draw a blank rectangle to prevent alpha channel problems...
-    //
-    gc.fillRectangle( x, y, iconsize, iconsize );
     String steptype = stepMeta.getStepID();
     Image im =
         images.get( steptype ).getAsBitmapForSize( gc.getDevice(), Math.round( iconsize * magnification ),
@@ -397,7 +413,7 @@ public class SWTDirectGC implements GCInterface {
 
     int w = Math.round( iconsize * magnification );
     int h = Math.round( iconsize * magnification );
-    
+
     if ( jobEntryCopy.isSpecial() ) {
       if ( jobEntryCopy.isStart() ) {
         swtImage = GUIResource.getInstance().getSwtImageStart();
@@ -416,9 +432,19 @@ public class SWTDirectGC implements GCInterface {
     }
 
     Image image = swtImage.getAsBitmapForSize( gc.getDevice(), w, h );
-    
+
     org.eclipse.swt.graphics.Rectangle bounds = image.getBounds();
     gc.drawImage( image, 0, 0, bounds.width, bounds.height, x, y, iconsize, iconsize );
+  }
+
+  @Override
+  public void drawJobEntryIcon( int x, int y, JobEntryCopy jobEntryCopy ) {
+    drawJobEntryIcon( x, y , jobEntryCopy, currentMagnification );
+  }
+
+  @Override
+  public void drawStepIcon( int x, int y, StepMeta stepMeta ) {
+    drawStepIcon( x, y, stepMeta, currentMagnification );
   }
 
   public void setAntialias( boolean antiAlias ) {

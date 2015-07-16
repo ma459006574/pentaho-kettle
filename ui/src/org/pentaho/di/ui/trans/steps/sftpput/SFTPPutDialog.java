@@ -23,9 +23,9 @@
 package org.pentaho.di.ui.trans.steps.sftpput;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.UnknownHostException;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.CTabFolder;
@@ -55,8 +55,8 @@ import org.eclipse.swt.widgets.Text;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.Props;
 import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.exception.KettleJobException;
 import org.pentaho.di.core.row.RowMetaInterface;
-import org.pentaho.di.core.util.StringUtil;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.job.entries.sftp.SFTPClient;
 import org.pentaho.di.job.entries.sftpput.JobEntrySFTPPUT;
@@ -66,6 +66,7 @@ import org.pentaho.di.trans.step.StepDialogInterface;
 import org.pentaho.di.trans.steps.sftpput.SFTPPutMeta;
 import org.pentaho.di.ui.core.dialog.ErrorDialog;
 import org.pentaho.di.ui.core.widget.LabelTextVar;
+import org.pentaho.di.ui.core.widget.PasswordTextVar;
 import org.pentaho.di.ui.core.widget.TextVar;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
@@ -349,9 +350,8 @@ public class SFTPPutDialog extends BaseStepDialog implements StepDialogInterface
     fdlPassword.top = new FormAttachment( wUserName, margin );
     fdlPassword.right = new FormAttachment( middle, -margin );
     wlPassword.setLayoutData( fdlPassword );
-    wPassword = new TextVar( transMeta, wServerSettings, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
+    wPassword = new PasswordTextVar( transMeta, wServerSettings, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
     props.setLook( wPassword );
-    wPassword.setEchoChar( '*' );
     wPassword.addModifyListener( lsMod );
     fdPassword = new FormData();
     fdPassword.left = new FormAttachment( middle, 0 );
@@ -430,9 +430,8 @@ public class SFTPPutDialog extends BaseStepDialog implements StepDialogInterface
     wkeyfilePass =
       new LabelTextVar(
         transMeta, wServerSettings, BaseMessages.getString( PKG, "SFTPPUT.keyfilePass.Label" ), BaseMessages
-          .getString( PKG, "SFTPPUT.keyfilePass.Tooltip" ) );
+          .getString( PKG, "SFTPPUT.keyfilePass.Tooltip" ), true );
     props.setLook( wkeyfilePass );
-    wkeyfilePass.setEchoChar( '*' );
     wkeyfilePass.addModifyListener( lsMod );
     fdkeyfilePass = new FormData();
     fdkeyfilePass.left = new FormAttachment( 0, -margin );
@@ -508,22 +507,14 @@ public class SFTPPutDialog extends BaseStepDialog implements StepDialogInterface
     wProxyPassword =
       new LabelTextVar(
         transMeta, wServerSettings, BaseMessages.getString( PKG, "SFTPPUT.ProxyPassword.Label" ), BaseMessages
-          .getString( PKG, "SFTPPUT.ProxyPassword.Tooltip" ) );
+          .getString( PKG, "SFTPPUT.ProxyPassword.Tooltip" ), true );
     props.setLook( wProxyPassword );
-    wProxyPassword.setEchoChar( '*' );
     wProxyPassword.addModifyListener( lsMod );
     fdProxyPasswd = new FormData();
     fdProxyPasswd.left = new FormAttachment( 0, -2 * margin );
     fdProxyPasswd.top = new FormAttachment( wProxyUsername, margin );
     fdProxyPasswd.right = new FormAttachment( 100, 0 );
     wProxyPassword.setLayoutData( fdProxyPasswd );
-
-    // OK, if the password contains a variable, we don't want to have the password hidden...
-    wProxyPassword.getTextWidget().addModifyListener( new ModifyListener() {
-      public void modifyText( ModifyEvent e ) {
-        checkProxyPasswordVisible();
-      }
-    } );
 
     // Test connection button
     wTest = new Button( wServerSettings, SWT.PUSH );
@@ -1065,17 +1056,6 @@ public class SFTPPutDialog extends BaseStepDialog implements StepDialogInterface
     dispose();
   }
 
-  public void checkProxyPasswordVisible() {
-    String password = wProxyPassword.getText();
-    List<String> list = new ArrayList<String>();
-    StringUtil.getUsedVariables( password, list, true );
-    if ( list.size() == 0 ) {
-      wProxyPassword.setEchoChar( '*' );
-    } else {
-      wProxyPassword.setEchoChar( '\0' ); // Show it all...
-    }
-  }
-
   private void setDefaulProxyPort() {
     if ( wProxyType.getText().equals( SFTPClient.PROXY_TYPE_HTTP ) ) {
       if ( Const.isEmpty( wProxyPort.getText() )
@@ -1131,34 +1111,12 @@ public class SFTPPutDialog extends BaseStepDialog implements StepDialogInterface
 
   }
 
-  private boolean connectToSFTP( boolean checkFolder, String Remotefoldername ) {
-    boolean retval = false;
+  @VisibleForTesting
+  boolean connectToSFTP( boolean checkFolder, String Remotefoldername ) {
+    boolean retval = true;
     try {
       if ( sftpclient == null ) {
-        // Create sftp client to host ...
-        sftpclient =
-          new SFTPClient(
-            InetAddress.getByName(
-              transMeta.environmentSubstitute( wServerName.getText() ) ),
-            Const.toInt( transMeta.environmentSubstitute( wServerPort.getText() ), 22 ),
-            transMeta.environmentSubstitute( wUserName.getText() ),
-            transMeta.environmentSubstitute( wKeyFilename.getText() ),
-            transMeta.environmentSubstitute( wkeyfilePass.getText() ) );
-        // Set proxy?
-        String realProxyHost = transMeta.environmentSubstitute( wProxyHost.getText() );
-        if ( !Const.isEmpty( realProxyHost ) ) {
-          // Set proxy
-          sftpclient.setProxy(
-            realProxyHost,
-            transMeta.environmentSubstitute( wProxyPort.getText() ),
-            transMeta.environmentSubstitute( wProxyUsername.getText() ),
-            transMeta.environmentSubstitute( wProxyPassword.getText() ),
-            wProxyType.getText() );
-        }
-        // login to ftp host ...
-        sftpclient.login( transMeta.environmentSubstitute( wPassword.getText() ) );
-
-        retval = true;
+        sftpclient = createSFTPClient();
       }
       if ( checkFolder ) {
         retval = sftpclient.folderExists( Remotefoldername );
@@ -1171,8 +1129,36 @@ public class SFTPPutDialog extends BaseStepDialog implements StepDialogInterface
         + Const.CR );
       mb.setText( BaseMessages.getString( PKG, "SFTPPUT.ErrorConnect.Title.Bad" ) );
       mb.open();
+      retval = false;
     }
     return retval;
+  }
+
+  SFTPClient createSFTPClient() throws UnknownHostException, KettleJobException {
+    // Create sftp client to host ...
+    sftpclient =
+      new SFTPClient(
+        InetAddress.getByName(
+          transMeta.environmentSubstitute( wServerName.getText() ) ),
+        Const.toInt( transMeta.environmentSubstitute( wServerPort.getText() ), 22 ),
+        transMeta.environmentSubstitute( wUserName.getText() ),
+        transMeta.environmentSubstitute( wKeyFilename.getText() ),
+        transMeta.environmentSubstitute( wkeyfilePass.getText() ) );
+    // Set proxy?
+    String realProxyHost = transMeta.environmentSubstitute( wProxyHost.getText() );
+    if ( !Const.isEmpty( realProxyHost ) ) {
+      // Set proxy
+      sftpclient.setProxy(
+        realProxyHost,
+        transMeta.environmentSubstitute( wProxyPort.getText() ),
+        transMeta.environmentSubstitute( wProxyUsername.getText() ),
+        transMeta.environmentSubstitute( wProxyPassword.getText() ),
+        wProxyType.getText() );
+    }
+    // login to ftp host ...
+    sftpclient.login( transMeta.environmentSubstitute( wPassword.getText() ) );
+
+    return sftpclient;
   }
 
   private void getFields() {
