@@ -22,9 +22,6 @@
 
 package org.pentaho.di.ui.spoon;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +45,7 @@ import org.pentaho.ui.xul.impl.XulEventHandler;
 import org.pentaho.xul.swt.tab.TabItem;
 import org.pentaho.xul.swt.tab.TabSet;
 
-public class MainSpoonPerspective extends AbstractSpoonPerspective {
+public class MainSpoonPerspective implements SpoonPerspectiveImageProvider {
 
   public static final String ID = "001-spoon-jobs";
 
@@ -72,13 +69,12 @@ public class MainSpoonPerspective extends AbstractSpoonPerspective {
   }
 
   public InputStream getPerspectiveIcon() {
-    return ImageUtil.getImageInputStream( Display.getCurrent(), "ui/images/transformation.svg" );
+    return ImageUtil.getImageInputStream( Display.getCurrent(), "ui/images/transformation.png" );
   }
-  
-  public Image getIcon() {
-    SwtUniversalImage image = SwtSvgImageUtil.getUniversalImage( Display.getCurrent(), getClass().getClassLoader(), "ui/images/transformation.svg" );
-    return image.getAsBitmapForSize( Display.getCurrent(), 16, 16 );
-  }  
+
+  public String getPerspectiveIconPath() {
+    return "ui/images/transformation.svg";
+  }
 
   public Composite getUI() {
     return ui;

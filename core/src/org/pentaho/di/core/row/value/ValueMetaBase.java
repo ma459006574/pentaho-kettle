@@ -54,6 +54,7 @@ import java.util.TimeZone;
 import org.pentaho.di.compatibility.Value;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.database.DatabaseInterface;
+import org.pentaho.di.core.database.DatabaseInterfaceExtended;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.database.GreenplumDatabaseMeta;
 import org.pentaho.di.core.database.MySQLDatabaseMeta;
@@ -232,7 +233,7 @@ public class ValueMetaBase implements ValueMetaInterface {
         }
         break;
       case TYPE_BIGNUMBER:
-        String alternativeBigNumberMask = EnvUtil.getSystemProperty( Const.KETTLE_DEFAULT_NUMBER_FORMAT );
+        String alternativeBigNumberMask = EnvUtil.getSystemProperty( Const.KETTLE_DEFAULT_BIGNUMBER_FORMAT );
         if ( Const.isEmpty( alternativeBigNumberMask ) ) {
           setConversionMask( "#.###############################################;"
               + "-#.###############################################" );
@@ -2708,7 +2709,7 @@ public class ValueMetaBase implements ValueMetaInterface {
       writeString( outputStream, dateFormatLocale != null ? dateFormatLocale.toString() : null );
 
       // date time zone?
-      writeString( outputStream, dateFormatTimeZone != null ? dateFormatTimeZone.toString() : null );
+      writeString( outputStream, dateFormatTimeZone != null ? dateFormatTimeZone.getID() : null );
 
       // string to number conversion lenient?
       outputStream.writeBoolean( lenientStringToNumber );
@@ -4486,7 +4487,7 @@ public class ValueMetaBase implements ValueMetaInterface {
               precision = -1;
             }
           }
-          
+
           break;
 
         case java.sql.Types.TIMESTAMP:
@@ -4579,13 +4580,16 @@ public class ValueMetaBase implements ValueMetaInterface {
           throw new SQLException( e );
         }
       }
-      
-      ValueMetaInterface newValueMetaInterface = databaseMeta.getDatabaseInterface().customizeValueFromSQLType( v, rm, index );
-      if( newValueMetaInterface != null ) {
-        return newValueMetaInterface;
-      } else {
-        return v;
+
+      ValueMetaInterface newV = v;
+      if ( databaseMeta.getDatabaseInterface() instanceof DatabaseInterfaceExtended ) {
+        try {
+          newV = ( (DatabaseInterfaceExtended) databaseMeta.getDatabaseInterface() ).customizeValueFromSQLType( v, rm, index );
+        } catch ( SQLException e ) {
+          throw new SQLException( e );
+        }
       }
+      return newV;
     } catch ( Exception e ) {
       throw new KettleDatabaseException( "Error determining value metadata from SQL resultset metadata", e );
     }

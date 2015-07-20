@@ -655,6 +655,7 @@
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.core.database.ReleaseSavePointTest" haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.core.database.TablespaceDDLFragmentTest" haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.core.database.VerticaDatabaseMetaTest" haltonerror="false"/>
+      <test todir="${testreports.xml.dir}" name="org.pentaho.di.core.database.util.DatabaseUtilTest" haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.core.row.ValueDataUtilTest" haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.imp.rule.DatabaseConfigurationImportRuleTest" haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.imp.rule.JobHasANoteImportRuleTest" haltonerror="false"/>
@@ -715,8 +716,9 @@
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.HopTest" haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.NormalExecutionTest" haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.RowProducerTest" haltonerror="false"/>
+      <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.TransMeta_PDI_13634_Test" haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.TransSingleThreadTest" haltonerror="false"/>
-      <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.WordCountSingleThreadTest" haltonerror="false"/>
+      <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.WordCountSampleTest" haltonerror="false"/>
 
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.addsequence.AddSequenceTest"
             haltonerror="false"/>
@@ -753,6 +755,7 @@
             haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.excelinput.PoiWorkBookTest"
             haltonerror="false"/>
+      <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.excelinput.StaxWorkBookTest" haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.execsqlrow.ExecSQLRowTest"
             haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.getxmldata.GetXMLDataTest"
@@ -761,6 +764,7 @@
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.insertupdate.InsertUpdateTest"
             haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.janino.JaninoStepTest" haltonerror="false"/>
+      <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.javafilter.JavaFilterTest" haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.jsonoutput.JsonOutputTest"
             haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.mailvalidator.MailValidationTest"
@@ -774,6 +778,8 @@
             haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.numberrange.NumberRangeSetTest"
             haltonerror="false"/>
+      <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.pentahoreporting.PentahoReportingOutputTest"
+            haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.regexeval.RegexEvalTest"
             haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.rowgenerator.RowGeneratorTest"
@@ -783,6 +789,8 @@
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.scriptvalues_mod.JavaScriptStringTest"
             haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.sort.SortRowsTest" haltonerror="false"/>
+      <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.sftpput.SFTPPutIntegrationTest"
+            haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.tableoutput.TableOutputTest"
             haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.tableinput.TableInputTest"
@@ -790,6 +798,8 @@
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.textfileinput.TextFileInputTests"
             haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.textfileoutput.TextFileOutputTests"
+            haltonerror="false"/>
+      <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.textfileoutput.TextFileOutputSplittingTest"
             haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.unique.UniqueRowsTest" haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.update.UpdateTest" haltonerror="false"/>
@@ -876,6 +886,10 @@
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.cluster.SlaveSequenceTest" haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.trans.steps.concatfields.ConcatFields_PDI_10856_Test" haltonerror="false"/>
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.www.CarteTest" haltonerror="false"/>
+      <test todir="${testreports.xml.dir}" name="org.pentaho.di.job.entries.sftp.SFTPClientTest" haltonerror="false"/>
+      <test todir="${testreports.xml.dir}" name="org.pentaho.di.job.entries.sftp.JobEntrySFTPTest" haltonerror="false"/>
+      <test todir="${testreports.xml.dir}" name="org.pentaho.di.job.entries.ftpsget.FTPSConnectionTest" haltonerror="false"/>
+      <test todir="${testreports.xml.dir}" name="org.pentaho.di.job.entries.ftpsget.JobEntryFTPSGetTest" haltonerror="false"/>
 
       <!-- Some extra things to run -->
       <test todir="${testreports.xml.dir}" name="org.pentaho.di.job.entries.copyfiles.CopyFilesTest"

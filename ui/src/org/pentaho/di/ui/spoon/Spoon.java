@@ -819,6 +819,8 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
       /* menuBar = (XulMenubar) */
       mainSpoonContainer.getDocumentRoot().getElementById( "spoon-menubar" );
       mainToolbar = (XulToolbar) mainSpoonContainer.getDocumentRoot().getElementById( "main-toolbar" );
+      props.setLook( (Control) mainToolbar.getManagedObject(), Props.WIDGET_STYLE_TOOLBAR );
+
       /* canvas = (XulVbox) */
       mainSpoonContainer.getDocumentRoot().getElementById( "trans-job-canvas" );
       deck = (SwtDeck) mainSpoonContainer.getDocumentRoot().getElementById( "canvas-deck" );
@@ -1872,36 +1874,14 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
   private void addTree() {
     mainComposite = new Composite( sashform, SWT.BORDER );
     mainComposite.setLayout( new FormLayout() );
+    props.setLook( mainComposite, Props.WIDGET_STYLE_TOOLBAR );
 
-    // int mainMargin = 4;
-
-    // TODO: add i18n keys
-    //
-    Label sep0 = new Label( mainComposite, SWT.SEPARATOR | SWT.HORIZONTAL );
-    sep0.setBackground( GUIResource.getInstance().getColorWhite() );
-    FormData fdSep0 = new FormData();
-    fdSep0.left = new FormAttachment( 0, 0 );
-    fdSep0.right = new FormAttachment( 100, 0 );
-    fdSep0.top = new FormAttachment( 0, 0 );
-    sep0.setLayoutData( fdSep0 );
-
-    // empty panel to correct background color.
-    Composite tabWrapper = new Composite( mainComposite, SWT.NONE );
-    tabWrapper.setLayout( new FormLayout() );
-    tabWrapper.setBackground( GUIResource.getInstance().getColorWhite() );
-
-    FormData fdTabWrapper = new FormData();
-    fdTabWrapper.left = new FormAttachment( 0, 0 );
-    fdTabWrapper.top = new FormAttachment( sep0, 0 );
-    fdTabWrapper.right = new FormAttachment( 100, 0 );
-    tabWrapper.setLayoutData( fdTabWrapper );
-
-    CTabFolder tabFolder = new CTabFolder( tabWrapper, SWT.HORIZONTAL );
+    CTabFolder tabFolder = new CTabFolder( mainComposite, SWT.HORIZONTAL );
     props.setLook( tabFolder, Props.WIDGET_STYLE_TAB );
 
     FormData fdTab = new FormData();
     fdTab.left = new FormAttachment( 0, 0 );
-    fdTab.top = new FormAttachment( sep0, 0 );
+    fdTab.top = new FormAttachment( mainComposite, 0 );
     fdTab.right = new FormAttachment( 100, 0 );
     fdTab.height = 0;
     tabFolder.setLayoutData( fdTab );
@@ -1910,7 +1890,7 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
     view.setControl( new Composite( tabFolder, SWT.NONE ) );
     view.setText( STRING_SPOON_MAIN_TREE );
     view.setImage( GUIResource.getInstance().getImageExploreSolutionSmall() );
-    
+
     design = new CTabItem( tabFolder, SWT.NONE );
     design.setText( STRING_SPOON_CORE_OBJECTS_TREE );
     design.setControl( new Composite( tabFolder, SWT.NONE ) );
@@ -1921,7 +1901,7 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
     FormData fdSep3 = new FormData();
     fdSep3.left = new FormAttachment( 0, 0 );
     fdSep3.right = new FormAttachment( 100, 0 );
-    fdSep3.top = new FormAttachment( tabWrapper, 0 );
+    fdSep3.top = new FormAttachment( tabFolder, 0 );
     sep3.setLayoutData( fdSep3 );
 
     selectionLabel = new Label( mainComposite, SWT.HORIZONTAL );
@@ -1930,12 +1910,11 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
     if ( Const.isLinux() ) {
       fdsLabel.top = new FormAttachment( sep3, 10 );
     } else {
-      fdsLabel.top = new FormAttachment( sep3, 8 );      
+      fdsLabel.top = new FormAttachment( sep3, 8 );
     }
     selectionLabel.setLayoutData( fdsLabel );
 
     ToolBar treeTb = new ToolBar( mainComposite, SWT.HORIZONTAL | SWT.FLAT );
-    treeTb.setBackground( GUIResource.getInstance().getColorDemoGray() );
     props.setLook( treeTb, Props.WIDGET_STYLE_TOOLBAR );
     /*
     This contains a map with all the unnamed transformation (just a filename)
@@ -1959,13 +1938,13 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
         | SWT.BORDER | SWT.LEFT | SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL );
     selectionFilter.setToolTipText( BaseMessages.getString( PKG, "Spoon.SelectionFilter.Tooltip" ) );
     FormData fdSelectionFilter = new FormData();
+    int offset = -( GUIResource.getInstance().getImageExpandAll().getBounds().height + 5 );
     if ( Const.isLinux() ) {
-      fdSelectionFilter.top =
-        new FormAttachment( treeTb, -( GUIResource.getInstance().getImageExpandAll().getBounds().height + 12 ) );
-    } else {
-      fdSelectionFilter.top =
-        new FormAttachment( treeTb, -( GUIResource.getInstance().getImageExpandAll().getBounds().height + 5 ) );
+      if ( !Const.isKDE() ) {
+        offset = -( GUIResource.getInstance().getImageExpandAll().getBounds().height + 12 );
+      }
     }
+    fdSelectionFilter.top = new FormAttachment( treeTb, offset );
     fdSelectionFilter.right = new FormAttachment( 95, -55 );
     fdSelectionFilter.left = new FormAttachment( selectionLabel, 10 );
     selectionFilter.setLayoutData( fdSelectionFilter );
@@ -2208,6 +2187,8 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
               }
               toolTip.setImage( image );
               toolTip.setText( name + Const.CR + Const.CR + tip );
+              toolTip.setBackgroundColor( GUIResource.getInstance().getColor( 255, 254, 225 ) );
+              toolTip.setForegroundColor( GUIResource.getInstance().getColor( 0, 0, 0 ) );
               toolTip.show( new org.eclipse.swt.graphics.Point( move.x + 10, move.y + 10 ) );
             }
           }
@@ -2221,6 +2202,8 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
                       display, ConstUI.ICON_SIZE, ConstUI.ICON_SIZE );
               toolTip.setImage( image );
               toolTip.setText( name + Const.CR + Const.CR + tip );
+              toolTip.setBackgroundColor( GUIResource.getInstance().getColor( 255, 254, 225 ) );
+              toolTip.setForegroundColor( GUIResource.getInstance().getColor( 0, 0, 0 ) );
               toolTip.show( new org.eclipse.swt.graphics.Point( move.x + 10, move.y + 10 ) );
             }
           }
@@ -2239,8 +2222,6 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
     } );
 
     toolTip = new DefaultToolTip( variableComposite, ToolTip.RECREATE, true );
-    toolTip.setBackgroundColor( GUIResource.getInstance().getColor( 255, 254, 225 ) );
-    toolTip.setForegroundColor( GUIResource.getInstance().getColor( 0, 0, 0 ) );
     toolTip.setRespectMonitorBounds( true );
     toolTip.setRespectDisplayBounds( true );
     toolTip.setPopupDelay( 350 );
@@ -5867,7 +5848,7 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
     }
     return saved;
   }
-  
+
   // Put here to support testing, but you cannot instance Spoon from a
   // JUnit test case without a bunch of work. I abandoned the attempt to
   // create a Spoon test case to test this. mb
@@ -5970,7 +5951,7 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
     }
     messageBuilder.append( outputStringDate );
     return messageBuilder;
-  }  
+  }
 
   public void helpAbout() {
     MessageBox mb = new MessageBox( shell, SWT.OK | SWT.ICON_INFORMATION | SWT.CENTER | SWT.SHEET );
@@ -6364,7 +6345,7 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
         continue;
       }
 
-      Image icon = hopMeta.isEnabled() ? guiResource.getImageHop() : guiResource.getImageDisabledHop();
+      Image icon = hopMeta.isEnabled() ? guiResource.getImageHopTree() : guiResource.getImageDisabledHopTree();
       createTreeItem( tiHopTitle, hopMeta.toString(), icon );
     }
   }
@@ -7069,7 +7050,7 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
   public JobGraph getActiveJobGraph() {
     if ( delegates != null && delegates.tabs != null && tabfolder != null ) {
       TabMapEntry mapEntry = delegates.tabs.getTab( tabfolder.getSelected() );
-      if ( mapEntry.getObject() instanceof JobGraph ) {
+      if ( mapEntry != null && mapEntry.getObject() instanceof JobGraph ) {
         return (JobGraph) mapEntry.getObject();
       }
     }
@@ -8325,6 +8306,7 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
       }
     }
 
+    transMeta.setChanged();
     refreshTree();
     refreshGraph();
   }
@@ -8337,34 +8319,11 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
   }
 
   /**
-   * This creates a new partitioning schema, edits it and adds it to the transformation metadata
-   *
+   * This creates a new partitioning schema, edits it and adds it to the transformation metadata if its name is not a
+   * duplicate of any of existing
    */
   public void newPartitioningSchema( TransMeta transMeta ) {
-    PartitionSchema partitionSchema = new PartitionSchema();
-
-    PartitionSchemaDialog dialog =
-      new PartitionSchemaDialog( shell, partitionSchema, transMeta.getDatabases(), transMeta );
-    if ( dialog.open() ) {
-      transMeta.getPartitionSchemas().add( partitionSchema );
-
-      if ( rep != null ) {
-        try {
-          if ( !rep.getSecurityProvider().isReadOnly() ) {
-            rep.save( partitionSchema, Const.VERSION_COMMENT_INITIAL_VERSION, null );
-          } else {
-            throw new KettleException( BaseMessages.getString(
-              PKG, "Spoon.Dialog.Exception.ReadOnlyRepositoryUser" ) );
-          }
-        } catch ( KettleException e ) {
-          new ErrorDialog(
-            getShell(), BaseMessages.getString( PKG, "Spoon.Dialog.ErrorSavingPartition.Title" ), BaseMessages
-              .getString( PKG, "Spoon.Dialog.ErrorSavingPartition.Message", partitionSchema.getName() ), e );
-        }
-      }
-
-      refreshTree();
-    }
+    delegates.partitions.newPartitioningSchema( transMeta );
   }
 
   private void editPartitionSchema( TransMeta transMeta, PartitionSchema partitionSchema ) {
@@ -8393,33 +8352,11 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
   }
 
   /**
-   * This creates a new clustering schema, edits it and adds it to the transformation metadata
-   *
+   * This creates a new clustering schema, edits it and adds it to the transformation metadata if its name is not a
+   * duplicate of any of existing
    */
   public void newClusteringSchema( TransMeta transMeta ) {
-    ClusterSchema clusterSchema = new ClusterSchema();
-
-    ClusterSchemaDialog dialog = new ClusterSchemaDialog( shell, clusterSchema, transMeta.getSlaveServers() );
-    if ( dialog.open() ) {
-      transMeta.getClusterSchemas().add( clusterSchema );
-
-      if ( rep != null ) {
-        try {
-          if ( !rep.getSecurityProvider().isReadOnly() ) {
-            rep.save( clusterSchema, Const.VERSION_COMMENT_INITIAL_VERSION, null );
-          } else {
-            throw new KettleException( BaseMessages.getString(
-              PKG, "Spoon.Dialog.Exception.ReadOnlyRepositoryUser" ) );
-          }
-        } catch ( KettleException e ) {
-          new ErrorDialog(
-            getShell(), BaseMessages.getString( PKG, "Spoon.Dialog.ErrorSavingCluster.Title" ), BaseMessages
-              .getString( PKG, "Spoon.Dialog.ErrorSavingCluster.Message", clusterSchema.getName() ), e );
-        }
-      }
-
-      refreshTree();
-    }
+    delegates.clusters.newClusteringSchema( transMeta );
   }
 
   private void editClusterSchema( TransMeta transMeta, ClusterSchema clusterSchema ) {
