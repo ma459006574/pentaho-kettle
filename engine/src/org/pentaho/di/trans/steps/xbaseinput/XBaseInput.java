@@ -103,6 +103,7 @@ public class XBaseInput extends BaseStep implements StepInterface {
 
         if ( data.files.nrOfFiles() == 0 ) {
           logBasic( BaseMessages.getString( PKG, "XBaseInput.Log.Error.NoFilesSpecified" ) );
+          setOutputDone(); // signal end to receiver(s)
           return false;
         }
       }
