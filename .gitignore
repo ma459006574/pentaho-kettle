@@ -24,3 +24,4 @@ build-res/module-scripts/
 *.iml
 /*.launch
 /null
+/simple-jndi
