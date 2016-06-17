@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+
+   id="KettleUtil"
+   iconfile="icon.png"
+   description="kettle工具"
+   tooltip="kettle工具"
+   category="i18n:org.pentaho.di.trans.step:BaseStep.Category.Experimental"
+   classname="com.metl.KettleUtilMeta">
+		
+		<libraries>
+    		<library name="KettleUtil.jar"/>
+		</libraries>
+		
+</plugin>

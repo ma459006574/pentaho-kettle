@@ -23,7 +23,9 @@
 package org.pentaho.di.repository.kdr.delegates;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.RowMetaAndData;
@@ -48,6 +50,10 @@ public class KettleDatabaseRepositoryDirectoryDelegate extends KettleDatabaseRep
     return repository.connectionDelegate.getOneRow(
       quoteTable( KettleDatabaseRepository.TABLE_R_DIRECTORY ),
       quote( KettleDatabaseRepository.FIELD_DIRECTORY_ID_DIRECTORY ), id_directory );
+  }
+  public List<RowMetaAndData> getDirectorys() throws KettleException {
+	    return repository.connectionDelegate.getRows(
+	      quoteTable( KettleDatabaseRepository.TABLE_R_DIRECTORY ));
   }
 
   public RepositoryDirectoryInterface loadPathToRoot( ObjectId id_directory ) throws KettleException {
@@ -95,12 +101,14 @@ public class KettleDatabaseRepositoryDirectoryDelegate extends KettleDatabaseRep
       synchronized ( repository ) {
 
         root.clear();
-        ObjectId[] subids = repository.getSubDirectoryIDs( root.getObjectId() );
-        for ( int i = 0; i < subids.length; i++ ) {
-          RepositoryDirectory subdir = new RepositoryDirectory();
-          loadRepositoryDirectory( subdir, subids[i] );
-          root.addSubdirectory( subdir );
-        }
+        loadRepositoryDirectory( root, root.getObjectId() );
+        
+//        ObjectId[] subids = repository.getSubDirectoryIDs( root.getObjectId() );
+//        for ( int i = 0; i < subids.length; i++ ) {
+//          RepositoryDirectory subdir = new RepositoryDirectory();
+//          loadRepositoryDirectory( subdir, subids[i] );
+//          root.addSubdirectory( subdir );
+//        }
       }
 
       return root;
@@ -109,35 +117,89 @@ public class KettleDatabaseRepositoryDirectoryDelegate extends KettleDatabaseRep
     }
   }
 
-  public void loadRepositoryDirectory( RepositoryDirectory repositoryDirectory, ObjectId id_directory ) throws KettleException {
+  public void loadRepositoryDirectory( RepositoryDirectoryInterface repositoryDirectory, ObjectId id_directory ) throws KettleException {
     if ( id_directory == null ) {
       // This is the root directory, id = OL
       id_directory = new LongObjectId( 0L );
     }
 
     try {
-      RowMetaAndData row = getDirectory( id_directory );
-      if ( row != null ) {
-        repositoryDirectory.setObjectId( id_directory );
-
-        // Content?
-        //
-        repositoryDirectory.setName( row.getString( "DIRECTORY_NAME", null ) );
-
-        // The sub-directories?
-        //
-        ObjectId[] subids = repository.getSubDirectoryIDs( repositoryDirectory.getObjectId() );
-        for ( int i = 0; i < subids.length; i++ ) {
-          RepositoryDirectory subdir = new RepositoryDirectory();
-          loadRepositoryDirectory( subdir, subids[i] );
-          repositoryDirectory.addSubdirectory( subdir );
-        }
+//      RowMetaAndData row = getDirectory( id_directory );
+//      if ( row != null ) {
+//        repositoryDirectory.setObjectId( id_directory );
+//
+//        // Content?
+//        //
+//        repositoryDirectory.setName( row.getString( "DIRECTORY_NAME", null ) );
+//
+//        // The sub-directories?
+//        //
+//        ObjectId[] subids = repository.getSubDirectoryIDs( repositoryDirectory.getObjectId() );
+//        for ( int i = 0; i < subids.length; i++ ) {
+//          RepositoryDirectory subdir = new RepositoryDirectory();
+//          loadRepositoryDirectory( subdir, subids[i] );
+//          repositoryDirectory.addSubdirectory( subdir );
+//        }
+//      }
+      List<RowMetaAndData> rows = getDirectorys();
+      Map<String,RowMetaAndData> idMap = new HashMap<String,RowMetaAndData>();
+      Map<String,List<RowMetaAndData>> parentMap = new HashMap<String,List<RowMetaAndData>>();
+	  for(RowMetaAndData row:rows){
+    	  idMap.put(row.getString( "ID_DIRECTORY", null ), row);
+    	  String parentId = row.getString( "ID_DIRECTORY_PARENT", null );
+    	  List<RowMetaAndData> childList = parentMap.get(parentId);
+    	  if(childList==null){
+    		  childList = new ArrayList<RowMetaAndData>();
+        	  parentMap.put(parentId, childList);
+    	  }
+    	  childList.add(row);
       }
+    repositoryDirectory.setObjectId( id_directory );
+    if(!"0".equals(id_directory.getId())){
+        repositoryDirectory.setName( idMap.get(id_directory.getId()).getString( "DIRECTORY_NAME", null ) );
+    }else{
+        repositoryDirectory.setName( RepositoryDirectory.DIRECTORY_SEPARATOR );
+    }
+    List<RowMetaAndData> list = parentMap.get(id_directory.getId());
+    if(list!=null){
+	    for(RowMetaAndData row:list){
+	        RepositoryDirectory subdir = new RepositoryDirectory();
+	        loadRepositoryDirectory( subdir, row, parentMap);
+	        repositoryDirectory.addSubdirectory( subdir );
+	    }
+    }
     } catch ( Exception e ) {
       throw new KettleException( BaseMessages.getString(
         PKG, "Repository.LoadRepositoryDirectory.ErrorLoading.Exception" ), e );
     }
   }
+	  /**
+	*  <br/>
+	* @author jingma@iflytek.com
+	* @param subdir
+	* @param row
+	* @param parentMap
+	 * @throws KettleException 
+	*/
+	private void loadRepositoryDirectory(RepositoryDirectoryInterface repositoryDirectory,
+			RowMetaAndData dir, Map<String, List<RowMetaAndData>> parentMap) throws KettleException {
+		try{
+	    repositoryDirectory.setObjectId(new LongObjectId(dir.getInteger( "ID_DIRECTORY", 0 )) );
+	    repositoryDirectory.setName( dir.getString( "DIRECTORY_NAME", null ) );
+	    List<RowMetaAndData> list = parentMap.get(dir.getString( "ID_DIRECTORY", null ));
+	    if(list!=null){
+		    for(RowMetaAndData row:list){
+		        RepositoryDirectory subdir = new RepositoryDirectory();
+		        loadRepositoryDirectory( subdir, row, parentMap);
+		        repositoryDirectory.addSubdirectory( subdir );
+		    }
+	    }
+	    } catch ( Exception e ) {
+	        throw new KettleException( BaseMessages.getString(
+	          PKG, "Repository.LoadRepositoryDirectory.ErrorLoading.Exception" ), e );
+	      }
+	}
+
 
   /*
    * public synchronized RepositoryDirectory refreshRepositoryDirectoryTree() throws KettleException { try {
@@ -147,7 +209,7 @@ public class KettleDatabaseRepositoryDirectoryDelegate extends KettleDatabaseRep
    * }
    */
 
-  private synchronized ObjectId insertDirectory( ObjectId id_directory_parent, RepositoryDirectoryInterface dir ) throws KettleException {
+private synchronized ObjectId insertDirectory( ObjectId id_directory_parent, RepositoryDirectoryInterface dir ) throws KettleException {
     ObjectId id = repository.connectionDelegate.getNextDirectoryID();
 
     String tablename = KettleDatabaseRepository.TABLE_R_DIRECTORY;

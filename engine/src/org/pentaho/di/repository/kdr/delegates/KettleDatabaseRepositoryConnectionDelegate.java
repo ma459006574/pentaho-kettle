@@ -1808,6 +1808,42 @@ public class KettleDatabaseRepositoryConnectionDelegate extends KettleDatabaseRe
     }
     return null;
   }
+ 
+  public List<RowMetaAndData> getRows( String schemaAndTable ) throws KettleException {
+	List<RowMetaAndData> list = new ArrayList<RowMetaAndData>();
+    String sql = "SELECT * FROM " + schemaAndTable;
+
+    // Get the prepared statement
+    //
+    PreparedStatement ps = sqlMap.get( sql );
+    if ( ps == null ) {
+      ps = database.prepareSQL( sql );
+      sqlMap.put( sql, ps );
+    }
+
+    // Assemble the parameter (if any)
+    //
+    RowMetaInterface parameterMeta = new RowMeta();
+
+    Object[] parameterData = new Object[] {,};
+
+    ResultSet resultSet = null;
+    try {
+      resultSet = database.openQuery( ps, parameterMeta, parameterData );
+      Object[] result = database.getRow( resultSet );
+      while( result != null ){
+    	  list.add(new RowMetaAndData( database.getReturnRowMeta(), result ));
+    	  result = database.getRow( resultSet );
+      }
+      return list;
+    } catch ( KettleException e ) {
+      throw e;
+    } finally {
+      if ( resultSet != null ) {
+        database.closeQuery( resultSet );
+      }
+    }
+  }
 
   /**
    * This method should be called WITH AN ALREADY QUOTED schema and table
