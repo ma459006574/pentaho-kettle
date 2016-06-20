@@ -178,7 +178,7 @@ public class JobEntryEval extends JobEntryBase implements Cloneable, JobEntryInt
       scope.put( "previous_result", scope, prev_result );
 
       try {
-        Object res = cx.evaluateString( scope, this.script, "<cmd>", 1, null );
+        Object res = cx.evaluateString( scope, environmentSubstitute(this.script), "<cmd>", 1, null );
         boolean retval = Context.toBoolean( res );
         // System.out.println(result.toString()+" + ["+this.script+"] --> "+retval);
         result.setNrErrors( 0 );
