@@ -1,19 +1,33 @@
-package com.metl;
+package com.metl.kettleutil;
 
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.swt.widgets.Shell;
-import org.pentaho.di.core.*;
-import org.pentaho.di.core.database.DatabaseMeta; 
-import org.pentaho.di.core.exception.*;
-import org.pentaho.di.core.row.*;
+import org.pentaho.di.core.CheckResult;
+import org.pentaho.di.core.CheckResultInterface;
+import org.pentaho.di.core.Const;
+import org.pentaho.di.core.Counter;
+import org.pentaho.di.core.database.DatabaseMeta;
+import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.exception.KettleValueException;
+import org.pentaho.di.core.exception.KettleXMLException;
+import org.pentaho.di.core.row.RowMetaInterface;
+import org.pentaho.di.core.row.ValueMeta;
+import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.i18n.BaseMessages;
-import org.pentaho.di.repository.*;
-import org.pentaho.di.trans.*;
-import org.pentaho.di.trans.step.*;
+import org.pentaho.di.repository.ObjectId;
+import org.pentaho.di.repository.Repository;
+import org.pentaho.di.trans.Trans;
+import org.pentaho.di.trans.TransMeta;
+import org.pentaho.di.trans.step.BaseStepMeta;
+import org.pentaho.di.trans.step.StepDataInterface;
+import org.pentaho.di.trans.step.StepDialogInterface;
+import org.pentaho.di.trans.step.StepInterface;
+import org.pentaho.di.trans.step.StepMeta;
+import org.pentaho.di.trans.step.StepMetaInterface;
 import org.w3c.dom.Node;
 
 
@@ -28,36 +42,71 @@ import org.w3c.dom.Node;
 public class KettleUtilMeta extends BaseStepMeta implements StepMetaInterface {
 
 	private static Class<?> PKG = KettleUtilMeta.class; // for i18n purposes
-	private String outputField = "ahuoo";
+    /**
+    * 配置名称
+    */
+    private String configName = "";
+	/**
+	* 具体配置信息
+	*/
+	private String configInfo = "{}";
 
 	public KettleUtilMeta() {
 		super(); 
 	}
 
-	public String getOutputField() {
-		return outputField;
-	}
+	/**
+     * @return configName 
+     */
+    public String getConfigName() {
+        return configName;
+    }
 
-	public void setOutputField(String outputField) {
-		this.outputField = outputField;
-	}
+    /**
+     * @param configName the configName to set
+     */
+    public void setConfigName(String configName) {
+        this.configName = configName;
+    }
 
-	public String getXML() throws KettleValueException {
+    /**
+     * @return configInfo 
+     */
+    public String getConfigInfo() {
+        return configInfo;
+    }
+
+    /**
+     * @param configInfo the configInfo to set
+     */
+    public void setConfigInfo(String configInfo) {
+        this.configInfo = configInfo;
+    }
+
+    public String getXML() throws KettleValueException {
 		String retval = "";
-		retval += "		<outputfield>" + getOutputField() + "</outputfield>" + Const.CR;
+		retval += "		<configname>" + getConfigName() + "</configname>" + Const.CR;
+        retval += "     <configinfo>" + getConfigInfo() + "</configinfo>" + Const.CR;
 		return retval;
 	}
 
-	public void getFields(RowMetaInterface r, String origin, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) {
+	@SuppressWarnings("deprecation")
+    public void getFields(RowMetaInterface r, String origin, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) {
 
-		// append the outputField to the output
 		ValueMetaInterface v = new ValueMeta();
-		v.setName(outputField);
+		v.setName(configName);
 		v.setType(ValueMeta.TYPE_STRING);
 		v.setTrimType(ValueMeta.TRIM_TYPE_BOTH);
 		v.setOrigin(origin);
-
 		r.addValueMeta(v);
+		
+        v = new ValueMeta();
+        v.setName(configInfo);
+        v.setType(ValueMeta.TYPE_STRING);
+        v.setTrimType(ValueMeta.TRIM_TYPE_BOTH);
+        v.setOrigin(origin);
+
+        r.addValueMeta(v);
 		
 	}
 
@@ -69,7 +118,7 @@ public class KettleUtilMeta extends BaseStepMeta implements StepMetaInterface {
 	public void loadXML(Node stepnode, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleXMLException {
 
 		try {
-			setOutputField(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "outputfield")));
+			setConfigInfo(XMLHandler.getNodeValue(XMLHandler.getSubNode(stepnode, "configinfo")));
 		} catch (Exception e) {
 			throw new KettleXMLException("Template Plugin Unable to read step info from XML node", e);
 		}
@@ -77,7 +126,8 @@ public class KettleUtilMeta extends BaseStepMeta implements StepMetaInterface {
 	}
 
 	public void setDefault() {
-		outputField = "template_outfield";
+        configName = "test_config";
+		configInfo = "{}";
 	}
 
 	public void check(List<CheckResultInterface> remarks, TransMeta transmeta, StepMeta stepMeta, RowMetaInterface prev, String input[], String output[], RowMetaInterface info) {
@@ -109,7 +159,8 @@ public class KettleUtilMeta extends BaseStepMeta implements StepMetaInterface {
 	public void readRep(Repository rep, ObjectId id_step, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleException {
 		try
 		{
-			outputField  = rep.getStepAttributeString(id_step, "outputfield"); //$NON-NLS-1$
+            configName  = rep.getStepAttributeString(id_step, "configname"); //$NON-NLS-1$
+			configInfo  = rep.getStepAttributeString(id_step, "configinfo"); //$NON-NLS-1$
 		}
 		catch(Exception e)
 		{
@@ -121,7 +172,8 @@ public class KettleUtilMeta extends BaseStepMeta implements StepMetaInterface {
 	{
 		try
 		{
-			rep.saveStepAttribute(id_transformation, id_step, "outputfield", outputField); //$NON-NLS-1$
+            rep.saveStepAttribute(id_transformation, id_step, "configname", configName); //$NON-NLS-1$
+			rep.saveStepAttribute(id_transformation, id_step, "configinfo", configInfo); //$NON-NLS-1$
 		}
 		catch(Exception e)
 		{

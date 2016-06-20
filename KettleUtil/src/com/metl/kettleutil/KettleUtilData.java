@@ -1,4 +1,4 @@
-package com.metl;
+package com.metl.kettleutil;
 
 /**   
  * @Title: 数据类 

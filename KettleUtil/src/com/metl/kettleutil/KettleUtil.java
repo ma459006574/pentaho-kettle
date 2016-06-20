@@ -1,4 +1,4 @@
-package com.metl;
+package com.metl.kettleutil;
 
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;

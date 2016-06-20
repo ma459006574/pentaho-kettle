@@ -1,4 +1,4 @@
-package com.metl;
+package com.metl.kettleutil;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -18,32 +18,39 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.pentaho.di.core.Const;
+import org.pentaho.di.core.Props;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
+import org.pentaho.di.ui.core.widget.StyledTextComp;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
-
-/**   
- * @Title: 对话框类 
- * @Package plugin.template 
- * @Description: TODO(用一句话描述该文件做什么) 
- * @author http://www.ahuoo.com  
- * @date 2010-8-8 下午05:10:26 
- * @version V1.0   
- */
-
+/**
+* 通用工具 <br/>
+* date: 2016年6月20日 上午10:40:44 <br/>
+* @author jingma@iflytek.com
+* @version 
+*/
 public class KettleUtilDialog extends BaseStepDialog implements StepDialogInterface {
 
 	private static Class<?> PKG = KettleUtilMeta.class; // for i18n purposes
 	
 	private KettleUtilMeta input;
 
-	// output field name
-	private Label wlValName;
-	private Text wValName;
-	private FormData fdlValName, fdValName;
+    /**
+    * 配置名称
+    */
+    private Text wConfigName;
+	private Label wlConfigName;
+	private FormData fdlConfigName, fdConfigName;
+
+    /**
+    * 具体配置信息
+    */
+    private StyledTextComp wConfigInfo;
+    private Label wlConfigInfo;
+    private FormData fdlConfigInfo, fdConfigInfo;
 	
 	public KettleUtilDialog(Shell parent, Object in, TransMeta transMeta, String sname) {
 		super(parent, (BaseStepMeta) in, transMeta, sname);
@@ -96,23 +103,44 @@ public class KettleUtilDialog extends BaseStepDialog implements StepDialogInterf
 		wStepname.setLayoutData(fdStepname);
 
 		// output dummy value
-		wlValName = new Label(shell, SWT.RIGHT);
-		wlValName.setText(BaseMessages.getString(PKG, "KettleUtil.FieldName.Label")); 
-		props.setLook(wlValName);
-		fdlValName = new FormData();
-		fdlValName.left = new FormAttachment(0, 0);
-		fdlValName.right = new FormAttachment(middle, -margin);
-		fdlValName.top = new FormAttachment(wStepname, margin);
-		wlValName.setLayoutData(fdlValName);
+		wlConfigName = new Label(shell, SWT.RIGHT);
+		wlConfigName.setText(BaseMessages.getString(PKG, "KettleUtil.ConfigName.Label")); 
+		props.setLook(wlConfigName);
+		fdlConfigName = new FormData();
+		fdlConfigName.left = new FormAttachment(0, 0);
+		fdlConfigName.right = new FormAttachment(middle, -margin);
+		fdlConfigName.top = new FormAttachment(wStepname, margin);
+		wlConfigName.setLayoutData(fdlConfigName);
 
-		wValName = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-		props.setLook(wValName);
-		wValName.addModifyListener(lsMod);
-		fdValName = new FormData();
-		fdValName.left = new FormAttachment(middle, 0);
-		fdValName.right = new FormAttachment(100, 0);
-		fdValName.top = new FormAttachment(wStepname, margin);
-		wValName.setLayoutData(fdValName);
+		wConfigName = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+		props.setLook(wConfigName);
+		wConfigName.addModifyListener(lsMod);
+		fdConfigName = new FormData();
+		fdConfigName.left = new FormAttachment(middle, 0);
+		fdConfigName.right = new FormAttachment(100, 0);
+		fdConfigName.top = new FormAttachment(wStepname, margin);
+		wConfigName.setLayoutData(fdConfigName);
+
+	    // Log message to display
+	    wlConfigInfo = new Label( shell, SWT.RIGHT );
+	    wlConfigInfo.setText( BaseMessages.getString( PKG, "KettleUtil.ConfigInfo.Label" ) );
+	    props.setLook( wlConfigInfo );
+	    fdlConfigInfo = new FormData();
+	    fdlConfigInfo.left = new FormAttachment( 0, 0 );
+	    fdlConfigInfo.top = new FormAttachment( wConfigName, margin );
+	    fdlConfigInfo.right = new FormAttachment( middle, -margin );
+	    wlConfigInfo.setLayoutData( fdlConfigInfo );
+
+	    wConfigInfo =
+	      new StyledTextComp( transMeta, shell, SWT.MULTI | SWT.LEFT | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, "" );
+	    props.setLook( wConfigInfo, Props.WIDGET_STYLE_FIXED );
+	    wConfigInfo.addModifyListener( lsMod );
+	    fdConfigInfo = new FormData();
+	    fdConfigInfo.left = new FormAttachment( middle, 0 );
+	    fdConfigInfo.top = new FormAttachment( wConfigName, margin );
+	    fdConfigInfo.right = new FormAttachment( 100, -2 * margin );
+	    fdConfigInfo.height = 125;
+	    wConfigInfo.setLayoutData( fdConfigInfo );
 		      
 		// OK and cancel buttons
 		wOK = new Button(shell, SWT.PUSH);
@@ -120,7 +148,7 @@ public class KettleUtilDialog extends BaseStepDialog implements StepDialogInterf
 		wCancel = new Button(shell, SWT.PUSH);
 		wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel")); 
 
-		BaseStepDialog.positionBottomButtons(shell, new Button[] { wOK, wCancel }, margin, wValName);
+		BaseStepDialog.positionBottomButtons(shell, new Button[] { wOK, wCancel }, margin, wConfigInfo);
 
 		
 		// Add listeners
@@ -145,7 +173,7 @@ public class KettleUtilDialog extends BaseStepDialog implements StepDialogInterf
 		};
 
 		wStepname.addSelectionListener(lsDef);
-		wValName.addSelectionListener(lsDef);
+		wConfigName.addSelectionListener(lsDef);
 
 		// Detect X or ALT-F4 or something that kills this window...
 		shell.addShellListener(new ShellAdapter() {
@@ -172,7 +200,8 @@ public class KettleUtilDialog extends BaseStepDialog implements StepDialogInterf
 	// Read data and place it in the dialog
 	public void getData() {
 		wStepname.selectAll();
-		wValName.setText(input.getOutputField());	
+		wConfigName.setText(input.getConfigName());	
+        wConfigInfo.setText(input.getConfigInfo()); 
 	}
 
 	private void cancel() {
@@ -184,7 +213,8 @@ public class KettleUtilDialog extends BaseStepDialog implements StepDialogInterf
 	// let the plugin know about the entered data
 	private void ok() {
 		stepname = wStepname.getText(); // return value
-		input.setOutputField(wValName.getText());
+		input.setConfigName(wConfigName.getText());
+        input.setConfigInfo(wConfigInfo.getText());
 		dispose();
 	}
 }
