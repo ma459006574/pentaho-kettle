@@ -12,15 +12,12 @@ import org.pentaho.di.trans.step.StepInterface;
 import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 
-/**   
- * @Title: 步骤类 
- * @Package plugin.template 
- * @Description: (用一句话描述该文件做什么) 
- * @author http://www.ahuoo.com  
- * @date 2010-8-8 下午05:10:26 
- * @version V1.0   
- */
-
+/**
+* Kettle工具类 <br/>
+* date: 2016年6月20日 上午11:34:54 <br/>
+* @author jingma@iflytek.com
+* @version 
+*/
 public class KettleUtil extends BaseStep implements StepInterface {
 
 	private KettleUtilData data;
@@ -83,8 +80,7 @@ public class KettleUtil extends BaseStep implements StepInterface {
 	public void run() {
 		logBasic("Starting to run...");
 		try {
-			while (processRow(meta, data) && !isStopped())
-				;
+			while (processRow(meta, data) && !isStopped());
 		} catch (Exception e) {
 			logError("Unexpected error : " + e.toString());
 			logError(Const.getStackTracker(e));
