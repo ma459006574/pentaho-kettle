@@ -7,7 +7,10 @@
 package com.metl.util;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -15,12 +18,12 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import com.alibaba.fastjson.JSONObject;
 
 /**
- * 获取第一个对象 <br/>
+ * 获取对象列表 <br/>
  * date: 2016年6月21日 上午12:16:28 <br/>
  * @author jingma@iflytek.com
  * @version 
  */
-public class FastTResultSet implements ResultSetExtractor {
+public class ResultSetList implements ResultSetExtractor {
 
     /**
      * 
@@ -29,14 +32,18 @@ public class FastTResultSet implements ResultSetExtractor {
     @Override
     public Object extractData(ResultSet rs) throws SQLException,
             DataAccessException {
-        JSONObject json = new JSONObject();
+        List<JSONObject> list = new ArrayList<JSONObject>();
+        JSONObject json = null;
+        ResultSetMetaData metadata = rs.getMetaData();
         if(rs.next()){
-            for(int i=1;i<=rs.getMetaData().getColumnCount();i++){
-                String colName = rs.getMetaData().getColumnName(i).toLowerCase();
+            json = new JSONObject();
+            for(int i=1;i<=metadata.getColumnCount();i++){
+                String colName = metadata.getColumnName(i).toLowerCase();
                 json.put(colName, rs.getObject(i));
             }
+            list.add(json);
         }
-        return json;
+        return list;
     }
 
 }

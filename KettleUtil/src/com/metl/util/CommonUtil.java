@@ -6,12 +6,10 @@
 
 package com.metl.util;
 
-import javax.sql.DataSource;
-
-import org.pentaho.di.core.database.util.DatabaseUtil;
-import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.job.entries.eval.JobEntryEval;
-import org.springframework.jdbc.core.JdbcTemplate;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 
 /**
  * 一般工具类 <br/>
@@ -21,20 +19,23 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public class CommonUtil {
     /**
-    * 获取数据库操作对象 <br/>
+    * 获取参数 <br/>
     * @author jingma@iflytek.com
     * @param jee 
-    * @param dbCode
-    * @return
+    * @param key 参数名称
+    * @return 值
     */
-    public static JdbcTemplate getJdbcTemplate(JobEntryEval jee, String dbCode) {
-        try {
-            DataSource dataSource = ( new DatabaseUtil() ).getNamedDataSource( dbCode );
-            JdbcTemplate jt = new JdbcTemplate(dataSource);
-            return jt;
-        } catch (KettleException e1) {
-            jee.logError("获取数据库失败", e1);
-        }
-        return null;
+    public static String getProp(JobEntryEval jee, String key){
+        return jee.environmentSubstitute("${"+key+"}");
+    }
+    /**
+    * 获取参数并解析为JSON对象 <br/>
+    * @author jingma@iflytek.com
+    * @param jee 
+    * @param key 参数名称
+    * @return 值
+    */
+    public static JSONObject getPropJSONObject(JobEntryEval jee, String key){
+        return JSON.parseObject(getProp(jee, key));
     }
 }
