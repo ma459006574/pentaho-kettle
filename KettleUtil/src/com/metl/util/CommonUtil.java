@@ -6,7 +6,9 @@
 
 package com.metl.util;
 
+import org.pentaho.di.job.Job;
 import org.pentaho.di.job.entries.eval.JobEntryEval;
+import org.pentaho.di.trans.steps.scriptvalues_mod.ScriptValuesMod;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -37,5 +39,68 @@ public class CommonUtil {
     */
     public static JSONObject getPropJSONObject(JobEntryEval jee, String key){
         return JSON.parseObject(getProp(jee, key));
+    }
+    /**
+    * 获取根job <br/>
+    * @author jingma@iflytek.com
+    * @param jee 
+    * @return
+    */
+    public static Job getRootJob(JobEntryEval jee) {
+        Job rootjob = jee.getParentJob();
+        while(rootjob.getParentJob()!=null){
+            rootjob = rootjob.getParentJob();
+        }
+        return rootjob;
+    }
+    /**
+    * 获取根job的id <br/>
+    * @author jingma@iflytek.com
+    * @param jee 
+    * @return
+    */
+    public static String getRootJobId(JobEntryEval jee) {
+        return getRootJob(jee).getObjectId().getId();
+    }
+    /**
+    * 获取根job <br/>
+    * @author jingma@iflytek.com
+    * @param jee 
+    * @return
+    */
+    public static Job getRootJob(ScriptValuesMod jee) {
+        Job rootjob = jee.getTrans().getParentJob();
+        while(rootjob!=null&&rootjob.getParentJob()!=null){
+            rootjob = rootjob.getParentJob();
+        }
+        return rootjob;
+    }
+    /**
+    * 获取根job的id <br/>
+    * @author jingma@iflytek.com
+    * @param jee 
+    * @return
+    */
+    public static String getRootJobId(ScriptValuesMod jee) {
+        Job rootjob = getRootJob(jee);
+        if(rootjob!=null){
+            return rootjob.getObjectId().getId();
+        }else{
+            return null;
+        }
+    }
+    /**
+    * 获取根job的名称 <br/>
+    * @author jingma@iflytek.com
+    * @param jee 
+    * @return
+    */
+    public static String getRootJobName(ScriptValuesMod jee) {
+        Job rootjob = getRootJob(jee);
+        if(rootjob!=null){
+            return rootjob.getObjectName();
+        }else{
+            return null;
+        }
     }
 }

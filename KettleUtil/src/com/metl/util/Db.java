@@ -16,6 +16,7 @@ import javax.sql.DataSource;
 import org.pentaho.di.core.database.util.DatabaseUtil;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.job.entries.eval.JobEntryEval;
+import org.pentaho.di.trans.steps.userdefinedjavaclass.UserDefinedJavaClass;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.alibaba.fastjson.JSONObject;
@@ -31,6 +32,23 @@ public class Db {
     * spring数据库操作工具
     */
     private JdbcTemplate jdbcTemplate;
+    /**
+    * 获取数据库操作对象 <br/>
+    * @author jingma@iflytek.com
+    * @param jee 
+    * @param dbCode
+    * @return
+    */
+    public static Db getDb(UserDefinedJavaClass jee, String dbCode) {
+        try {
+            DataSource dataSource = ( new DatabaseUtil() ).getNamedDataSource( dbCode );
+            JdbcTemplate jt = new JdbcTemplate(dataSource);
+            return new Db(jt);
+        } catch (KettleException e) {
+            jee.logError("获取数据库失败", e);
+        }
+        return null;
+    }
     /**
     * 获取数据库操作对象 <br/>
     * @author jingma@iflytek.com
@@ -116,6 +134,15 @@ public class Db {
     */
     public JSONObject findOne(String sql,Object... prarms){
         return (JSONObject) jdbcTemplate.query(sql, prarms, new ResultSetFast());
+    }
+    /**
+    * 获取数据库连接 <br/>
+    * @author jingma@iflytek.com
+    * @return
+    * @throws SQLException
+    */
+    public Connection getConn() throws SQLException{
+        return jdbcTemplate.getDataSource().getConnection();
     }
     /**
      * @return jdbcTemplate 

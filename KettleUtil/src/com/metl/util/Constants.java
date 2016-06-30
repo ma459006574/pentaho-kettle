@@ -219,4 +219,17 @@ public interface Constants {
     * 数据账单状态-入库成功
     */
     String DATA_BILL_STATUS_INPUT_SUCCESS = "input_success";
+    
+    /**
+    * 成败-未知
+    */
+    String SUCCESS_FAILED_NUKNOW = "unkown";
+    /**
+    * 成败-成功
+    */
+    String SUCCESS_FAILED_SUCCESS = "success";
+    /**
+    * 成败-失败
+    */
+    String SUCCESS_FAILED_FAILED = "failed";
 }

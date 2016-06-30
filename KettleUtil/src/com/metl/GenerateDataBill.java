@@ -6,6 +6,7 @@
 
 package com.metl;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -43,6 +44,10 @@ public class GenerateDataBill {
     * 项目基础数据库操作对象
     */
     private Db metldb;
+    /**
+    * 抽取标记
+    */
+    private String etlflag;
     
     /**
      * Creates a new instance of GenerateDataBill.
@@ -63,23 +68,57 @@ public class GenerateDataBill {
     * @author jingma@iflytek.com
     */
     public void run(){
+        String start = metldb.getCurrentDateStr14();
         String doType = sourceObj.getString("do_type");
         jee.logBasic("来源对象类型："+doType);
-        switch (doType) {
-        case "table":
-            gdbTable();
-            break;
-        default:
-            break;
+        String result = Constants.SUCCESS_FAILED_NUKNOW;
+        try {
+            switch (doType) {
+            case "table":
+                gdbTable();
+                break;
+            case "view":
+                gdbTable();
+                break;
+            default:
+                break;
+            }
+            result = Constants.SUCCESS_FAILED_SUCCESS;
+        } catch (SQLException e) {
+            jee.logError("创建表的数据账单失败", e);
+            result = Constants.SUCCESS_FAILED_FAILED;
         }
-        
+        //记录日志到数据库，便于监控。还需要将Kettle本身的运行日志记录到文件中，文件分天存放，每次一个文件
+        String sql = "insert into metl_kettle_log"
+                + "(create_user,job,start_time,end_time,etlflag,result, "
+                + "log_path,data_task)values(?,?,?,?,?,?,?,?)";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = metldb.getConn();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, dataTask.getString("create_user"));
+            ps.setString(2, CommonUtil.getRootJobId(jee));
+            ps.setString(3, start);
+            ps.setString(4, metldb.getCurrentDateStr14());
+            ps.setString(5, etlflag);
+            ps.setString(6, result);
+            ps.setString(7, null);
+            ps.setString(8, dataTask.getString("ocode"));
+            ps.execute();
+        } catch (SQLException e) {
+            jee.logError("插入日志失败", e);
+        } finally{
+            Db.closeConn(jee, conn,ps);
+        }
     }
 
     /**
     * 生成数据账单-表 <br/>
     * @author jingma@iflytek.com
+     * @throws SQLException 
     */
-    private void gdbTable() {
+    private void gdbTable() throws SQLException {
         String isAdd = dataTask.getString("is_add");
         //增量
         if(Constants.WHETHER_TRUE.equals(isAdd)){
@@ -90,7 +129,7 @@ public class GenerateDataBill {
             String dataType = addField.getString("data_type");
             String businessType = addField.getString("business_type");
             //实时从数据库查询抽取标记
-            String etlflag = metldb.findOne("select etlflag from metl_data_task t where t.ocode=?", 
+            etlflag = metldb.findOne("select etlflag from metl_data_task t where t.ocode=?", 
                     dataTask.getString("ocode")).getString("etlflag");
             Db sourcedb = Db.getDb(jee, dbCode);
             //如果抽取标记为空，则从来源对象获取增量字段最小值
@@ -182,11 +221,45 @@ public class GenerateDataBill {
                 }
             }else{
                 //否则就是数字，本系统增量字段业务类型支持时间和数字
+                //首次，对历史数据进行分片处理
+                if(minObj != null){
+                    //开始
+                    BigDecimal start = minObj.getBigDecimal("etlflag");
+                    //结束
+                    BigDecimal end = maxObj.getBigDecimal("etlflag");
+                    //增量，以天为单位
+                    BigDecimal addInterval = sourceObj.getBigDecimal("add_interval");
+                    while(true){
+                        start = start.add(addInterval);
+                        tempEtlflag = start.toString();
+                        
+                        //如果还没有达到最大值
+                        if(start.compareTo(end)<0){
+                            //在数据账单中添加记录
+                            addDataBillTable(etlflag,tempEtlflag);
+                            etlflag = tempEtlflag;
+                        }else if(start.compareTo(end)>=0){
+                            tempEtlflag = end.toString();
+                            //在数据账单中添加记录
+                            addDataBillTable(etlflag,tempEtlflag);
+                            etlflag = tempEtlflag;
+                            break;
+                        }
+                    }
+                }else{
+                    //若已经有数据账单生成过了，则直接生成增量账单
+                    tempEtlflag = maxObj.getString("etlflag");
+                    if(!etlflag.equals(tempEtlflag)){
+                        //在数据账单中添加记录
+                        addDataBillTable(etlflag,tempEtlflag);
+                    }
+                }
                 
             }
+            etlflag = tempEtlflag;
             //更新抽取标记
             String sql = "update METL_DATA_TASK t set t.etlflag='"
-            +tempEtlflag+"' where t.oid='"+dataTask.getString("oid")+"'";
+            +etlflag+"' where t.oid='"+dataTask.getString("oid")+"'";
             metldb.execute(sql);
         }else{
             //否则就不是增量
@@ -196,24 +269,26 @@ public class GenerateDataBill {
 
     /**
     * 添加数据账单-表 <br/>
+    * 处理数据时：<code>start<=add_field<=end</code>但是这样会导致数据账单中数据片数据之和大于总数。
     * @author jingma@iflytek.com
-    * @param start
-    * @param end
+    * @param start 数据片开始
+    * @param end 数据片结束
+     * @throws SQLException 
     */
-    private void addDataBillTable(String start, String end) {
+    private void addDataBillTable(String start, String end) throws SQLException {
         String sql = "insert into metl_data_bill (create_user, source_task, "
                 + "source_obj, target_obj, job, database, source_table, "
                 + "shard_field, shard_start, shard_end, state) values (?,?,?,?,?,?,?,?,?,?,?)";
         Connection conn = null;
         PreparedStatement insert = null;
         try {
-            conn = metldb.getJdbcTemplate().getDataSource().getConnection();
+            conn = metldb.getConn();
             insert = conn.prepareStatement(sql);
             insert.setString(1, dataTask.getString("create_user"));
             insert.setString(2, dataTask.getString("ocode"));
             insert.setString(3, dataTask.getString("source_obj"));
             insert.setString(4, dataTask.getString("target_obj"));
-            insert.setString(5, null);
+            insert.setString(5, CommonUtil.getRootJobId(jee));
             insert.setString(6, sourceObj.getString("database"));
             insert.setString(7, sourceObj.getString("real_name"));
             insert.setString(8, sourceObj.getString("add_field"));
@@ -226,8 +301,6 @@ public class GenerateDataBill {
                 insert.setString(11,Constants.DATA_BILL_STATUS_WAIT_EXAMINE);
             }
             insert.execute();
-        } catch (SQLException e) {
-            jee.logError("创建表的数据账单失败", e);
         } finally {
             Db.closeConn(jee, conn, insert);
         }
@@ -273,6 +346,34 @@ public class GenerateDataBill {
      */
     public void setJee(JobEntryEval jee) {
         this.jee = jee;
+    }
+
+    /**
+     * @return metldb 
+     */
+    public Db getMetldb() {
+        return metldb;
+    }
+
+    /**
+     * @param metldb the metldb to set
+     */
+    public void setMetldb(Db metldb) {
+        this.metldb = metldb;
+    }
+
+    /**
+     * @return etlflag 
+     */
+    public String getEtlflag() {
+        return etlflag;
+    }
+
+    /**
+     * @param etlflag the etlflag to set
+     */
+    public void setEtlflag(String etlflag) {
+        this.etlflag = etlflag;
     }
     
 }
