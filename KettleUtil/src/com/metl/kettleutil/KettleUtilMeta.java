@@ -3,6 +3,7 @@ package com.metl.kettleutil;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.widgets.Shell;
 import org.pentaho.di.core.CheckResult;
 import org.pentaho.di.core.CheckResultInterface;
@@ -13,8 +14,6 @@ import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleValueException;
 import org.pentaho.di.core.exception.KettleXMLException;
 import org.pentaho.di.core.row.RowMetaInterface;
-import org.pentaho.di.core.row.ValueMeta;
-import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.i18n.BaseMessages;
@@ -43,9 +42,9 @@ public class KettleUtilMeta extends BaseStepMeta implements StepMetaInterface {
 
 	private static Class<?> PKG = KettleUtilMeta.class; // for i18n purposes
     /**
-    * 配置名称
+    * 类名称
     */
-    private String configName = "";
+    private String className = "";
 	/**
 	* 具体配置信息
 	*/
@@ -54,21 +53,18 @@ public class KettleUtilMeta extends BaseStepMeta implements StepMetaInterface {
 	public KettleUtilMeta() {
 		super(); 
 	}
-
-	/**
-     * @return configName 
-     */
-    public String getConfigName() {
-        return configName;
-    }
-
     /**
-     * @param configName the configName to set
+     * @return className 
      */
-    public void setConfigName(String configName) {
-        this.configName = configName;
+    public String getClassName() {
+        return className;
     }
-
+    /**
+     * @param className the className to set
+     */
+    public void setClassName(String className) {
+        this.className = className;
+    }
     /**
      * @return configInfo 
      */
@@ -85,29 +81,21 @@ public class KettleUtilMeta extends BaseStepMeta implements StepMetaInterface {
 
     public String getXML() throws KettleValueException {
 		String retval = "";
-		retval += "		<configname>" + getConfigName() + "</configname>" + Const.CR;
+		retval += "		<classname>" + getClassName() + "</classname>" + Const.CR;
         retval += "     <configinfo>" + getConfigInfo() + "</configinfo>" + Const.CR;
 		return retval;
 	}
 
-	@SuppressWarnings("deprecation")
     public void getFields(RowMetaInterface r, String origin, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) {
-
-		ValueMetaInterface v = new ValueMeta();
-		v.setName(configName);
-		v.setType(ValueMeta.TYPE_STRING);
-		v.setTrimType(ValueMeta.TRIM_TYPE_BOTH);
-		v.setOrigin(origin);
-		r.addValueMeta(v);
-		
-        v = new ValueMeta();
-        v.setName(configInfo);
-        v.setType(ValueMeta.TYPE_STRING);
-        v.setTrimType(ValueMeta.TRIM_TYPE_BOTH);
-        v.setOrigin(origin);
-
-        r.addValueMeta(v);
-		
+		if(StringUtils.isNotBlank(className)){
+		    try {
+		        //实例化配置的类，获取输出字段
+		        KettleUtilRunBase kui = (KettleUtilRunBase) Class.forName(space.environmentSubstitute(className)).newInstance();
+		        kui.getFields(r, origin, info, nextStep, space);
+            } catch (Exception e) {
+                logError("获取输出字段失败", e);
+            }
+		}
 	}
 
 	public Object clone() {
@@ -126,7 +114,7 @@ public class KettleUtilMeta extends BaseStepMeta implements StepMetaInterface {
 	}
 
 	public void setDefault() {
-        configName = "test_config";
+        className = "com.metl.SimpleExecuteRule";
 		configInfo = "{}";
 	}
 
@@ -159,7 +147,7 @@ public class KettleUtilMeta extends BaseStepMeta implements StepMetaInterface {
 	public void readRep(Repository rep, ObjectId id_step, List<DatabaseMeta> databases, Map<String, Counter> counters) throws KettleException {
 		try
 		{
-            configName  = rep.getStepAttributeString(id_step, "configname"); //$NON-NLS-1$
+            className  = rep.getStepAttributeString(id_step, "classname"); //$NON-NLS-1$
 			configInfo  = rep.getStepAttributeString(id_step, "configinfo"); //$NON-NLS-1$
 		}
 		catch(Exception e)
@@ -172,7 +160,7 @@ public class KettleUtilMeta extends BaseStepMeta implements StepMetaInterface {
 	{
 		try
 		{
-            rep.saveStepAttribute(id_transformation, id_step, "configname", configName); //$NON-NLS-1$
+            rep.saveStepAttribute(id_transformation, id_step, "classname", className); //$NON-NLS-1$
 			rep.saveStepAttribute(id_transformation, id_step, "configinfo", configInfo); //$NON-NLS-1$
 		}
 		catch(Exception e)

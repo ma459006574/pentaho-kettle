@@ -8,6 +8,7 @@ package com.metl.util;
 
 import org.pentaho.di.job.Job;
 import org.pentaho.di.job.entries.eval.JobEntryEval;
+import org.pentaho.di.trans.step.BaseStep;
 import org.pentaho.di.trans.steps.scriptvalues_mod.ScriptValuesMod;
 
 import com.alibaba.fastjson.JSON;
@@ -28,6 +29,16 @@ public class CommonUtil {
     * @return 值
     */
     public static String getProp(JobEntryEval jee, String key){
+        return jee.environmentSubstitute("${"+key+"}");
+    }
+    /**
+    * 获取参数 <br/>
+    * @author jingma@iflytek.com
+    * @param jee 
+    * @param key 参数名称
+    * @return 值
+    */
+    public static String getProp(BaseStep jee, String key){
         return jee.environmentSubstitute("${"+key+"}");
     }
     /**

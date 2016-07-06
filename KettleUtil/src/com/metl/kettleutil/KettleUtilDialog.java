@@ -24,6 +24,7 @@ import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.trans.step.BaseStepMeta;
 import org.pentaho.di.trans.step.StepDialogInterface;
 import org.pentaho.di.ui.core.widget.StyledTextComp;
+import org.pentaho.di.ui.core.widget.TextVar;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
 /**
@@ -41,9 +42,9 @@ public class KettleUtilDialog extends BaseStepDialog implements StepDialogInterf
     /**
     * 配置名称
     */
-    private Text wConfigName;
-	private Label wlConfigName;
-	private FormData fdlConfigName, fdConfigName;
+    private TextVar wClassName;
+	private Label wlClassName;
+	private FormData fdlClassName, fdClassName;
 
     /**
     * 具体配置信息
@@ -102,32 +103,30 @@ public class KettleUtilDialog extends BaseStepDialog implements StepDialogInterf
 		fdStepname.right = new FormAttachment(100, 0);
 		wStepname.setLayoutData(fdStepname);
 
-		// output dummy value
-		wlConfigName = new Label(shell, SWT.RIGHT);
-		wlConfigName.setText(BaseMessages.getString(PKG, "KettleUtil.ConfigName.Label")); 
-		props.setLook(wlConfigName);
-		fdlConfigName = new FormData();
-		fdlConfigName.left = new FormAttachment(0, 0);
-		fdlConfigName.right = new FormAttachment(middle, -margin);
-		fdlConfigName.top = new FormAttachment(wStepname, margin);
-		wlConfigName.setLayoutData(fdlConfigName);
+		wlClassName = new Label(shell, SWT.RIGHT);
+		wlClassName.setText(BaseMessages.getString(PKG, "KettleUtil.ClassName.Label")+" "); 
+		props.setLook(wlClassName);
+		fdlClassName = new FormData();
+		fdlClassName.left = new FormAttachment(0, 0);
+		fdlClassName.right = new FormAttachment(middle, -margin);
+		fdlClassName.top = new FormAttachment(wStepname, margin);
+		wlClassName.setLayoutData(fdlClassName);
 
-		wConfigName = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-		props.setLook(wConfigName);
-		wConfigName.addModifyListener(lsMod);
-		fdConfigName = new FormData();
-		fdConfigName.left = new FormAttachment(middle, 0);
-		fdConfigName.right = new FormAttachment(100, 0);
-		fdConfigName.top = new FormAttachment(wStepname, margin);
-		wConfigName.setLayoutData(fdConfigName);
+		wClassName = new TextVar(transMeta, shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
+		props.setLook(wClassName);
+		wClassName.addModifyListener(lsMod);
+		fdClassName = new FormData();
+		fdClassName.left = new FormAttachment(middle, 0);
+		fdClassName.top = new FormAttachment(wStepname, margin);
+        fdClassName.right = new FormAttachment(100, margin );
+		wClassName.setLayoutData(fdClassName);
 
-	    // Log message to display
 	    wlConfigInfo = new Label( shell, SWT.RIGHT );
-	    wlConfigInfo.setText( BaseMessages.getString( PKG, "KettleUtil.ConfigInfo.Label" ) );
+	    wlConfigInfo.setText( BaseMessages.getString( PKG, "KettleUtil.ConfigInfo.Label" )+" " );
 	    props.setLook( wlConfigInfo );
 	    fdlConfigInfo = new FormData();
 	    fdlConfigInfo.left = new FormAttachment( 0, 0 );
-	    fdlConfigInfo.top = new FormAttachment( wConfigName, margin );
+	    fdlConfigInfo.top = new FormAttachment( wClassName, margin );
 	    fdlConfigInfo.right = new FormAttachment( middle, -margin );
 	    wlConfigInfo.setLayoutData( fdlConfigInfo );
 
@@ -137,7 +136,7 @@ public class KettleUtilDialog extends BaseStepDialog implements StepDialogInterf
 	    wConfigInfo.addModifyListener( lsMod );
 	    fdConfigInfo = new FormData();
 	    fdConfigInfo.left = new FormAttachment( middle, 0 );
-	    fdConfigInfo.top = new FormAttachment( wConfigName, margin );
+	    fdConfigInfo.top = new FormAttachment( wClassName, margin );
 	    fdConfigInfo.right = new FormAttachment( 100, -2 * margin );
 	    fdConfigInfo.height = 125;
 	    wConfigInfo.setLayoutData( fdConfigInfo );
@@ -173,7 +172,7 @@ public class KettleUtilDialog extends BaseStepDialog implements StepDialogInterf
 		};
 
 		wStepname.addSelectionListener(lsDef);
-		wConfigName.addSelectionListener(lsDef);
+		wClassName.addSelectionListener(lsDef);
 
 		// Detect X or ALT-F4 or something that kills this window...
 		shell.addShellListener(new ShellAdapter() {
@@ -200,7 +199,7 @@ public class KettleUtilDialog extends BaseStepDialog implements StepDialogInterf
 	// Read data and place it in the dialog
 	public void getData() {
 		wStepname.selectAll();
-		wConfigName.setText(input.getConfigName());	
+		wClassName.setText(input.getClassName());	
         wConfigInfo.setText(input.getConfigInfo()); 
 	}
 
@@ -213,7 +212,7 @@ public class KettleUtilDialog extends BaseStepDialog implements StepDialogInterf
 	// let the plugin know about the entered data
 	private void ok() {
 		stepname = wStepname.getText(); // return value
-		input.setConfigName(wConfigName.getText());
+		input.setClassName(wClassName.getText());
         input.setConfigInfo(wConfigInfo.getText());
 		dispose();
 	}

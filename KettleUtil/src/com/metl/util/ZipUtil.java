@@ -1,7 +1,9 @@
 package com.metl.util;  
   
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,7 +23,33 @@ import org.apache.commons.lang3.StringUtils;
  * @author ninemax 
  */  
 public class ZipUtil {  
-      
+    
+    /** 
+     * 使用给定密码解压指定目录下的ZIP压缩文件到指定目录 
+     * <p> 
+     * 如果指定目录不存在,可以自动创建,不合法的路径将导致异常被抛出 
+     * @param zipDir 指定的ZIP压缩文件 
+     * @param dest 解压目录 
+     * @param passwd ZIP文件的密码 
+     * @return 解压后文件数组 
+     * @throws ZipException 压缩文件有损坏或者解压缩失败抛出 
+     */  
+    public static File [] unzipDir(String zipDir, String dest, String passwd) throws ZipException {  
+        List<File> result = new ArrayList<File>();
+        File zips = new File(zipDir);
+        for(File zip:zips.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                if(name.endsWith("zip")){
+                    return true;
+                }
+                return false;
+            }
+        })){
+            result.addAll(Arrays.asList(unzip(zip.getAbsolutePath(),dest, passwd)));
+        }
+        return result.toArray(new File[]{});
+    }   
     /** 
      * 使用给定密码解压指定的ZIP压缩文件到指定目录 
      * <p> 

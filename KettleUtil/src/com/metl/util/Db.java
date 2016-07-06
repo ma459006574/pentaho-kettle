@@ -16,7 +16,8 @@ import javax.sql.DataSource;
 import org.pentaho.di.core.database.util.DatabaseUtil;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.job.entries.eval.JobEntryEval;
-import org.pentaho.di.trans.steps.userdefinedjavaclass.UserDefinedJavaClass;
+import org.pentaho.di.job.entry.JobEntryBase;
+import org.pentaho.di.trans.step.BaseStep;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.alibaba.fastjson.JSONObject;
@@ -35,17 +36,17 @@ public class Db {
     /**
     * 获取数据库操作对象 <br/>
     * @author jingma@iflytek.com
-    * @param jee 
+    * @param ku 
     * @param dbCode
     * @return
     */
-    public static Db getDb(UserDefinedJavaClass jee, String dbCode) {
+    public static Db getDb(BaseStep ku, String dbCode) {
         try {
             DataSource dataSource = ( new DatabaseUtil() ).getNamedDataSource( dbCode );
             JdbcTemplate jt = new JdbcTemplate(dataSource);
             return new Db(jt);
         } catch (KettleException e) {
-            jee.logError("获取数据库失败", e);
+            ku.logError("获取数据库失败", e);
         }
         return null;
     }
@@ -56,7 +57,7 @@ public class Db {
     * @param dbCode
     * @return
     */
-    public static Db getDb(JobEntryEval jee, String dbCode) {
+    public static Db getDb(JobEntryBase jee, String dbCode) {
         try {
             DataSource dataSource = ( new DatabaseUtil() ).getNamedDataSource( dbCode );
             JdbcTemplate jt = new JdbcTemplate(dataSource);

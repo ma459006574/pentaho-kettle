@@ -1,7 +1,8 @@
 package com.metl.kettleutil;
 
-import org.pentaho.di.core.Const;
+import org.apache.commons.lang3.StringUtils;
 import org.pentaho.di.core.exception.KettleException;
+import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.row.RowDataUtil;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.trans.Trans;
@@ -30,8 +31,33 @@ public class KettleUtil extends BaseStep implements StepInterface {
 	public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
 		meta = (KettleUtilMeta) smi;
 		data = (KettleUtilData) sdi;
+		if(StringUtils.isNotBlank(meta.getClassName())){
+            try {
+                //实例化配置的类
+                KettleUtilRunBase kui = (KettleUtilRunBase) Class.forName(environmentSubstitute(meta.getClassName())).newInstance();
+                kui.setKu(this);
+                kui.setData(data);
+                kui.setMeta(meta);
+                return kui.run();
+            } catch (Exception e) {
+                logError("运行失败", e);
+                return defaultRun();
+            }
+		}else{
+	        return defaultRun();
+		}
 
-		Object[] r = getRow(); // get row, blocks when needed!
+	}
+
+    /**
+    * 默认运行方法 <br/>
+    * @author jingma@iflytek.com
+    * @return
+    * @throws KettleException
+    * @throws KettleStepException
+    */
+    public boolean defaultRun() throws KettleException, KettleStepException {
+        Object[] r = getRow(); // get row, blocks when needed!
 		if (r == null) // no more input to be expected...
 		{
 			setOutputDone();
@@ -48,9 +74,7 @@ public class KettleUtil extends BaseStep implements StepInterface {
 
 		}
 		
-		
-
-		Object[] outputRow = RowDataUtil.addValueData(r, data.outputRowMeta.size() - 1, "dummy value");
+		Object[] outputRow = RowDataUtil.createResizedCopy( r, data.outputRowMeta.size() );
 
 		putRow(data.outputRowMeta, outputRow); // copy row to possible alternate rowset(s)
 
@@ -59,7 +83,7 @@ public class KettleUtil extends BaseStep implements StepInterface {
 		}
 
 		return true;
-	}
+    }
 
 	public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
 		meta = (KettleUtilMeta) smi;
@@ -74,23 +98,4 @@ public class KettleUtil extends BaseStep implements StepInterface {
 
 		super.dispose(smi, sdi);
 	}
-
-	//
-	// Run is were the action happens!
-	public void run() {
-		logBasic("Starting to run...");
-		try {
-			while (processRow(meta, data) && !isStopped());
-		} catch (Exception e) {
-			logError("Unexpected error : " + e.toString());
-			logError(Const.getStackTracker(e));
-			setErrors(1);
-			stopAll();
-		} finally {
-			dispose(meta, data);
-			logBasic("Finished, processing " + getLinesRead() + " rows");
-			markStop();
-		}
-	}
-
 }
