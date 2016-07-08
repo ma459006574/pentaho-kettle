@@ -29,7 +29,12 @@ public class CommonUtil {
     * @return 值
     */
     public static String getProp(JobEntryEval jee, String key){
-        return jee.environmentSubstitute("${"+key+"}");
+        String value = jee.environmentSubstitute("${"+key+"}");
+        if(value.startsWith("${")){
+            return "";
+        }else{
+            return value;
+        }
     }
     /**
     * 获取参数 <br/>
@@ -39,7 +44,12 @@ public class CommonUtil {
     * @return 值
     */
     public static String getProp(BaseStep jee, String key){
-        return jee.environmentSubstitute("${"+key+"}");
+        String value = jee.environmentSubstitute("${"+key+"}");
+        if(value.startsWith("${")){
+            return "";
+        }else{
+            return value;
+        }
     }
     /**
     * 获取参数并解析为JSON对象 <br/>

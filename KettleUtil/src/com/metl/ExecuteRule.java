@@ -21,6 +21,13 @@ import com.metl.util.Db;
 
 /**
  * 执行数据对象定义的验证转换默认值等规则 <br/>
+ * 运用<pre>
+import com.metl.ExecuteRule;
+public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException
+{
+    ExecuteRule er = new ExecuteRule(this,parent,smi,sdi);
+    return er.run();
+}</pre>
  * date: 2016年6月29日 下午4:58:19 <br/>
  * @author jingma@iflytek.com
  * @version 

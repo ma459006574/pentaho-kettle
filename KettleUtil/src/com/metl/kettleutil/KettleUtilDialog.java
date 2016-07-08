@@ -130,6 +130,10 @@ public class KettleUtilDialog extends BaseStepDialog implements StepDialogInterf
 	    fdlConfigInfo.right = new FormAttachment( middle, -margin );
 	    wlConfigInfo.setLayoutData( fdlConfigInfo );
 
+        // OK and cancel buttons
+        wOK = new Button(shell, SWT.PUSH);
+        wOK.setText(BaseMessages.getString(PKG, "System.Button.OK")); 
+        
 	    wConfigInfo =
 	      new StyledTextComp( transMeta, shell, SWT.MULTI | SWT.LEFT | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, "" );
 	    props.setLook( wConfigInfo, Props.WIDGET_STYLE_FIXED );
@@ -138,16 +142,14 @@ public class KettleUtilDialog extends BaseStepDialog implements StepDialogInterf
 	    fdConfigInfo.left = new FormAttachment( middle, 0 );
 	    fdConfigInfo.top = new FormAttachment( wClassName, margin );
 	    fdConfigInfo.right = new FormAttachment( 100, -2 * margin );
+	    fdConfigInfo.bottom = new FormAttachment( wOK, -2 * margin );
 	    fdConfigInfo.height = 125;
 	    wConfigInfo.setLayoutData( fdConfigInfo );
 		      
-		// OK and cancel buttons
-		wOK = new Button(shell, SWT.PUSH);
-		wOK.setText(BaseMessages.getString(PKG, "System.Button.OK")); 
 		wCancel = new Button(shell, SWT.PUSH);
 		wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel")); 
 
-		BaseStepDialog.positionBottomButtons(shell, new Button[] { wOK, wCancel }, margin, wConfigInfo);
+		BaseStepDialog.positionBottomButtons(shell, new Button[] { wOK, wCancel }, margin, null);
 
 		
 		// Add listeners

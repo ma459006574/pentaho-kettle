@@ -10,7 +10,6 @@ import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.row.RowDataUtil;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMeta;
-import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.trans.step.StepMeta;
 
@@ -23,7 +22,7 @@ import com.metl.util.CommonUtil;
  * @author jingma@iflytek.com
  * @version 
  */
-public class ExecuteRule1 extends KettleUtilRunBase{
+public class ExecuteDataEtlRule extends KettleUtilRunBase{
     /**
     * 开始获取并执行数据账单中的任务 <br/>
     * @author jingma@iflytek.com
@@ -37,28 +36,21 @@ public class ExecuteRule1 extends KettleUtilRunBase{
             ku.setOutputDone();
             return false;
         }
-
         if (ku.first) {
             ku.first = false;
             data.outputRowMeta = (RowMetaInterface) ku.getInputRowMeta().clone();
             getFields(data.outputRowMeta, ku.getStepname(), null, null, ku);
         }
-        
         Object[] outputRow = RowDataUtil.createResizedCopy( r, data.outputRowMeta.size() );
+        
         String batch = CommonUtil.getProp(ku, "BATCH");
-        outputRow[2] = batch;
+        outputRow[getFieldIndex("BATCH")] = batch;
+        
         ku.putRow(data.outputRowMeta, outputRow); // copy row to possible alternate rowset(s)
-
         return true;
     }
     
-    @SuppressWarnings("deprecation")
     public void getFields(RowMetaInterface r, String origin, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) {
-        ValueMetaInterface v = new ValueMeta();
-        v.setName("BATCH");
-        v.setType(ValueMeta.TYPE_STRING);
-        v.setTrimType(ValueMeta.TRIM_TYPE_BOTH);
-        v.setOrigin(origin);
-        r.addValueMeta(v);
+        addField(r,"BATCH",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin);
     }
 }

@@ -34,7 +34,8 @@ public class KettleUtil extends BaseStep implements StepInterface {
 		if(StringUtils.isNotBlank(meta.getClassName())){
             try {
                 //实例化配置的类
-                KettleUtilRunBase kui = (KettleUtilRunBase) Class.forName(environmentSubstitute(meta.getClassName())).newInstance();
+                KettleUtilRunBase kui = (KettleUtilRunBase) Class.forName(
+                        environmentSubstitute(meta.getClassName())).newInstance();
                 kui.setKu(this);
                 kui.setData(data);
                 kui.setMeta(meta);

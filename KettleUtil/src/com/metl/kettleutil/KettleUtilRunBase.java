@@ -9,6 +9,8 @@ package com.metl.kettleutil;
 import org.apache.commons.lang3.StringUtils;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.row.RowMetaInterface;
+import org.pentaho.di.core.row.ValueMeta;
+import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.trans.step.StepMeta;
 
@@ -51,12 +53,41 @@ public abstract class KettleUtilRunBase {
     public abstract void getFields(RowMetaInterface r, String origin, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space);
 
     /**
-    * 开始获取并执行任务 <br/>
+    * 开始处理每一行数据 <br/>
     * @author jingma@iflytek.com
     * @return 
     * @throws KettleException 
     */
     public abstract boolean run() throws KettleException;
+
+    /**
+    *  <br/>
+    * @author jingma@iflytek.com
+    * @param r
+    * @param string
+    * @param typeInteger
+    * @param trimTypeNone
+    * @param origin
+    */
+    @SuppressWarnings("deprecation")
+    protected void addField(RowMetaInterface r, String name, int type,
+            int trimType, String origin) {
+        ValueMetaInterface v = new ValueMeta();
+        v.setName(name);
+        v.setType(type);
+        v.setTrimType(trimType);
+        v.setOrigin(origin);
+        r.addValueMeta(v);
+    }
+    /**
+    * 获取输出字段在数组中的下标 <br/>
+    * @author jingma@iflytek.com
+    * @param field 字段名称
+    * @return 下标
+    */
+    public int getFieldIndex(String field){
+        return data.outputRowMeta.indexOfValue(field);
+    }
     /**
      * @return ku 
      */
