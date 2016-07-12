@@ -4,7 +4,7 @@
 * Copyright (c) 2016, jingma@iflytek.com All Rights Reserved.
 */
 
-package com.metl;
+package com.metl.jobrun;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -16,10 +16,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.pentaho.di.job.entries.eval.JobEntryEval;
 
 import com.alibaba.fastjson.JSONObject;
+import com.metl.constants.Constants;
+import com.metl.db.Db;
 import com.metl.util.CommonUtil;
-import com.metl.util.Constants;
 import com.metl.util.DateUtil;
-import com.metl.util.Db;
 
 /**
  * 生成数据账单 <br/>

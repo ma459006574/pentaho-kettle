@@ -4,7 +4,7 @@
 * Copyright (c) 2016, jingma@iflytek.com All Rights Reserved.
 */
 
-package com.metl.util;
+package com.metl.constants;
 
 
 /**
@@ -232,4 +232,26 @@ public interface Constants {
     * 成败-失败
     */
     String SUCCESS_FAILED_FAILED = "failed";
+
+    /**
+    * 数据类型-字符串
+    */
+    String DATA_TYPE_STRING = "string";
+    /**
+    * 数据类型-数字
+    */
+    String DATA_TYPE_NUMBER = "number";
+    /**
+    * 数据类型-时间
+    */
+    String DATA_TYPE_DATE = "date";
+    /**
+    * 数据类型-CLOB
+    */
+    String DATA_TYPE_CLOB = "clob";
+    /**
+    * 数据类型-BLOB
+    */
+    String DATA_TYPE_BLOB = "blob";
+    
 }

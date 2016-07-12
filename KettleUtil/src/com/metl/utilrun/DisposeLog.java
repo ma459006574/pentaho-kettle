@@ -4,7 +4,7 @@
 * Copyright (c) 2016, jingma@iflytek.com All Rights Reserved.
 */
 
-package com.metl;
+package com.metl.utilrun;
 
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.row.RowDataUtil;
@@ -13,9 +13,9 @@ import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.trans.step.StepMeta;
 
+import com.metl.constants.Constants;
 import com.metl.kettleutil.KettleUtilRunBase;
 import com.metl.util.CommonUtil;
-import com.metl.util.Constants;
 import com.metl.util.DateUtil;
 import com.metl.util.StringUtil;
 

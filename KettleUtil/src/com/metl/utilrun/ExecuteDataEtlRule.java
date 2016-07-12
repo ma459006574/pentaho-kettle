@@ -4,7 +4,10 @@
 * Copyright (c) 2016, jingma@iflytek.com All Rights Reserved.
 */
 
-package com.metl;
+package com.metl.utilrun;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.row.RowDataUtil;
@@ -13,6 +16,7 @@ import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.trans.step.StepMeta;
 
+import com.alibaba.fastjson.JSONObject;
 import com.metl.kettleutil.KettleUtilRunBase;
 import com.metl.util.CommonUtil;
 
@@ -23,6 +27,10 @@ import com.metl.util.CommonUtil;
  * @version 
  */
 public class ExecuteDataEtlRule extends KettleUtilRunBase{
+    /**
+    * 需要设置默认值的字段
+    */
+    private List<JSONObject> defaultValueFields = new ArrayList<JSONObject>();
     /**
     * 开始获取并执行数据账单中的任务 <br/>
     * @author jingma@iflytek.com
@@ -43,14 +51,36 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
         }
         Object[] outputRow = RowDataUtil.createResizedCopy( r, data.outputRowMeta.size() );
         
-        String batch = CommonUtil.getProp(ku, "BATCH");
-        outputRow[getFieldIndex("BATCH")] = batch;
+        setDefaultValue(outputRow);
         
         ku.putRow(data.outputRowMeta, outputRow); // copy row to possible alternate rowset(s)
         return true;
     }
+
+    /**
+    * 设置默认值 <br/>
+    * @author jingma@iflytek.com
+    * @param outputRow
+    */
+    public void setDefaultValue(Object[] outputRow) {
+        for(JSONObject dvf:defaultValueFields){
+            
+        }
+        String batch = CommonUtil.getProp(ku, "BATCH");
+        outputRow[getFieldIndex("BATCH")] = batch;
+    }
     
     public void getFields(RowMetaInterface r, String origin, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) {
-        addField(r,"BATCH",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin);
+        //查询有默认值的字段
+        List<JSONObject> defFields = metldb.findList("select * from metl_data_field df where df.data_object=? and df.default_value is not null", configInfo.getString("targetObj"));
+        defaultValueFields.clear();
+        for(JSONObject def:defFields){
+            //没有直接映射关系
+            if(r.searchValueMeta(def.getString("ocode").toUpperCase())==null){
+                defaultValueFields.add(def);
+                addField(r,def.getString("ocode").toUpperCase(),
+                        dataTypeToKettleType(def.getString("data_type")),ValueMeta.TRIM_TYPE_NONE,origin);
+            }
+        }
     }
 }

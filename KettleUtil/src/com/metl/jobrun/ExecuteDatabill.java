@@ -4,7 +4,7 @@
 * Copyright (c) 2016, jingma@iflytek.com All Rights Reserved.
 */
 
-package com.metl;
+package com.metl.jobrun;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -12,8 +12,8 @@ import java.util.List;
 import org.pentaho.di.job.entries.eval.JobEntryEval;
 
 import com.alibaba.fastjson.JSONObject;
-import com.metl.util.Constants;
-import com.metl.util.Db;
+import com.metl.constants.Constants;
+import com.metl.db.Db;
 
 /**
  * 执行数据账单中的任务 <br/>

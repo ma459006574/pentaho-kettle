@@ -4,7 +4,7 @@
 * Copyright (c) 2016, jingma@iflytek.com All Rights Reserved.
 */
 
-package com.metl.util;
+package com.metl.db;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

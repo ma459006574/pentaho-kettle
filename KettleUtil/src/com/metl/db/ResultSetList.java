@@ -4,7 +4,7 @@
 * Copyright (c) 2016, jingma@iflytek.com All Rights Reserved.
 */
 
-package com.metl.util;
+package com.metl.db;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -35,7 +35,7 @@ public class ResultSetList implements ResultSetExtractor {
         List<JSONObject> list = new ArrayList<JSONObject>();
         JSONObject json = null;
         ResultSetMetaData metadata = rs.getMetaData();
-        if(rs.next()){
+        while(rs.next()){
             json = new JSONObject();
             for(int i=1;i<=metadata.getColumnCount();i++){
                 String colName = metadata.getColumnName(i).toLowerCase();

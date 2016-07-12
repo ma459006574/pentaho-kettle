@@ -16,8 +16,8 @@ import org.pentaho.di.trans.step.StepMeta;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.metl.util.Constants;
-import com.metl.util.Db;
+import com.metl.constants.Constants;
+import com.metl.db.Db;
 
 /**
  *  <br/>
@@ -79,6 +79,27 @@ public abstract class KettleUtilRunBase {
         v.setOrigin(origin);
         r.addValueMeta(v);
     }
+
+    /**
+    * metl数据类型转换为kettle的数据类型 <br/>
+    * @author jingma@iflytek.com
+    * @param dataType
+    * @return
+    */
+    protected int dataTypeToKettleType(String dataType) {
+        if(Constants.DATA_TYPE_STRING.equals(dataType)){
+            return ValueMeta.TYPE_STRING;
+        }else if(Constants.DATA_TYPE_NUMBER.equals(dataType)){
+            return ValueMeta.TYPE_INTEGER;
+        }else if(Constants.DATA_TYPE_DATE.equals(dataType)){
+            return ValueMeta.TYPE_DATE;
+        }else if(Constants.DATA_TYPE_BLOB.equals(dataType)){
+            return ValueMeta.TYPE_BINARY;
+        }else if(Constants.DATA_TYPE_CLOB.equals(dataType)){
+            return ValueMeta.TYPE_STRING;
+        }
+        return 0;
+    }
     /**
     * 获取输出字段在数组中的下标 <br/>
     * @author jingma@iflytek.com
@@ -112,12 +133,13 @@ public abstract class KettleUtilRunBase {
 
     /**
      * @param meta the meta to set
+     * @param space 
      */
-    public void setMeta(KettleUtilMeta meta) {
+    public void setMeta(KettleUtilMeta meta, VariableSpace space) {
         this.meta = meta;
         //将配置信息解析成josn对象,支持变量
         if(StringUtils.isNotBlank(meta.getConfigInfo())){
-            setConfigInfo(JSON.parseObject(ku.environmentSubstitute(meta.getConfigInfo())));
+            setConfigInfo(JSON.parseObject(space.environmentSubstitute(meta.getConfigInfo())));
         }
     }
 

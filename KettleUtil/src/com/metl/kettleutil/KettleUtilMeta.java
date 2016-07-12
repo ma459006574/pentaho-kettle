@@ -91,6 +91,8 @@ public class KettleUtilMeta extends BaseStepMeta implements StepMetaInterface {
 		    try {
 		        //实例化配置的类，获取输出字段
 		        KettleUtilRunBase kui = (KettleUtilRunBase) Class.forName(space.environmentSubstitute(className)).newInstance();
+		        kui.setKu(null);
+		        kui.setMeta(this,space);
 		        kui.getFields(r, origin, info, nextStep, space);
             } catch (Exception e) {
                 logError("获取输出字段失败", e);

@@ -4,7 +4,7 @@
 * Copyright (c) 2016, jingma@iflytek.com All Rights Reserved.
 */
 
-package com.metl.util;
+package com.metl.db;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,6 +13,8 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.pentaho.di.core.database.util.DatabaseUtil;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.job.entries.eval.JobEntryEval;
@@ -30,6 +32,10 @@ import com.alibaba.fastjson.JSONObject;
  */
 public class Db {
     /**
+    * 日志
+    */
+    private static Log log = LogFactory.getLog(Db.class);
+    /**
     * spring数据库操作工具
     */
     private JdbcTemplate jdbcTemplate;
@@ -46,7 +52,11 @@ public class Db {
             JdbcTemplate jt = new JdbcTemplate(dataSource);
             return new Db(jt);
         } catch (KettleException e) {
-            ku.logError("获取数据库失败", e);
+            if(ku!=null){
+                ku.logError("获取数据库失败", e);
+            }else{
+                log.error("获取数据库失败", e);
+            }
         }
         return null;
     }
@@ -63,7 +73,11 @@ public class Db {
             JdbcTemplate jt = new JdbcTemplate(dataSource);
             return new Db(jt);
         } catch (KettleException e) {
-            jee.logError("获取数据库失败", e);
+            if(jee!=null){
+                jee.logError("获取数据库失败", e);
+            }else{
+                log.error("获取数据库失败", e);
+            }
         }
         return null;
     }
@@ -88,7 +102,11 @@ public class Db {
             try {
                 conn.close();
             } catch (SQLException e) {
-                jee.logError("关闭数据库连接失败", e);
+                if(jee!=null){
+                    jee.logError("关闭数据库连接失败", e);
+                }else{
+                    log.error("关闭数据库连接失败", e);
+                }
             }
         }
     }

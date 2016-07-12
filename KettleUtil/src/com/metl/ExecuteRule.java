@@ -15,9 +15,9 @@ import org.pentaho.di.trans.steps.userdefinedjavaclass.UserDefinedJavaClass;
 import org.pentaho.di.trans.steps.userdefinedjavaclass.UserDefinedJavaClassData;
 import org.pentaho.di.trans.steps.userdefinedjavaclass.UserDefinedJavaClassMeta;
 
+import com.metl.constants.Constants;
+import com.metl.db.Db;
 import com.metl.util.CommonUtil;
-import com.metl.util.Constants;
-import com.metl.util.Db;
 
 /**
  * 执行数据对象定义的验证转换默认值等规则 <br/>
