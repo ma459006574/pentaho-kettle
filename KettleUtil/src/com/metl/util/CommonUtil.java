@@ -6,10 +6,10 @@
 
 package com.metl.util;
 
+import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.job.Job;
 import org.pentaho.di.job.entries.eval.JobEntryEval;
-import org.pentaho.di.trans.step.BaseStep;
-import org.pentaho.di.trans.steps.scriptvalues_mod.ScriptValuesMod;
+import org.pentaho.di.trans.step.StepInterface;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -24,27 +24,12 @@ public class CommonUtil {
     /**
     * 获取参数 <br/>
     * @author jingma@iflytek.com
-    * @param jee 
+    * @param vs 
     * @param key 参数名称
     * @return 值
     */
-    public static String getProp(JobEntryEval jee, String key){
-        String value = jee.environmentSubstitute("${"+key+"}");
-        if(value.startsWith("${")){
-            return "";
-        }else{
-            return value;
-        }
-    }
-    /**
-    * 获取参数 <br/>
-    * @author jingma@iflytek.com
-    * @param jee 
-    * @param key 参数名称
-    * @return 值
-    */
-    public static String getProp(BaseStep jee, String key){
-        String value = jee.environmentSubstitute("${"+key+"}");
+    public static String getProp(VariableSpace vs, String key){
+        String value = vs.environmentSubstitute("${"+key+"}");
         if(value.startsWith("${")){
             return "";
         }else{
@@ -54,12 +39,24 @@ public class CommonUtil {
     /**
     * 获取参数并解析为JSON对象 <br/>
     * @author jingma@iflytek.com
-    * @param jee 
+    * @param vs 
     * @param key 参数名称
     * @return 值
     */
-    public static JSONObject getPropJSONObject(JobEntryEval jee, String key){
-        return JSON.parseObject(getProp(jee, key));
+    public static JSONObject getPropJSONObject(VariableSpace vs, String key){
+        return JSON.parseObject(getProp(vs, key));
+    }
+    /**
+    * 获取根job <br/>
+    * @author jingma@iflytek.com
+    * @param rootjob 
+    * @return
+    */
+    public static Job getRootJob(Job rootjob) {
+        while(rootjob!=null&&rootjob.getParentJob()!=null){
+            rootjob = rootjob.getParentJob();
+        }
+        return rootjob;
     }
     /**
     * 获取根job <br/>
@@ -69,10 +66,17 @@ public class CommonUtil {
     */
     public static Job getRootJob(JobEntryEval jee) {
         Job rootjob = jee.getParentJob();
-        while(rootjob.getParentJob()!=null){
-            rootjob = rootjob.getParentJob();
-        }
-        return rootjob;
+        return getRootJob(rootjob);
+    }
+    /**
+    * 获取根job <br/>
+    * @author jingma@iflytek.com
+    * @param si 
+    * @return
+    */
+    public static Job getRootJob(StepInterface si) {
+        Job rootjob = si.getTrans().getParentJob();
+        return getRootJob(rootjob);
     }
     /**
     * 获取根job的id <br/>
@@ -84,26 +88,13 @@ public class CommonUtil {
         return getRootJob(jee).getObjectId().getId();
     }
     /**
-    * 获取根job <br/>
-    * @author jingma@iflytek.com
-    * @param jee 
-    * @return
-    */
-    public static Job getRootJob(ScriptValuesMod jee) {
-        Job rootjob = jee.getTrans().getParentJob();
-        while(rootjob!=null&&rootjob.getParentJob()!=null){
-            rootjob = rootjob.getParentJob();
-        }
-        return rootjob;
-    }
-    /**
     * 获取根job的id <br/>
     * @author jingma@iflytek.com
-    * @param jee 
+    * @param si 
     * @return
     */
-    public static String getRootJobId(ScriptValuesMod jee) {
-        Job rootjob = getRootJob(jee);
+    public static String getRootJobId(StepInterface si) {
+        Job rootjob = getRootJob(si);
         if(rootjob!=null){
             return rootjob.getObjectId().getId();
         }else{
@@ -113,11 +104,11 @@ public class CommonUtil {
     /**
     * 获取根job的名称 <br/>
     * @author jingma@iflytek.com
-    * @param jee 
+    * @param si 
     * @return
     */
-    public static String getRootJobName(ScriptValuesMod jee) {
-        Job rootjob = getRootJob(jee);
+    public static String getRootJobName(StepInterface si) {
+        Job rootjob = getRootJob(si);
         if(rootjob!=null){
             return rootjob.getObjectName();
         }else{

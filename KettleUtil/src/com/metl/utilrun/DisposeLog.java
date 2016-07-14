@@ -41,10 +41,10 @@ public class DisposeLog extends KettleUtilRunBase{
         }
         Object[] outputRow = RowDataUtil.createResizedCopy( r, data.outputRowMeta.size());
         
-        outputRow[getFieldIndex("INSERT_NUM")] = StringUtil.parseLong(CommonUtil.getProp(ku, "INSERT_NUM"));
-        outputRow[getFieldIndex("UPDATE_NUM")] = StringUtil.parseLong(CommonUtil.getProp(ku, "UPDATE_NUM"));
-        outputRow[getFieldIndex("INPUT_NUM")] = StringUtil.parseLong(CommonUtil.getProp(ku, "INPUT_NUM"));
-        outputRow[getFieldIndex("DELETE_NUM")] = StringUtil.parseLong(CommonUtil.getProp(ku, "DELETE_NUM"));
+        outputRow[getFieldIndex("INPUT_COUNT")] = StringUtil.parseLong(CommonUtil.getProp(ku, "INPUT_COUNT"));
+        outputRow[getFieldIndex("REPEAT_COUNT")] = StringUtil.parseLong(CommonUtil.getProp(ku, "REPEAT_COUNT"));
+        outputRow[getFieldIndex("ADD_COUNT")] = StringUtil.parseLong(CommonUtil.getProp(ku, "ADD_COUNT"));
+        outputRow[getFieldIndex("INVALID_COUNT")] = StringUtil.parseLong(CommonUtil.getProp(ku, "INVALID_COUNT"));
         outputRow[getFieldIndex("END_TIME")] = DateUtil.getGabDate();
         String state = Constants.DATA_BILL_STATUS_INPUT_SUCCESS;
         if(!Constants.SUCCESS_FAILED_SUCCESS.equals(outputRow[getFieldIndex("RESULT")])){
@@ -57,10 +57,10 @@ public class DisposeLog extends KettleUtilRunBase{
     }
     
     public void getFields(RowMetaInterface r, String origin, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) {
-        addField(r,"INSERT_NUM",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin);
-        addField(r,"UPDATE_NUM",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin);
-        addField(r,"INPUT_NUM",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin);
-        addField(r,"DELETE_NUM",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin);
+        addField(r,"INPUT_COUNT",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin);
+        addField(r,"REPEAT_COUNT",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin);
+        addField(r,"ADD_COUNT",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin);
+        addField(r,"INVALID_COUNT",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin);
         addField(r,"END_TIME",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin);
         addField(r,"STATE",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin);
     }

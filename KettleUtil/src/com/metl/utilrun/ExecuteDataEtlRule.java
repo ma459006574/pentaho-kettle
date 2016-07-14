@@ -6,8 +6,11 @@
 
 package com.metl.utilrun;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.row.RowDataUtil;
@@ -18,7 +21,8 @@ import org.pentaho.di.trans.step.StepMeta;
 
 import com.alibaba.fastjson.JSONObject;
 import com.metl.kettleutil.KettleUtilRunBase;
-import com.metl.util.CommonUtil;
+import com.metl.rule.FieldDefaultValue;
+import com.metl.util.StringUtil;
 
 /**
  * 执行数据对象定义的验证转换默认值等规则 <br/>
@@ -31,6 +35,14 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
     * 需要设置默认值的字段
     */
     private List<JSONObject> defaultValueFields = new ArrayList<JSONObject>();
+    /**
+    * 规则与方法的映射
+    */
+    private Map<String,Method> ruleMap = new HashMap<String, Method>();
+    /**
+    * 字段默认值规则
+    */
+    private FieldDefaultValue fdv = new FieldDefaultValue();
     /**
     * 开始获取并执行数据账单中的任务 <br/>
     * @author jingma@iflytek.com
@@ -63,21 +75,36 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
     * @param outputRow
     */
     public void setDefaultValue(Object[] outputRow) {
+        fdv.setEder(this);
         for(JSONObject dvf:defaultValueFields){
-            
+            try {
+                //执行默认值方法并将结果赋值到记录中
+                outputRow[getFieldIndex(dvf.getString("ocode"))] = 
+                        ruleMap.get(dvf.getString("default_value")).invoke(fdv, dvf);
+            } catch (Exception e) {
+                ku.logError(dvf+"执行默认值规则失败", e);
+            }
         }
-        String batch = CommonUtil.getProp(ku, "BATCH");
-        outputRow[getFieldIndex("BATCH")] = batch;
     }
     
     public void getFields(RowMetaInterface r, String origin, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) {
         //查询有默认值的字段
-        List<JSONObject> defFields = metldb.findList("select * from metl_data_field df where df.data_object=? and df.default_value is not null", configInfo.getString("targetObj"));
+        List<JSONObject> defFields = metldb.findList(
+                "select * from metl_data_field df where df.data_object=? and df.default_value is not null", 
+                configInfo.getString("targetObj"));
         defaultValueFields.clear();
         for(JSONObject def:defFields){
             //没有直接映射关系
             if(r.searchValueMeta(def.getString("ocode").toUpperCase())==null){
                 defaultValueFields.add(def);
+                try {
+                    String defRule = StringUtil.underlineTohump(def.getString("default_value"));
+                    Method method = FieldDefaultValue.class.
+                            getMethod(defRule,JSONObject.class);
+                    ruleMap.put(def.getString("default_value"), method);
+                } catch (Exception e) {
+                    ku.logError(def+"获取默认值规则的方法失败", e);
+                }
                 addField(r,def.getString("ocode").toUpperCase(),
                         dataTypeToKettleType(def.getString("data_type")),ValueMeta.TRIM_TYPE_NONE,origin);
             }

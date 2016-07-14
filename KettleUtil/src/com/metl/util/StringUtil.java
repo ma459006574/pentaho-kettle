@@ -16,6 +16,7 @@ package com.metl.util;
 
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +31,14 @@ import org.apache.commons.lang.StringUtils;
  */
 
 public class StringUtil extends StringUtils{
+    /**
+    * 获取随机32位大写UUID <br/>
+    * @author jingma@iflytek.com
+    * @return
+    */
+    public static String getUUIDUpperStr(){
+        return UUID.randomUUID().toString().replace("-", "").toUpperCase();
+    }
 
     /**
      * 
@@ -280,5 +289,34 @@ public class StringUtil extends StringUtils{
     */
     public static long parseLong(Object obj){
         return parseInt(obj).longValue();
+    }
+
+    /**
+    * 下划线规则的命名转换为驼峰式命名 <br/>
+    * @author jingma@iflytek.com
+    * @param name 元名称
+    * @return 转换后名称
+    */
+    public static String underlineTohump(String name) {
+        if(isBlank(name)){
+            return null;
+        }
+        StringBuffer sb = new StringBuffer();
+        String[] ns = name.toLowerCase().split("_");
+        boolean isFirst = true;
+        for(String n:ns){
+            if(isFirst){
+                isFirst = false;
+                sb.append(n);
+                continue;
+            }
+            if(n.length()<2){
+                sb.append(n.toUpperCase());
+            }else{
+                sb.append(n.substring(0, 1).toUpperCase());
+                sb.append(n.substring(1));
+            }
+        }
+        return sb.toString();
     }
 }

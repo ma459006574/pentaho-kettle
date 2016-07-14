@@ -23,6 +23,7 @@ public class KettleUtil extends BaseStep implements StepInterface {
 
 	private KettleUtilData data;
 	private KettleUtilMeta meta;
+	private KettleUtilRunBase kui;
 	
 	public KettleUtil(StepMeta s, StepDataInterface stepDataInterface, int c, TransMeta t, Trans dis) {
 		super(s, stepDataInterface, c, t, dis);
@@ -34,11 +35,13 @@ public class KettleUtil extends BaseStep implements StepInterface {
 		if(StringUtils.isNotBlank(meta.getClassName())){
             try {
                 //实例化配置的类
-                KettleUtilRunBase kui = (KettleUtilRunBase) Class.forName(
-                        environmentSubstitute(meta.getClassName())).newInstance();
-                kui.setKu(this);
+                if(first){
+                    kui = (KettleUtilRunBase) Class.forName(
+                            environmentSubstitute(meta.getClassName())).newInstance();
+                    kui.setKu(this);
+                    kui.setMeta(meta,this);
+                }
                 kui.setData(data);
-                kui.setMeta(meta,this);
                 return kui.run();
             } catch (Exception e) {
                 logError("运行失败", e);
