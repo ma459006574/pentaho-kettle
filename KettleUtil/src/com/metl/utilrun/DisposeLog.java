@@ -57,11 +57,11 @@ public class DisposeLog extends KettleUtilRunBase{
     }
     
     public void getFields(RowMetaInterface r, String origin, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) {
-        addField(r,"INPUT_COUNT",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin);
-        addField(r,"REPEAT_COUNT",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin);
-        addField(r,"ADD_COUNT",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin);
-        addField(r,"INVALID_COUNT",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin);
-        addField(r,"END_TIME",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin);
-        addField(r,"STATE",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin);
+        addField(r,"INPUT_COUNT",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin,"读取量");
+        addField(r,"REPEAT_COUNT",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin,"重复量");
+        addField(r,"ADD_COUNT",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin,"新增量");
+        addField(r,"INVALID_COUNT",ValueMeta.TYPE_INTEGER,ValueMeta.TRIM_TYPE_NONE,origin,"无效量");
+        addField(r,"END_TIME",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"结束时间");
+        addField(r,"STATE",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"数据账单运行状态");
     }
 }

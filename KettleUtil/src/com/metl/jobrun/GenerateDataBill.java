@@ -58,9 +58,12 @@ public class GenerateDataBill {
     public GenerateDataBill(JobEntryEval jobEntryEval) {
         super();
         this.jee = jobEntryEval;
-        this.dataTask = CommonUtil.getPropJSONObject(jee,"dataTask");
-        this.sourceObj = CommonUtil.getPropJSONObject(jee,"sourceObj");
         metldb = Db.getDb(jee, Constants.DATASOURCE_METL);
+        String dataTaskOcode = CommonUtil.getProp(jee,"DATA_TASK_OCODE");
+        this.dataTask = metldb.findOne("select * from metl_data_task dt where dt.ocode=?", 
+                dataTaskOcode);
+        this.sourceObj = metldb.findOne("select * from metl_data_object o where o.ocode=?", 
+                dataTask.getString("source_obj"));
     }
 
     /**

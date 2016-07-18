@@ -54,6 +54,16 @@ public class FieldDefaultValue {
         //暂时还没验证
         return null;
     }
+    /**
+    * 通过去重字段生成的md5 <br/>
+    * @author jingma@iflytek.com
+    * @param field
+    * @return
+    */
+    public Object md5Rr(JSONObject field){
+        //不在这里赋值
+        return null;
+    }
 
     /**
      * @return eder 

@@ -61,30 +61,50 @@ public abstract class KettleUtilRunBase {
     public abstract boolean run() throws KettleException;
 
     /**
-    *  <br/>
+    * 添加字段 <br/>
     * @author jingma@iflytek.com
-    * @param r
-    * @param string
-    * @param typeInteger
-    * @param trimTypeNone
-    * @param origin
+    * @param r 行
+    * @param name 字段名称
+    * @param type 类型
+    * @param trimType 去除空白规则
+    * @param origin 宿主
+    * @param comments 描述
+    */
+    protected void addField(RowMetaInterface r, String name, int type,
+            int trimType, String origin, String comments) {
+        addField(r, name, type, trimType, origin,comments, 0);
+    }
+    /**
+    * 添加字段 <br/>
+    * @author jingma@iflytek.com
+    * @param r 行
+    * @param name 字段名称
+    * @param type 类型
+    * @param trimType 去除空白规则
+    * @param origin 宿主
+    * @param comments 描述
+    * @param length 长度
     */
     @SuppressWarnings("deprecation")
     protected void addField(RowMetaInterface r, String name, int type,
-            int trimType, String origin) {
+            int trimType, String origin, String comments, int length) {
         ValueMetaInterface v = new ValueMeta();
         v.setName(name);
         v.setType(type);
         v.setTrimType(trimType);
         v.setOrigin(origin);
+        v.setComments(comments);
+        if(length>0){
+            v.setLength(length);
+        }
         r.addValueMeta(v);
     }
 
     /**
     * metl数据类型转换为kettle的数据类型 <br/>
     * @author jingma@iflytek.com
-    * @param dataType
-    * @return
+    * @param dataType metl数据类型
+    * @return kettle的数据类型
     */
     protected int dataTypeToKettleType(String dataType) {
         if(Constants.DATA_TYPE_STRING.equals(dataType)){

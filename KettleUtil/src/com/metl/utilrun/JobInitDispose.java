@@ -13,6 +13,7 @@ import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.trans.step.StepMeta;
 
+import com.alibaba.fastjson.JSONObject;
 import com.metl.kettleutil.KettleUtilRunBase;
 import com.metl.util.CommonUtil;
 import com.metl.util.DateUtil;
@@ -39,13 +40,19 @@ public class JobInitDispose extends KettleUtilRunBase{
         Object[] outputRow = new Object[data.outputRowMeta.size()];
         
         //获取数据账单主键
-        String dataBill = CommonUtil.getProp(ku,"DATA_BILL");
+        String dataBillOid = CommonUtil.getProp(ku,"DATA_BILL_OID");
         //若数据账单为空则生成随机uuid值
-        if(StringUtil.isBlank(dataBill)){
-            dataBill = StringUtil.getUUIDUpperStr();
+        if(StringUtil.isBlank(dataBillOid)){
+            throw new RuntimeException("数据账单主键(DATA_BILL_OID)参数不能为空");
+//            dataBill = StringUtil.getUUIDUpperStr();
         }
+        JSONObject dataBill = metldb.findOne("select * from metl_data_bill db where db.oid=?", dataBillOid);
         //将数据账单主键作为批次标记
-        outputRow[getFieldIndex("BATCH")] = dataBill;
+        outputRow[getFieldIndex("BATCH")] = dataBillOid;
+        outputRow[getFieldIndex("DATA_BILL")] = dataBill.toJSONString();
+        outputRow[getFieldIndex("JOB_XDLJ")] = dataBill.getString("source_task");
+        outputRow[getFieldIndex("SHARD_START")] = dataBill.getString("shard_start");
+        outputRow[getFieldIndex("SHARD_END")] = dataBill.getString("shard_end");
         outputRow[getFieldIndex("JOB_NAME")] = CommonUtil.getRootJobName(ku);
         outputRow[getFieldIndex("ID_JOB")] = CommonUtil.getRootJobId(ku);
         outputRow[getFieldIndex("START_TIME")] = DateUtil.getGabDate();
@@ -53,9 +60,9 @@ public class JobInitDispose extends KettleUtilRunBase{
         String tempTable = CommonUtil.getProp(ku,"TEMP_TABLE");
         //临时表变量为空
         if(StringUtil.isBlank(tempTable)){
-            String targetTable = CommonUtil.getProp(ku,"TARGET_TABLE");
-            if(StringUtil.isNotBlank(targetTable)){
-                tempTable = "TEMP_"+targetTable;
+            String sourceObj = dataBill.getString("source_obj").toUpperCase();
+            if(StringUtil.isNotBlank(sourceObj)){
+                tempTable = "TEMP_"+sourceObj;
             }
         }
         outputRow[getFieldIndex("TEMP_TABLE")] = tempTable;
@@ -67,10 +74,14 @@ public class JobInitDispose extends KettleUtilRunBase{
     }
     
     public void getFields(RowMetaInterface r, String origin, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) {
-        addField(r,"JOB_NAME",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin);
-        addField(r,"START_TIME",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin);
-        addField(r,"ID_JOB",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin);
-        addField(r,"BATCH",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin);
-        addField(r,"TEMP_TABLE",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin);
+        addField(r,"JOB_NAME",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"JOB名称");
+        addField(r,"START_TIME",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"开始时间");
+        addField(r,"ID_JOB",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"JOB主键");
+        addField(r,"BATCH",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"批次标记");
+        addField(r,"TEMP_TABLE",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"临时表");
+        addField(r,"DATA_BILL",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"数据账单对象");
+        addField(r,"JOB_XDLJ",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"JOB相对路径");
+        addField(r,"SHARD_START",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"数据片开始");
+        addField(r,"SHARD_END",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"数据片结束");
     }
 }

@@ -50,7 +50,7 @@ public class DateUtil extends DateUtils{
 	/**
 	* 常见时间格式化器
 	*/
-	public static final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMATTER_L);
+	public static final SimpleDateFormat sdf14 = new SimpleDateFormat(DATE_FORMATTER14);
 
 	/**
 	* 解析大部分常见日期格式 <br/>
@@ -77,7 +77,7 @@ public class DateUtil extends DateUtils{
 			//设置为严格验证时间格式，默认是非严格的，1月32不会报错，会解析为2月1号。
 			format.setLenient(false);
 			Date date = format.parse(dateStr);
-			System.out.println(String.format("原始字符串：%s,判断格式：%s,解析结果：%s", dateStr,parse,sdf.format(date)));
+//			System.out.println(String.format("原始字符串：%s,判断格式：%s,解析结果：%s", dateStr,parse,sdf.format(date)));
 			return date;
 		} catch (Exception e) {
 		    System.err.println(String.format("日期解析出错：%s-->%s",parse,dateStr));
@@ -462,7 +462,7 @@ public class DateUtil extends DateUtils{
      * 产生文件函数名，以当然日期+4位随机码为主
      */
     public static String getDataName() {
-        return DateUtil.doFormatDate(new Date(), "yyyyMMddHHmmss")
+        return DateUtil.doFormatDate(new Date(), DATE_FORMATTER14)
                 + getRandNum(4);
     }
 
@@ -512,31 +512,12 @@ public class DateUtil extends DateUtils{
     }
 
     /**
-     * 格式化日期字符串 yyyymmddhh24miss
-     * 
-     * @param date
-     * @return
-     */
-    public static String formatDS(String date) {
-        if (date == null)
-            return "";
-        return date.replace("-", "").replace(":", "").replace(" ", "");
-    }
-
-    /**
      * 返回指定格式的日期字符串
      * @param format 格式字符串
      * @return
      */
     public static String getDateTimeStr(String format){
     	return doFormatDate(new Date(), format);
-    }
-    /**
-     * 返回yyyy-MM-dd格式的日期字符串
-     * @return
-     */
-    public static String getDateStr(){
-    	return getDateTimeStr(DATE_FORMATTER_S);
     }
     /**
      * 返回yyyy-MM-dd HH:mm:ss格式的日期字符串
@@ -553,111 +534,22 @@ public class DateUtil extends DateUtils{
     public static String getGabDate() {
         return getDateTimeStr(DATE_FORMATTER14);
     }
-    /**
-     * 
-     * 将公安部的14位的时间字符串转换成"YYYY-MM-DD hh:mm:ss"
-     * 
-     * @param 14位的时间字符串 如20130405210204
-     * @return YYYY-MM-DD hh:mm:ss格式的时间字符串
-     * @author Administrator
-     * @created 2013-7-30 下午01:19:00
-     * @lastModified
-     * @history
-     */
-    public static String timeFormate(String time) {
-        if (time == null || time.length() < 14) {
-            return time;
-        } else {
-            StringBuilder str = new StringBuilder();
-            str.append(time.substring(0, 4))
-                    .append("-")
-                    .append(time.substring(4, 6))
-                    .append("-")
-                    .append(time.substring(6, 8)).append(" ")
-                    .append(time.substring(8, 10))
-                    .append(":")
-                    .append(time.substring(10, 12))
-                    .append(":")
-                    .append(time.substring(12, 14));
-            return str.toString();
-        }
-    }
-
-    /**
-     * 
-     * 将14为字符串转换为“yyyy-mm-dd”格式的时间字符
-     * 
-     * @param time
-     * @return
-     * @author Administrator
-     * @created 2013-7-31 下午07:42:15
-     * @lastModified
-     * @history
-     */
-    public static String datetimeFormate(String time) {
-        if (StringUtils.isBlank(time)) {
-            return time;
-        } else if (time.length() == 14
-                || time.length() == 8) {
-            StringBuilder str = new StringBuilder();
-            str.append(time.substring(0, 4))
-                    .append("-")
-                    .append(time.substring(4, 6))
-                    .append("-")
-                    .append(time.substring(6, 8));
-            return str.toString();
-        } else {
-            return time;
-        }
-    }
-
-    /**
-     * 
-     * 将14为字符串转换为“yyyy-mm-dd HH:MM”格式的时间字符
-     * 
-     * @param time
-     * @return
-     * @author Administrator
-     * @created 2013-7-31 下午07:44:55
-     * @lastModified
-     * @history
-     */
-    public static String dayHourtimeFormate(String time) {
-        if (StringUtils.isBlank(time)) {
-            return time;
-        } else if (time.length() == 14
-                || time.length() == 8) {
-            StringBuilder str = new StringBuilder();
-            str.append(time.substring(0, 4))
-                    .append("-")
-                    .append(time.substring(4, 6))
-                    .append("-")
-                    .append(time.substring(6, 8)).append(" ")
-                    .append(time.substring(8, 10))
-                    .append(":")
-                    .append(time.substring(10, 12));
-            return str.toString();
-        } else {
-            return time;
-        }
-    }
     
     /**
      * 处理Date类型返回的Json数值 
      * @param value 需要转换的参数
      * @return 返回转换后的数值
      */
-	public static Object processDate(Object value) { 
+	public static String processDate(Object value) { 
 		if (value == null) { 
-			return ""; 
+			return null; 
 		} else if (value instanceof java.util.Date){ 
-			return doFormatDate((Date) value, DATE_FORMATTER_L);
+			return sdf14.format((Date) value);
 		} else if(value instanceof java.sql.Date){
-			
 			java.sql.Date sqlDate = (java.sql.Date)value;
-			return doFormatDate(new Date(sqlDate.getTime()), DATE_FORMATTER_L);
-		} else { 
-			return value.toString(); 
+			return sdf14.format(new Date(sqlDate.getTime()));
+		} else {
+			return sdf14.format(parseDate(value.toString())); 
 		} 
 	}
 	
