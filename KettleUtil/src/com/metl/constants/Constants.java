@@ -22,6 +22,14 @@ public interface Constants {
     * 空字符串
     */
     String NULL_STR = "";
+    /**
+    * 反斜杠
+    */
+    String FXG = "/";
+    /**
+    * 临时对象前缀
+    */
+    String TEMP_ = "TEMP_";
 
     /**
     * 缓存-字典

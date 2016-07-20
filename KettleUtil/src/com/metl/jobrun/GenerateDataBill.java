@@ -77,10 +77,10 @@ public class GenerateDataBill {
         String result = Constants.SUCCESS_FAILED_NUKNOW;
         try {
             switch (doType) {
-            case "table":
+            case Constants.DO_TYPE_TABLE:
                 gdbTable();
                 break;
-            case "view":
+            case Constants.DO_TYPE_VIEW:
                 gdbTable();
                 break;
             default:
@@ -123,7 +123,8 @@ public class GenerateDataBill {
     */
     private void gdbTable() throws SQLException {
         String isAdd = dataTask.getString("is_add");
-        //增量
+        //增量，需要在前端做好校验，必须配置好增量字段，修改时也要做相关校验，这些就比较复杂了，
+        //这些验证将来需要仔细梳理，系统的做一遍测试
         if(Constants.WHETHER_TRUE.equals(isAdd)){
             String dbCode = sourceObj.getString("database");
             JSONObject addField = metldb.findOne("select * from metl_data_field t where t.oid=?", 
@@ -189,6 +190,10 @@ public class GenerateDataBill {
                     }
                     //增量，以天为单位
                     Integer addInterval = sourceObj.getInteger("add_interval");
+                    //若增量间隔为空，则设置最大值，相当于不分片
+                    if(addInterval==null){
+                        addInterval = Integer.MAX_VALUE;
+                    }
                     while(true){
                         start.add(Calendar.DAY_OF_MONTH, addInterval);
                         tempEtlflag = DateUtil.doFormatDate(start.getTime(),
@@ -230,8 +235,12 @@ public class GenerateDataBill {
                     BigDecimal start = minObj.getBigDecimal("etlflag");
                     //结束
                     BigDecimal end = maxObj.getBigDecimal("etlflag");
-                    //增量，以天为单位
+                    //增量
                     BigDecimal addInterval = sourceObj.getBigDecimal("add_interval");
+                    //若增量间隔为空，则设置为超常规的大间隔，相当于不分片
+                    if(addInterval==null){
+                        addInterval = BigDecimal.valueOf(99999999999999999l);
+                    }
                     while(true){
                         start = start.add(addInterval);
                         tempEtlflag = start.toString();

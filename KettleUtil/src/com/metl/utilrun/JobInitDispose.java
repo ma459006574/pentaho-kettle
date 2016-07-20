@@ -14,6 +14,7 @@ import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.trans.step.StepMeta;
 
 import com.alibaba.fastjson.JSONObject;
+import com.metl.constants.Constants;
 import com.metl.kettleutil.KettleUtilRunBase;
 import com.metl.util.CommonUtil;
 import com.metl.util.DateUtil;
@@ -47,10 +48,17 @@ public class JobInitDispose extends KettleUtilRunBase{
 //            dataBill = StringUtil.getUUIDUpperStr();
         }
         JSONObject dataBill = metldb.findOne("select * from metl_data_bill db where db.oid=?", dataBillOid);
+        JSONObject addField = null;
         //将数据账单主键作为批次标记
         outputRow[getFieldIndex("BATCH")] = dataBillOid;
         outputRow[getFieldIndex("DATA_BILL")] = dataBill.toJSONString();
         outputRow[getFieldIndex("JOB_XDLJ")] = dataBill.getString("source_task");
+        //分片字段
+        if(dataBill.getString("shard_field")!=null){
+            addField = metldb.findOne("select * from metl_data_field df where df.oid=?", 
+                    dataBill.getString("shard_field"));
+            outputRow[getFieldIndex("SHARD_FIELD")] = addField.getString("ocode");
+        }
         outputRow[getFieldIndex("SHARD_START")] = dataBill.getString("shard_start");
         outputRow[getFieldIndex("SHARD_END")] = dataBill.getString("shard_end");
         outputRow[getFieldIndex("JOB_NAME")] = CommonUtil.getRootJobName(ku);
@@ -62,7 +70,8 @@ public class JobInitDispose extends KettleUtilRunBase{
         if(StringUtil.isBlank(tempTable)){
             String sourceObj = dataBill.getString("source_obj").toUpperCase();
             if(StringUtil.isNotBlank(sourceObj)){
-                tempTable = "TEMP_"+sourceObj;
+                //临时表名：TEMP_+来源对象代码
+                tempTable = Constants.TEMP_+sourceObj;
             }
         }
         outputRow[getFieldIndex("TEMP_TABLE")] = tempTable;
@@ -81,7 +90,8 @@ public class JobInitDispose extends KettleUtilRunBase{
         addField(r,"TEMP_TABLE",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"临时表");
         addField(r,"DATA_BILL",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"数据账单对象");
         addField(r,"JOB_XDLJ",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"JOB相对路径");
-        addField(r,"SHARD_START",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"数据片开始");
-        addField(r,"SHARD_END",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"数据片结束");
+        addField(r,"SHARD_FIELD",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"分片字段");
+        addField(r,"SHARD_START",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"分片开始");
+        addField(r,"SHARD_END",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"分片结束");
     }
 }
