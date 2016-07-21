@@ -163,7 +163,12 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
             return;
         }
         //去重字段
-        rrField = toFieldMap.get(targetObj.getString("rr_field"));
+        rrField = metldb.findOne("select * from metl_data_field df where df.data_object=? and df.default_value=?", 
+                dataBill.getString("target_obj"),Constants.DEFAULT_VAL_MD5_RR);
+        //没有配置MD5字段
+        if(rrField==null){
+            return;
+        }
         //去重字段的去重编号大于0则不需要采用生成md5的方式去重，但若要去重必须在数据任务管理处映射该去重字段
         if(rrField.getIntValue("rr_no")>0){
             return;
@@ -285,6 +290,9 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
     * @see com.metl.kettleutil.KettleUtilRunBase#getFields(org.pentaho.di.core.row.RowMetaInterface, java.lang.String, org.pentaho.di.core.row.RowMetaInterface[], org.pentaho.di.trans.step.StepMeta, org.pentaho.di.core.variables.VariableSpace)
     */
     public void getFields(RowMetaInterface r, String origin, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) {
+        if(StringUtil.isBlank(CommonUtil.getProp(space, "DATA_BILL"))){
+            return;
+        }
         //查询有默认值的字段
         List<JSONObject> defFields = metldb.findList(
                 "select * from metl_data_field df where df.data_object=? and df.default_value is not null", 

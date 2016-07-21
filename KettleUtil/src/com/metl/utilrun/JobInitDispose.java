@@ -65,16 +65,16 @@ public class JobInitDispose extends KettleUtilRunBase{
         outputRow[getFieldIndex("ID_JOB")] = CommonUtil.getRootJobId(ku);
         outputRow[getFieldIndex("START_TIME")] = DateUtil.getGabDate();
         //设置临时表变量
-        String tempTable = CommonUtil.getProp(ku,"TEMP_TABLE");
+        String tempTable = CommonUtil.getProp(ku,Constants.TEMP_TABLE);
         //临时表变量为空
         if(StringUtil.isBlank(tempTable)){
-            String sourceObj = dataBill.getString("source_obj").toUpperCase();
-            if(StringUtil.isNotBlank(sourceObj)){
+            String sourceTask = dataBill.getString("source_task").toUpperCase();
+            if(StringUtil.isNotBlank(sourceTask)){
                 //临时表名：TEMP_+来源对象代码
-                tempTable = Constants.TEMP_+sourceObj;
+                tempTable = Constants.TEMP_+sourceTask;
             }
         }
-        outputRow[getFieldIndex("TEMP_TABLE")] = tempTable;
+        outputRow[getFieldIndex(Constants.TEMP_TABLE)] = tempTable;
         
         ku.putRow(data.outputRowMeta, outputRow); // copy row to possible alternate rowset(s)
         //结束输出
@@ -87,7 +87,7 @@ public class JobInitDispose extends KettleUtilRunBase{
         addField(r,"START_TIME",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"开始时间");
         addField(r,"ID_JOB",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"JOB主键");
         addField(r,"BATCH",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"批次标记");
-        addField(r,"TEMP_TABLE",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"临时表");
+        addField(r,Constants.TEMP_TABLE,ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"临时表");
         addField(r,"DATA_BILL",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"数据账单对象");
         addField(r,"JOB_XDLJ",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"JOB相对路径");
         addField(r,"SHARD_FIELD",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"分片字段");

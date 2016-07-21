@@ -19,6 +19,14 @@ public interface Constants {
 	*/
 	String DATASOURCE_METL = "metl";
     /**
+    * metl临时数据源
+    */
+    String DATASOURCE_TEMP = "metl_temp";
+    /**
+    * kettle资源库数据源
+    */
+    String DATASOURCE_KETTLE = "kettle";
+    /**
     * 空字符串
     */
     String NULL_STR = "";
@@ -30,6 +38,10 @@ public interface Constants {
     * 临时对象前缀
     */
     String TEMP_ = "TEMP_";
+    /**
+    * 临时表变量名称
+    */
+    String TEMP_TABLE = "TEMP_TABLE";
 
     /**
     * 缓存-字典
@@ -185,23 +197,23 @@ public interface Constants {
     /**
     * 定时类别-不需要定时
     */
-    String SCHEDULER_TYPE_NOT_TIMING = "not_timing";
+    String SCHEDULER_TYPE_NOT_TIMING = "0";
     /**
     * 定时类别-时间间隔
     */
-    String SCHEDULER_TYPE_TIME_INTERVAL = "time_interval";
+    String SCHEDULER_TYPE_TIME_INTERVAL = "1";
     /**
     * 定时类别-天
     */
-    String SCHEDULER_TYPE_DAY = "day";
+    String SCHEDULER_TYPE_DAY = "2";
     /**
     * 定时类别-周
     */
-    String SCHEDULER_TYPE_WEEK = "week";
+    String SCHEDULER_TYPE_WEEK = "3";
     /**
     * 定时类别-月
     */
-    String SCHEDULER_TYPE_MONTH = "month";
+    String SCHEDULER_TYPE_MONTH = "4";
 
     /**
     * 数据账单状态-待审核
@@ -261,5 +273,84 @@ public interface Constants {
     * 数据类型-BLOB
     */
     String DATA_TYPE_BLOB = "blob";
-    
+
+    /**
+    * 数据库类型-ORACLE
+    */
+    String DS_TYPE_ORACLE = "oracle";
+    /**
+    * 数据库类型-PostgreSQL
+    */
+    String DS_TYPE_POSTGRESQL = "PostgreSQL";
+    /**
+    * 数据库类型-greenplum
+    */
+    String DS_TYPE_GREENPLUM = "greenplum";
+    /**
+    * 数据库类型-mysql
+    */
+    String DS_TYPE_MYSQL = "mysql";
+
+    /**
+    * kettle模板-任务根目录
+    */
+    String KETTLE_TP_ROOT_DIR = "/metl";
+    /**
+    * kettle模板-统一字典任务目录
+    */
+    String KETTLE_TP_UNIFY_DICT = "/metl/unify_dict";
+    /**
+    * kettle模板-生成数据账单的JOB名称
+    */
+    String KETTLE_TP_GDB_NAME = "gdb_unify_dict";
+    /**
+    * kettle模板-执行数据账单的JOB名称
+    */
+    String KETTLE_TP_EDB_NAME = "edb_unify_dict";
+    /**
+    * kettle模板-执行数据账单的JOB-入临时对象的转换名称
+    */
+    String KETTLE_TP_EDB_TEMP_NAME = "入临时对象";
+    /**
+    * kettle模板-执行数据账单的JOB-入临时对象-取来源数据
+    */
+    String KETTLE_TP_EDB_TEMP_IN_NAME = "取来源数据";
+    /**
+    * kettle模板-执行数据账单的JOB-入目标对象的转换名称
+    */
+    String KETTLE_TP_EDB_TARGET_NAME = "入目标对象";
+    /**
+    * kettle模板-执行数据账单的JOB-入目标对象-取临时数据
+    */
+    String KETTLE_TP_EDB_TARGET_IN_NAME = "取临时数据";
+
+    /**
+    * 默认值-MD5去重
+    */
+    String DEFAULT_VAL_MD5_RR = "md5_rr";
+    /**
+    * 默认值-批次标记
+    */
+    String DEFAULT_VAL_BATCH = "batch";
+    /**
+    * 默认值-当前时间
+    */
+    String DEFAULT_VAL_CURRENT_DATE = "current_date";
+    /**
+    * 默认值-验证信息
+    */
+    String DEFAULT_VAL_VALIDATE_INFO = "validate_info";
+
+    /**
+    * JOB生成状态-未生成
+    */
+    String JOB_STATUS_NOT_GENERATE = "not_generate";
+    /**
+    * JOB生成状态-已生成
+    */
+    String JOB_STATUS_GENERATED = "generated";
+    /**
+    * JOB生成状态-待重生
+    */
+    String JOB_STATUS_WAIT_REPEAT_GENERATE = "wait_repeat_generate";
 }
