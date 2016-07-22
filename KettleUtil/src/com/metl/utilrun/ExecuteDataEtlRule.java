@@ -20,7 +20,6 @@ import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.trans.step.StepMeta;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.metl.constants.Constants;
 import com.metl.db.Db;
@@ -43,7 +42,7 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
     */
     private String rrFieldSpellSymbol = "-";
     /**
-    * 需要设置默认值的字段
+    * 需要调用默认值方法设置默认值的字段
     */
     private List<JSONObject> defaultValueFields = new ArrayList<JSONObject>();
     /**
@@ -104,6 +103,7 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
             return false;
         }
         init();
+        //创建输出记录
         Object[] outputRow = RowDataUtil.createResizedCopy( r, data.outputRowMeta.size() );
         //设置默认值
         setDefaultValue(outputRow);
@@ -113,7 +113,7 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
         disposeRepeatRule(outputRow);
         //校验数据
         validateData(outputRow);
-        
+        //将该记录设置到下一步骤的读取序列中
         ku.putRow(data.outputRowMeta, outputRow); // copy row to possible alternate rowset(s)
         return true;
     }
@@ -127,17 +127,16 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
             return;
         }
         ku.first = false;
+        //克隆输入记录的元数据
         data.outputRowMeta = (RowMetaInterface) ku.getInputRowMeta().clone();
         dataBill = CommonUtil.getPropJSONObject(ku, "DATA_BILL");
         dataTask = metldb.findOne("select * from metl_data_task dt where dt.ocode=?", 
                 dataBill.getString("source_task"));
         targetObj = metldb.findOne("select * from metl_data_object do where do.ocode=?", 
                 dataBill.getString("target_obj"));
-        toFieldMap = metldb.findMap("oid","select * from metl_data_field df where df.data_object=?", 
+        toFieldMap = metldb.findMap(Constants.FIELD_OID,"select * from metl_data_field df where df.data_object=?", 
                 dataBill.getString("target_obj"));
-        etlRuleConfig = JSON.parseObject(metldb.findOne("select expand from metl_unify_dict d where d.ocode=? and d.dict_category=?", 
-                "ETL_RULE_CONFIG",Constants.DICT_CATEGORY_GENERAL_CONFIG).
-                getString("expand"));
+        etlRuleConfig = metldb.findGeneralConfig("etl_rule_config");
         //获取默认配置
         if(etlRuleConfig.containsKey("rrFieldSpellSymbol")){
             rrFieldSpellSymbol = etlRuleConfig.getJSONObject("rrFieldSpellSymbol").
@@ -147,10 +146,11 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
         if(configInfo.containsKey("rrFieldSpellSymbol")){
             rrFieldSpellSymbol = configInfo.getString("rrFieldSpellSymbol");
         }
+        //将当前对象注入到默认值器中
+        fdv.setEder(this);
         
         clearTarget();
         rrInit();
-        getFields(data.outputRowMeta, ku.getStepname(), null, null, ku);
     }
 
     /**
@@ -174,9 +174,12 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
             return;
         }
         //已经有映射关系了，则不再生成MD5
-        if(data.outputRowMeta.searchValueMeta(rrField.getString("oname"))!=null){
+        if(data.outputRowMeta.searchValueMeta(rrField.getString("ocode").
+                toUpperCase())!=null){
             return;
         }
+        //添加默认字段元数据
+        getFields(data.outputRowMeta, ku.getStepname(), null, null, ku);
         //采用组合去重字段生成md5的方式去重，必须在目标数据对象的字段配置好去重编号
         Map<Integer,JSONObject> rrMap = new HashMap<Integer, JSONObject>();
         for(JSONObject toField:toFieldMap.values()){
@@ -189,7 +192,7 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
         Collections.sort(rrNoList);
         int index = -10;
         for(Integer rrNo:rrNoList){
-            index = getFieldIndex(rrMap.get(rrNo).getString("ocode").toUpperCase());
+            index = getFieldIndex(rrMap.get(rrNo).getString(Constants.FIELD_OCODE).toUpperCase());
             rrFieldIndexMap.put(index, rrMap.get(rrNo));
             rrFieldIndexList.add(index);
         }
@@ -240,6 +243,7 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
         }
         StringBuffer tempStr = new StringBuffer();
         for(Integer rrFieldIndex:rrFieldIndexList){
+            //若该去重字段不在映射中，则跳过
             if(rrFieldIndex>-1){
                 //数据类型是date
                 if(Constants.DATA_TYPE_DATE.equals(
@@ -251,7 +255,7 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
             }
             tempStr.append(rrFieldSpellSymbol);
         }
-        outputRow[getFieldIndex(rrField.getString("ocode").toUpperCase())]
+        outputRow[getFieldIndex(rrField.getString(Constants.FIELD_OCODE).toUpperCase())]
                 = MD5Util.encode(tempStr.toString());
     }
 
@@ -273,14 +277,14 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
     * @param outputRow
     */
     private void setDefaultValue(Object[] outputRow) {
-        fdv.setEder(this);
-        for(JSONObject dvf:defaultValueFields){
+        fdv.setOutputRow(outputRow);
+        for(JSONObject def:defaultValueFields){
             try {
                 //执行默认值方法并将结果赋值到记录中
-                outputRow[getFieldIndex(dvf.getString("ocode"))] = 
-                        ruleMap.get(dvf.getString("default_value")).invoke(fdv, dvf);
+                outputRow[getFieldIndex(def.getString(Constants.FIELD_OCODE))] = 
+                        ruleMap.get(def.getString(Constants.FIELD_DEFAULT_VALUE)).invoke(fdv, def);
             } catch (Exception e) {
-                ku.logError(dvf+"执行默认值规则失败", e);
+                ku.logError(def+"执行默认值规则失败", e);
             }
         }
     }
@@ -293,26 +297,47 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
         if(StringUtil.isBlank(CommonUtil.getProp(space, "DATA_BILL"))){
             return;
         }
-        //查询有默认值的字段
+        dataBill = CommonUtil.getPropJSONObject(space, "DATA_BILL");
+        //查询目标对象有默认值的字段
         List<JSONObject> defFields = metldb.findList(
                 "select * from metl_data_field df where df.data_object=? and df.default_value is not null", 
-                CommonUtil.getPropJSONObject(space, "DATA_BILL").getString("target_obj"));
+                dataBill.getString("target_obj"));
+        Map<String, JSONObject> tfmMap = metldb.findMap("target_field", 
+                "select * from metl_tf_mapping tfm where tfm.data_task=?", 
+                dataBill.getString("source_task"));
         defaultValueFields.clear();
+        String fieldName = null;
         for(JSONObject def:defFields){
-            //没有直接映射关系
-            if(r.searchValueMeta(def.getString("ocode").toUpperCase())==null){
+            //若配置类映射关系,直接跳过
+            if(tfmMap.containsKey(def.getString(Constants.FIELD_OID))){
+                continue;
+            }
+            fieldName =def.getString(Constants.FIELD_OCODE).toUpperCase();
+            //没有直接映射关系，当采用临时库表达式默认值时，就会出现前端没有配置映射关系，但这里有映射关系
+            if(r.searchValueMeta(fieldName)==null){
+                addField(r,fieldName,
+                        dataTypeToKettleType(def.getString("data_type")),
+                        ValueMeta.TRIM_TYPE_NONE,
+                        origin,def.getString(Constants.FIELD_ONAME),
+                        def.getIntValue("field_length"));
+                if(Constants.DEFAULT_VAL_NOT_METHOD.contains(
+                        def.getString(Constants.FIELD_DEFAULT_VALUE))){
+                    continue;
+                }
                 defaultValueFields.add(def);
                 try {
-                    String defRule = StringUtil.underlineTohump(def.getString("default_value"));
+                    //如果该规则对应的方法已经存在则跳过
+                    if(ruleMap.containsKey(def.getString(Constants.FIELD_DEFAULT_VALUE))){
+                        continue;
+                    }
+                    String defRule = StringUtil.underlineTohump(
+                            def.getString(Constants.FIELD_DEFAULT_VALUE));
                     Method method = FieldDefaultValue.class.
                             getMethod(defRule,JSONObject.class);
-                    ruleMap.put(def.getString("default_value"), method);
+                    ruleMap.put(def.getString(Constants.FIELD_DEFAULT_VALUE), method);
                 } catch (Exception e) {
                     ku.logError(def+"获取默认值规则的方法失败", e);
                 }
-                addField(r,def.getString("ocode").toUpperCase(),
-                        dataTypeToKettleType(def.getString("data_type")),ValueMeta.TRIM_TYPE_NONE,
-                        origin,def.getString("oname"),def.getIntValue("field_length"));
             }
         }
     }

@@ -107,7 +107,7 @@ public class GenerateDataBill {
             ps.setString(5, etlflag);
             ps.setString(6, result);
             ps.setString(7, null);
-            ps.setString(8, dataTask.getString("ocode"));
+            ps.setString(8, dataTask.getString(Constants.FIELD_OCODE));
             ps.execute();
         } catch (SQLException e) {
             jee.logError("插入日志失败", e);
@@ -134,13 +134,13 @@ public class GenerateDataBill {
             String businessType = addField.getString("business_type");
             //实时从数据库查询抽取标记
             etlflag = metldb.findOne("select etlflag from metl_data_task t where t.ocode=?", 
-                    dataTask.getString("ocode")).getString("etlflag");
+                    dataTask.getString(Constants.FIELD_OCODE)).getString("etlflag");
             Db sourcedb = Db.getDb(jee, dbCode);
             //如果抽取标记为空，则从来源对象获取增量字段最小值
             JSONObject minObj = null;
             JSONObject maxObj = null;
             if(StringUtils.isBlank(etlflag)){
-                minObj = sourcedb.findOne("select min("+addField.getString("ocode")
+                minObj = sourcedb.findOne("select min("+addField.getString(Constants.FIELD_OCODE)
                         +") as etlflag from "+sourceObj.getString("real_name"));
                 //数据类型是date
                 if(Constants.FD_TYPE_DATE.equals(dataType)){
@@ -159,14 +159,14 @@ public class GenerateDataBill {
             //数据类型是date
             if(Constants.FD_TYPE_DATE.equals(dataType)){
                 //获取来源对象中增量字段最大值，小于当前时间
-                maxObj = sourcedb.findOne("select max("+addField.getString("ocode")
+                maxObj = sourcedb.findOne("select max("+addField.getString(Constants.FIELD_OCODE)
                         +") as etlflag from "+sourceObj.getString("real_name")+
-                        " t where t."+addField.getString("ocode")+"<sysdate");
+                        " t where t."+addField.getString(Constants.FIELD_OCODE)+"<sysdate");
             }else{
                 //获取来源对象中增量字段最大值，小于当前时间
-                maxObj = sourcedb.findOne("select max("+addField.getString("ocode")
+                maxObj = sourcedb.findOne("select max("+addField.getString(Constants.FIELD_OCODE)
                         +") as etlflag from "+sourceObj.getString("real_name")+
-                        " t where t."+addField.getString("ocode")
+                        " t where t."+addField.getString(Constants.FIELD_OCODE)
                         +"<to_char(sysdate,'yyyymmddhh24miss')");
             }
             String tempEtlflag = null;
@@ -271,7 +271,7 @@ public class GenerateDataBill {
             etlflag = tempEtlflag;
             //更新抽取标记
             String sql = "update METL_DATA_TASK t set t.etlflag='"
-            +etlflag+"' where t.oid='"+dataTask.getString("oid")+"'";
+            +etlflag+"' where t.oid='"+dataTask.getString(Constants.FIELD_OID)+"'";
             metldb.execute(sql);
         }else{
             //否则就不是增量
@@ -297,7 +297,7 @@ public class GenerateDataBill {
             conn = metldb.getConn();
             insert = conn.prepareStatement(sql);
             insert.setString(1, dataTask.getString("create_user"));
-            insert.setString(2, dataTask.getString("ocode"));
+            insert.setString(2, dataTask.getString(Constants.FIELD_OCODE));
             insert.setString(3, dataTask.getString("source_obj"));
             insert.setString(4, dataTask.getString("target_obj"));
             insert.setString(5, CommonUtil.getRootJobId(jee));

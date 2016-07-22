@@ -20,7 +20,8 @@ import com.metl.constants.Constants;
 import com.metl.db.Db;
 
 /**
- *  <br/>
+ * kettleUtil插件扩展基础类 <br/>
+ * 要运用于该插件的类必须继承这个类<br/>
  * date: 2016年7月6日 下午4:25:59 <br/>
  * @author jingma@iflytek.com
  * @version 

@@ -6,6 +6,10 @@
 
 package com.metl.constants;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 
 /**
  * 常量 <br/>
@@ -243,7 +247,7 @@ public interface Constants {
     /**
     * 成败-未知
     */
-    String SUCCESS_FAILED_NUKNOW = "unkown";
+    String SUCCESS_FAILED_NUKNOW = "unknow";
     /**
     * 成败-成功
     */
@@ -298,7 +302,7 @@ public interface Constants {
     /**
     * kettle模板-统一字典任务目录
     */
-    String KETTLE_TP_UNIFY_DICT = "/metl/unify_dict";
+    String KETTLE_TP_UNIFY_DICT = KETTLE_TP_ROOT_DIR+"/unify_dict";
     /**
     * kettle模板-生成数据账单的JOB名称
     */
@@ -323,23 +327,61 @@ public interface Constants {
     * kettle模板-执行数据账单的JOB-入目标对象-取临时数据
     */
     String KETTLE_TP_EDB_TARGET_IN_NAME = "取临时数据";
+    /**
+    * kettle模板-执行数据账单的JOB名前缀
+    */
+    String KETTLE_TP_EDB_ = "edb_";
+    /**
+    * kettle模板-生成数据账单的JOB名前缀
+    */
+    String KETTLE_TP_GDB_ = "gdb_";
 
     /**
-    * 默认值-MD5去重
+    * kettle参数名-数据账单主键
     */
-    String DEFAULT_VAL_MD5_RR = "md5_rr";
+    String KETTLE_PARAM_DATA_BILL_OID = "DATA_BILL_OID";
     /**
-    * 默认值-批次标记
+    * kettle参数名-数据任务代码
     */
-    String DEFAULT_VAL_BATCH = "batch";
+    String KETTLE_PARAM_DATA_TASK_OCODE = "DATA_TASK_OCODE";
+
     /**
     * 默认值-当前时间
     */
     String DEFAULT_VAL_CURRENT_DATE = "current_date";
     /**
+    * 默认值-批次标记
+    */
+    String DEFAULT_VAL_BATCH = "batch";
+    /**
+    * 默认值-MD5去重
+    */
+    String DEFAULT_VAL_MD5_RR = "md5_rr";
+    /**
     * 默认值-验证信息
     */
     String DEFAULT_VAL_VALIDATE_INFO = "validate_info";
+    /**
+    * 默认值-临时库表达式
+    */
+    String DEFAULT_VAL_TEMP_EXP = "temp_exp";
+    /**
+    * 默认值-目标库表达式
+    */
+    String DEFAULT_VAL_TARGET_EXP = "target_exp";
+    /**
+    * 默认值-目标库方法
+    */
+    String DEFAULT_VAL_TARGET_FUNCTION = "target_function";
+    /**
+    * 默认值-类扩展
+    */
+    String DEFAULT_VAL_CLASS_EXPAND = "class_expand";
+    /**
+    * 默认值中不需要执行默认方法赋值的类型，这些默认值采用其他方式处理
+    */
+    List<String> DEFAULT_VAL_NOT_METHOD = new ArrayList<String>(
+            Arrays.asList(DEFAULT_VAL_MD5_RR,DEFAULT_VAL_TEMP_EXP));
 
     /**
     * JOB生成状态-未生成
@@ -353,4 +395,25 @@ public interface Constants {
     * JOB生成状态-待重生
     */
     String JOB_STATUS_WAIT_REPEAT_GENERATE = "wait_repeat_generate";
+
+    /**
+    * 字段名-对象主键
+    */
+    String FIELD_OID = "oid";
+    /**
+    * 字段名-对象名称
+    */
+    String FIELD_OCODE = "ocode";
+    /**
+    * 字段名-对象名称
+    */
+    String FIELD_ONAME = "oname";
+    /**
+    * 字段名-扩展信息
+    */
+    String FIELD_EXPAND = "expand";
+    /**
+    * 字段名-默认值
+    */
+    String FIELD_DEFAULT_VALUE = "default_value";
 }

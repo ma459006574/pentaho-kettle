@@ -57,7 +57,7 @@ public class JobInitDispose extends KettleUtilRunBase{
         if(dataBill.getString("shard_field")!=null){
             addField = metldb.findOne("select * from metl_data_field df where df.oid=?", 
                     dataBill.getString("shard_field"));
-            outputRow[getFieldIndex("SHARD_FIELD")] = addField.getString("ocode");
+            outputRow[getFieldIndex("SHARD_FIELD")] = addField.getString(Constants.FIELD_OCODE);
         }
         outputRow[getFieldIndex("SHARD_START")] = dataBill.getString("shard_start");
         outputRow[getFieldIndex("SHARD_END")] = dataBill.getString("shard_end");

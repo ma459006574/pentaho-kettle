@@ -13,6 +13,7 @@ import org.pentaho.di.trans.step.StepInterface;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.metl.constants.Constants;
 
 /**
  * 一般工具类 <br/>
@@ -114,5 +115,20 @@ public class CommonUtil {
         }else{
             return null;
         }
+    }
+
+    /**
+    * metl中的数据库类型转换为kettle中的数据库类型 <br/>
+    * @author jingma@iflytek.com
+    * @param metlDs
+    * @return
+    */
+    public static String metlDsToKettleDs(String metlDs) {
+        if(Constants.DS_TYPE_ORACLE.equals(metlDs)){
+            return "Oracle";
+        }else if(Constants.DS_TYPE_MYSQL.equals(metlDs)){
+            return "mysql";
+        }
+        return null;
     }
 }

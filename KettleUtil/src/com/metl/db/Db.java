@@ -24,7 +24,10 @@ import org.pentaho.di.job.entry.JobEntryBase;
 import org.pentaho.di.trans.step.BaseStep;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.metl.constants.Constants;
+import com.metl.util.StringUtil;
 
 /**
  * 数据库操作类 <br/>
@@ -37,6 +40,11 @@ public class Db {
     * 日志
     */
     private static Log log = LogFactory.getLog(Db.class);
+    /**
+    * 查询一般配置的sql语句
+    */
+    private static String FIND_GENERAL_CONFIG_SQL = 
+            "select expand from metl_unify_dict d where d.ocode=? and d.dict_category=?";
     /**
     * spring数据库操作工具
     */
@@ -105,6 +113,16 @@ public class Db {
         this.jdbcTemplate = jdbcTemplate;
     }
     /**
+    * 执行更新语句 <br/>
+    * @author jingma@iflytek.com
+    * @param sql 要执行的预编译查询语句
+    * @param prarms 参数
+    * @return 影响行数
+    */
+    public int update(String sql,Object... params){
+        return jdbcTemplate.update(sql, params);
+    }
+    /**
     * 获取对象列表  <br/>
     * @author jingma@iflytek.com
     * @param sql 要执行的预编译查询语句
@@ -148,6 +166,22 @@ public class Db {
             return new JSONObject();
         }
     }
+    /**
+    * 查询一般配置 <br/>
+    * @author jingma@iflytek.com
+    * @param configCode 配置代码
+    * @return 具体配置的JSON对象
+    */
+    public JSONObject findGeneralConfig(String configCode){
+        String expand = findOne(FIND_GENERAL_CONFIG_SQL, configCode,
+                Constants.DICT_CATEGORY_GENERAL_CONFIG).
+                getString(Constants.FIELD_EXPAND);
+        if(StringUtil.isNotBlank(expand)){
+            return JSON.parseObject(expand);
+        }else{
+            return null;
+        }
+    }
 
     /**
     * 获取数据库当前时间-14位字符串 <br/>
@@ -159,7 +193,7 @@ public class Db {
                 getString("current_date");
     }
     /**
-    * 执行更新语句 <br/>
+    * 执行修改语句 <br/>
     * @author jingma@iflytek.com
     * @param sql
     */
