@@ -41,7 +41,7 @@ public class JobInitDispose extends KettleUtilRunBase{
         Object[] outputRow = new Object[data.outputRowMeta.size()];
         
         //获取数据账单主键
-        String dataBillOid = CommonUtil.getProp(ku,"DATA_BILL_OID");
+        String dataBillOid = CommonUtil.getProp(ku,Constants.KETTLE_PARAM_DATA_BILL_OID);
         //若数据账单为空则生成随机uuid值
         if(StringUtil.isBlank(dataBillOid)){
             throw new RuntimeException("数据账单主键(DATA_BILL_OID)参数不能为空");
@@ -52,6 +52,7 @@ public class JobInitDispose extends KettleUtilRunBase{
         //将数据账单主键作为批次标记
         outputRow[getFieldIndex("BATCH")] = dataBillOid;
         outputRow[getFieldIndex("DATA_BILL")] = dataBill.toJSONString();
+        outputRow[getFieldIndex("DATA_TASK")] = dataBill.getString("source_task");
         outputRow[getFieldIndex("JOB_XDLJ")] = dataBill.getString("source_task");
         //分片字段
         if(dataBill.getString("shard_field")!=null){
@@ -75,6 +76,13 @@ public class JobInitDispose extends KettleUtilRunBase{
             }
         }
         outputRow[getFieldIndex(Constants.TEMP_TABLE)] = tempTable;
+        //设置kettle日志主键变量
+        String kettleLogOid = CommonUtil.getProp(ku,Constants.KETTLE_PARAM_KETTLE_LOG_OID);
+        //kettle日志主键变量为空
+        if(StringUtil.isBlank(kettleLogOid)){
+            kettleLogOid = StringUtil.getUUIDUpperStr();
+        }
+        outputRow[getFieldIndex(Constants.KETTLE_PARAM_KETTLE_LOG_OID)] = kettleLogOid;
         
         ku.putRow(data.outputRowMeta, outputRow); // copy row to possible alternate rowset(s)
         //结束输出
@@ -89,9 +97,11 @@ public class JobInitDispose extends KettleUtilRunBase{
         addField(r,"BATCH",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"批次标记");
         addField(r,Constants.TEMP_TABLE,ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"临时表");
         addField(r,"DATA_BILL",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"数据账单对象");
+        addField(r,"DATA_TASK",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"数据任务");
         addField(r,"JOB_XDLJ",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"JOB相对路径");
         addField(r,"SHARD_FIELD",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"分片字段");
         addField(r,"SHARD_START",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"分片开始");
         addField(r,"SHARD_END",ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"分片结束");
+        addField(r,Constants.KETTLE_PARAM_KETTLE_LOG_OID,ValueMeta.TYPE_STRING,ValueMeta.TRIM_TYPE_BOTH,origin,"kettle日志主键");
     }
 }

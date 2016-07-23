@@ -29,6 +29,7 @@ import com.metl.db.Db;
 import com.metl.util.CommonUtil;
 import com.metl.util.DateUtil;
 import com.metl.util.KettleUtils;
+import com.metl.util.StringUtil;
 
 /**
  * 执行数据账单中的任务 <br/>
@@ -51,10 +52,6 @@ public class ExecuteDatabill {
     */
     private static String logFileRoot = "/metl/logs/kettle";
     /**
-    * javascript控件
-    */
-    private JobEntryEval jee;
-    /**
     * 项目基础数据库操作对象
     */
     private static Db metldb;
@@ -74,6 +71,10 @@ public class ExecuteDatabill {
     * 任务队列:<目标对象,job列表>
     */
     private static Map<String, List<Job>> taskQueue = new HashMap<String, List<Job>>();
+    /**
+    * javascript控件
+    */
+    private JobEntryEval jee;
     
     static{
         //读取配置信息
@@ -119,27 +120,36 @@ public class ExecuteDatabill {
         //开始时间
         String start = metldb.getCurrentDateStr14();
         String result = Constants.SUCCESS_FAILED_NUKNOW;
+        //将新增任务数记录到日志表的读取量中，完成任务数记录到新增量中
+        int inputCount = 0;
+        int addCount = 0;
         try {
-            addTask();
-            executeTask();
+            inputCount = addTask();
+            addCount = executeTask();
             result = Constants.SUCCESS_FAILED_SUCCESS;
         } catch (Exception e) {
             jee.logError("执行数据账单任务异常", e);
             result = Constants.SUCCESS_FAILED_FAILED;
         }
+        //若没有新增任务且没有出现异常，则不记录日志了
+        if(inputCount==0&&Constants.SUCCESS_FAILED_SUCCESS.equals(result)){
+            return;
+        }
         //记录日志到数据库，便于监控。还需要将Kettle本身的运行日志记录到文件中，文件分天存放，每次一个文件
         String sql = "insert into metl_kettle_log"
-                + "(job,start_time,end_time,result)values(?,?,?,?)";
+                + "(job,start_time,end_time,input_count,add_count,result)values(?,?,?,?,?,?)";
         metldb.update(sql, CommonUtil.getRootJobId(jee),start,
-                metldb.getCurrentDateStr14(),result);
+                metldb.getCurrentDateStr14(),inputCount,addCount,result);
     }
 
     /**
     * 执行任务队列中的任务 <br/>
     * @author jingma@iflytek.com
+    * @return 执行完成的任务数量
     */
-    private void executeTask() {
+    private int executeTask() {
         Job job = null;
+        int overCount = 0;
         for(String to:taskQueue.keySet()){
             //没有入该数据对象的任务
             if(taskQueue.get(to).size()==0){
@@ -149,7 +159,6 @@ public class ExecuteDatabill {
             if(!job.isInitialized()){
                 //还未初始化
                 job.start();
-                writeJobLog(job);
             }else if(!job.isActive()){
                 //运行结束
                 writeJobLog(job);
@@ -161,6 +170,7 @@ public class ExecuteDatabill {
                 jobLogLine.remove(job);
                 jobLogStream.remove(job);
                 taskQueue.get(to).remove(job);
+                overCount++;
                 //没有入该数据对象的任务
                 if(taskQueue.get(to).size()==0){
                     continue;
@@ -170,10 +180,61 @@ public class ExecuteDatabill {
                 job.start();
             }else{
                 //正在运行
-                writeJobLog(job);
             }
-            
+            writeJobLog(job);
         }
+        return overCount;
+    }
+
+    /**
+    * 根据数据账单添加要执行的任务 <br/>
+    * @author jingma@iflytek.com
+    * @return 新增任务数量
+    * @throws Exception 
+    */
+    public int addTask() throws Exception {
+        Repository rep = jee.getRepository();
+        //获取审核通过且没有禁用的数据账单,用分片开始字段升序执行，确保从旧数据开始入
+        String sql = "select * from metl_data_bill db where db.state=? and db.is_disable=? order by db.shard_start asc";
+        List<JSONObject> list = metldb.findList(sql, Constants.DATA_BILL_STATUS_EXAMINE_PASS,
+                Constants.WHETHER_FALSE);
+        if(list.size()>0){
+            jee.logBasic("新增任务数："+list.size());
+        }else{
+            return 0;
+        }
+        JobMeta jobMeta = null;
+        Job job = null;
+        List<Job> jobList = null;
+        for(JSONObject dataBill:list){
+            String sourceTask = dataBill.getString("source_task");
+            String targetObj = dataBill.getString("target_obj");
+            if(!taskJobMateMap.containsKey(sourceTask)){
+                jobMeta = KettleUtils.loadJob("edb_"+sourceTask, 
+                        Constants.KETTLE_TP_ROOT_DIR+Constants.FXG+sourceTask,rep);
+                taskJobMateMap.put(sourceTask, jobMeta);
+            }
+            jobMeta = (JobMeta) taskJobMateMap.get(sourceTask).realClone(false);
+            //设置数据账单主键参数
+            jobMeta.setParameterValue(Constants.KETTLE_PARAM_DATA_BILL_OID, 
+                    dataBill.getString(Constants.FIELD_OID));
+            jobMeta.setParameterValue(Constants.KETTLE_PARAM_KETTLE_LOG_OID, 
+                    StringUtil.getUUIDUpperStr());
+            job = new Job(rep, jobMeta);
+            //若该目标对象还没有初始化
+            if(!taskQueue.containsKey(targetObj)){
+                jobList = new ArrayList<Job>();
+                taskQueue.put(targetObj, jobList);
+            }else{
+                jobList = taskQueue.get(targetObj);
+            }
+            jobList.add(job);
+            //修改数据账单状态为：正在入库中
+            metldb.update("update metl_data_bill db set db.state=? where db.oid=?", 
+                    Constants.DATA_BILL_STATUS_CURRENT_INPUT,
+                    dataBill.getString(Constants.FIELD_OID));
+        }
+        return list.size();
     }
 
     /**
@@ -194,18 +255,18 @@ public class ExecuteDatabill {
                 job.getLogChannel().getLogChannelId(), false, 
                 startLineNr, lastLineNr ).toString();
         FileOutputStream outStream = jobLogStream.get(job);
+        File logFile = null;
         //还有对应的输出流
         if(outStream==null){
-            File logFile = new File(logFileRoot+Constants.FXG
+            logFile = new File(logFileRoot+Constants.FXG
                     +DateUtil.doFormatDate(new Date(), DateUtil.DATE_FORMATTER8));
             if(!logFile.exists()){
                 logFile.mkdirs();
             }
             try {
                 logFile = new File(logFile.getAbsolutePath()+Constants.FXG
-                        +job.getJobname()+"_"+job.getParameterValue(
-                                Constants.KETTLE_PARAM_DATA_BILL_OID)+"_"
-                        +DateUtil.doFormatDate(new Date(), "HHmmss")+".txt");
+                        +job.getJobname()+"_"+job.getJobMeta().getParameterValue(
+                                Constants.KETTLE_PARAM_KETTLE_LOG_OID)+".txt");
                 if(!logFile.exists()){
                         logFile.createNewFile();
                         outStream = new FileOutputStream(logFile);
@@ -217,55 +278,8 @@ public class ExecuteDatabill {
         }
         try {
             outStream.write(joblogStr.getBytes());
-        } catch (IOException e) {
+        } catch (Exception e) {
             jee.logError("写日志文件失败", e);
-        }
-    }
-
-    /**
-    * 根据数据账单添加要执行的任务 <br/>
-    * @author jingma@iflytek.com
-    * @throws Exception 
-    */
-    public void addTask() throws Exception {
-        Repository rep = jee.getRepository();
-        //获取审核通过且没有禁用的数据账单
-        String sql = "select * from metl_data_bill db where db.state=? and db.is_disable=?";
-        List<JSONObject> list = metldb.findList(sql, Constants.DATA_BILL_STATUS_EXAMINE_PASS,
-                Constants.WHETHER_FALSE);
-        if(list.size()>0){
-            jee.logBasic("新增任务数："+list.size());
-        }else{
-            return;
-        }
-        JobMeta jobMeta = null;
-        Job job = null;
-        List<Job> jobList = null;
-        for(JSONObject dataBill:list){
-            String sourceTask = dataBill.getString("source_task");
-            String targetObj = dataBill.getString("target_obj");
-            if(!taskJobMateMap.containsKey(sourceTask)){
-                jobMeta = KettleUtils.loadJob("edb_"+sourceTask, 
-                        Constants.KETTLE_TP_ROOT_DIR+Constants.FXG+sourceTask,rep);
-                taskJobMateMap.put(sourceTask, jobMeta);
-            }
-            jobMeta = (JobMeta) taskJobMateMap.get(sourceTask).realClone(false);
-            //设置数据账单主键参数
-            jobMeta.setParameterValue(Constants.KETTLE_PARAM_DATA_BILL_OID, 
-                    dataBill.getString(Constants.FIELD_OID));
-            job = new Job(rep, jobMeta);
-            //若该目标对象还没有初始化
-            if(!taskQueue.containsKey(targetObj)){
-                jobList = new ArrayList<Job>();
-                taskQueue.put(targetObj, jobList);
-            }else{
-                jobList = taskQueue.get(targetObj);
-            }
-            jobList.add(job);
-            //修改数据账单状态为：正在入库中
-            metldb.update("update metl_data_bill db set db.state=? where db.oid=?", 
-                    Constants.DATA_BILL_STATUS_CURRENT_INPUT,
-                    dataBill.getString(Constants.FIELD_OID));
         }
     }
 

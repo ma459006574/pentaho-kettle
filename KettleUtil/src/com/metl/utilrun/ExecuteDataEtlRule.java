@@ -132,7 +132,7 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
         dataBill = CommonUtil.getPropJSONObject(ku, "DATA_BILL");
         dataTask = metldb.findOne("select * from metl_data_task dt where dt.ocode=?", 
                 dataBill.getString("source_task"));
-        targetObj = metldb.findOne("select * from metl_data_object do where do.ocode=?", 
+        targetObj = metldb.findOne("select * from metl_data_object t where t.ocode=?", 
                 dataBill.getString("target_obj"));
         toFieldMap = metldb.findMap(Constants.FIELD_OID,"select * from metl_data_field df where df.data_object=?", 
                 dataBill.getString("target_obj"));

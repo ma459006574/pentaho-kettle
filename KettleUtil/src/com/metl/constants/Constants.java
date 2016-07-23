@@ -341,6 +341,10 @@ public interface Constants {
     */
     String KETTLE_PARAM_DATA_BILL_OID = "DATA_BILL_OID";
     /**
+    * kettle参数名-kettle日志主键
+    */
+    String KETTLE_PARAM_KETTLE_LOG_OID = "KETTLE_LOG_OID";
+    /**
     * kettle参数名-数据任务代码
     */
     String KETTLE_PARAM_DATA_TASK_OCODE = "DATA_TASK_OCODE";

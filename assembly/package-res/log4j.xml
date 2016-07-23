@@ -12,8 +12,8 @@
 			<param name="acceptOnMatch" value="true" />
 		</filter>
 	</appender>
-	<appender name="sysout" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="/iflytek/logs/kettle/sysout.log" />  
+	<appender name="debug" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="E:/temp/metl/logs/kettle_log4j/debug.log" />  
         <param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
 		<param name="Append" value="true" />  
 		<param name="Encoding" value="UTF-8" />
@@ -29,9 +29,26 @@
 			<param name="acceptOnMatch" value="true" />
 		</filter>
 	</appender>
+	<appender name="info" class="org.apache.log4j.RollingFileAppender">
+		<param name="File" value="E:/temp/metl/logs/kettle_log4j/info.log" />  
+        <param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
+		<param name="Append" value="true" />  
+		<param name="Encoding" value="UTF-8" />
+		<param name="MaxBackupIndex" value="10" />  
+		<param name="MaxFileSize" value="20MB" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern"
+				value="%d{yyyy-MM-dd HH:mm:ss} %-5p [%t - %c:%L] %m%n" />
+		</layout>
+		<filter class="org.apache.log4j.varia.LevelRangeFilter">
+			<param name="LevelMin" value="INFO" />
+			<param name="LevelMax" value="FATAL" />
+			<param name="acceptOnMatch" value="true" />
+		</filter>
+	</appender>
 	
 	<appender name="error" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="/iflytek/logs/kettle/error.log" />  
+		<param name="File" value="E:/temp/metl/logs/kettle_log4j/error.log" />  
         <param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
 		<param name="Append" value="true" />  
 		<param name="Encoding" value="UTF-8" />
@@ -48,16 +65,22 @@
 		</filter>
 	</appender>
 
-	<logger name="druid.sql.Statement" additivity="false">
+	<logger name="com.metl" additivity="false">
 		<level value="DEBUG" />
-		<appender-ref ref="sysout" />
+		<appender-ref ref="debug" />
+		<appender-ref ref="info" />
 		<appender-ref ref="error" />
 		<appender-ref ref="console" />
+	</logger>
+	<logger name="druid.sql.Statement" additivity="false">
+		<level value="DEBUG" />
+		<appender-ref ref="debug" />
+		<appender-ref ref="error" />
 	</logger>
 	<root>
 		<level value="INFO" />
 		<appender-ref ref="console" />
-		<appender-ref ref="sysout" />
+		<appender-ref ref="info" />
 		<appender-ref ref="error" />
 	</root>
 </log4j:configuration>
