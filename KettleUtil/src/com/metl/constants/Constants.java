@@ -39,6 +39,26 @@ public interface Constants {
     */
     String FXG = "/";
     /**
+    * 单引号
+    */
+    String DYH = "'";
+    /**
+    * 百分号
+    */
+    String BFH = "%";
+    /**
+    * 双竖线
+    */
+    String SSX = "||";
+    /**
+    * 特殊连接符，一般不会在常规字符串中出现
+    */
+    String TSLJF1 = "TSLJF1";
+    /**
+    * 特殊连接符，一般不会在常规字符串中出现
+    */
+    String TSLJF2 = "TSLJF2";
+    /**
     * 临时对象前缀
     */
     String TEMP_ = "TEMP_";
@@ -197,6 +217,18 @@ public interface Constants {
     * 字典类别-一般配置
     */
     String DICT_CATEGORY_GENERAL_CONFIG = "GENERAL_CONFIG";
+    /**
+    * 字典类别-字段验证规则
+    */
+    String DICT_CATEGORY_FIELD_VALIDATE_RULE = "FIELD_VALIDATE_RULE";
+    /**
+    * 字典类别-字段转换规则
+    */
+    String DICT_CATEGORY_FIELD_TRANSITION_RULE = "FIELD_TRANSITION_RULE";
+    /**
+    * 字典类别-字段默认值规则
+    */
+    String DICT_CATEGORY_DEFAULT_RULE = "DEFAULT_RULE";
     
     /**
     * 定时类别-不需要定时
@@ -374,10 +406,6 @@ public interface Constants {
     */
     String DEFAULT_VAL_TARGET_EXP = "target_exp";
     /**
-    * 默认值-目标库方法
-    */
-    String DEFAULT_VAL_TARGET_FUNCTION = "target_function";
-    /**
     * 默认值-类扩展
     */
     String DEFAULT_VAL_CLASS_EXPAND = "class_expand";
@@ -385,7 +413,68 @@ public interface Constants {
     * 默认值中不需要执行默认方法赋值的类型，这些默认值采用其他方式处理
     */
     List<String> DEFAULT_VAL_NOT_METHOD = new ArrayList<String>(
-            Arrays.asList(DEFAULT_VAL_MD5_RR,DEFAULT_VAL_TEMP_EXP));
+            Arrays.asList(DEFAULT_VAL_MD5_RR,DEFAULT_VAL_VALIDATE_INFO,
+                    DEFAULT_VAL_TEMP_EXP));
+
+    /**
+    * 字段转换规则-时间转换
+    */
+    String FIELD_TRANSITION_RULE_DATE_TRANSITION = "date_transition";
+    /**
+    * 字段转换规则-身份证转换
+    */
+    String FIELD_TRANSITION_RULE_IDCORD_TRANSITION = "idcord_transition";
+    /**
+    * 字段转换规则-移除空白
+    */
+    String FIELD_TRANSITION_RULE_TRIM_BLANK= "trim_blank";
+    /**
+    * 字段转换规则-字典翻译
+    */
+    String FIELD_TRANSITION_RULE_DICT_TRANSITION = "dict_transition";
+    /**
+    * 字段转换规则-临时库表达式
+    */
+    String FIELD_TRANSITION_RULE_TEMP_EXP = "temp_exp";
+    /**
+    * 字段转换规则-目标库表达式
+    */
+    String FIELD_TRANSITION_RULE_TARGET_EXP = "target_exp";
+    /**
+    * 字段转换规则-类扩展
+    */
+    String FIELD_TRANSITION_RULE_CLASS_EXPAND = "class_expand";
+    /**
+    * 字段转换规则中不需要执行默认方法赋值的类型，这些转换规则采用其他方式处理
+    */
+    List<String> FIELD_TRANSITION_RULE_NOT_METHOD = new ArrayList<String>(
+            Arrays.asList(FIELD_TRANSITION_RULE_TEMP_EXP));
+
+    /**
+    * 字段验证规则-时间验证
+    */
+    String FIELD_VALIDATE_RULE_DATE_VALIDATE = "date_validate";
+    /**
+    * 字段验证规则-身份证验证
+    */
+    String FIELD_VALIDATE_RULE_IDCORD_VALIDATE = "idcord_validate";
+    /**
+    * 字段验证规则-临时库表达式
+    */
+    String FIELD_VALIDATE_RULE_TEMP_EXP = "temp_exp";
+    /**
+    * 字段验证规则-目标库表达式
+    */
+    String FIELD_VALIDATE_RULE_TARGET_EXP = "target_exp";
+    /**
+    * 字段验证规则-类扩展
+    */
+    String FIELD_VALIDATE_RULE_CLASS_EXPAND = "class_expand";
+    /**
+    * 字段验证规则中不需要执行默认方法赋值的类型，这些验证规则采用其他方式处理
+    */
+    List<String> FIELD_VALIDATE_RULE_NOT_METHOD = new ArrayList<String>(
+            Arrays.asList(FIELD_VALIDATE_RULE_TEMP_EXP));
 
     /**
     * JOB生成状态-未生成
@@ -417,7 +506,27 @@ public interface Constants {
     */
     String FIELD_EXPAND = "expand";
     /**
+    * 字段名-扩展信息-解析为JSON对象
+    */
+    String FIELD_EXPAND_OBJ = "expand_obj";
+    /**
     * 字段名-默认值
     */
     String FIELD_DEFAULT_VALUE = "default_value";
+    /**
+    * 字段名-验证器
+    */
+    String FIELD_VALIDATOR = "validator";
+    /**
+    * 字段名-转换器
+    */
+    String FIELD_TRANSITION = "transition";
+    /**
+    * 字段名-字典id
+    */
+    String FIELD_ID = "id";
+    /**
+    * 字段名-字典中文
+    */
+    String FIELD_CN = "cn";
 }

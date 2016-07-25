@@ -49,32 +49,12 @@ public class FieldDefaultValue {
         return DateUtil.getGabDate();
     }
     /**
-    * 获取验证信息 <br/>
-    * @author jingma@iflytek.com
-    * @param field 要处理的字段在metl库中的信息
-    * @return 得到的默认值
-    */
-    public Object validateInfo(JSONObject field){
-        //暂时还没验证
-        return null;
-    }
-    /**
     * 目标库表达式<br/>
     * @author jingma@iflytek.com
     * @param field 要处理的字段在metl库中的信息
     * @return 得到的默认值
     */
     public String targetExp(JSONObject field){
-        //TODO jingma:后期支持
-        return null;
-    }
-    /**
-    * 目标库方法调用<br/>
-    * @author jingma@iflytek.com
-    * @param field 要处理的字段在metl库中的信息
-    * @return 得到的默认值
-    */
-    public String targetFunction(JSONObject field){
         //TODO jingma:后期支持
         return null;
     }

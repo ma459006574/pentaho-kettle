@@ -63,7 +63,7 @@ public class ExecuteRule {
         this.udjc = udjc;
         this.meta = (UserDefinedJavaClassMeta) smi;
         this.data = (UserDefinedJavaClassData) sdi;
-        metldb = Db.getDb(udjc, Constants.DATASOURCE_METL);
+        metldb = Db.use(udjc, Constants.DATASOURCE_METL);
     }
 
     /**

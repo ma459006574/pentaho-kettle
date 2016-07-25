@@ -41,6 +41,11 @@ public abstract class KettleUtilRunBase {
     * 配置信息
     */
     protected JSONObject configInfo;
+    /**
+     * Creates a new instance of KettleUtilRunBase.
+     */
+    public KettleUtilRunBase() {
+    }
 
     /**
     * 获取本步骤的输出字段 <br/>
@@ -90,7 +95,7 @@ public abstract class KettleUtilRunBase {
     protected void addField(RowMetaInterface r, String name, int type,
             int trimType, String origin, String comments, int length) {
         ValueMetaInterface v = new ValueMeta();
-        v.setName(name);
+        v.setName(name.toUpperCase());
         v.setType(type);
         v.setTrimType(trimType);
         v.setOrigin(origin);
@@ -99,6 +104,15 @@ public abstract class KettleUtilRunBase {
             v.setLength(length);
         }
         r.addValueMeta(v);
+    }
+    /**
+    * 获取输出字段在数组中的下标 <br/>
+    * @author jingma@iflytek.com
+    * @param field 字段名称
+    * @return 下标
+    */
+    public int getFieldIndex(String field){
+        return data.outputRowMeta.indexOfValue(field.toUpperCase());
     }
 
     /**
@@ -122,15 +136,6 @@ public abstract class KettleUtilRunBase {
         return 0;
     }
     /**
-    * 获取输出字段在数组中的下标 <br/>
-    * @author jingma@iflytek.com
-    * @param field 字段名称
-    * @return 下标
-    */
-    public int getFieldIndex(String field){
-        return data.outputRowMeta.indexOfValue(field);
-    }
-    /**
      * @return ku 
      */
     public KettleUtil getKu() {
@@ -142,7 +147,7 @@ public abstract class KettleUtilRunBase {
      */
     public void setKu(KettleUtil ku) {
         this.ku = ku;
-        metldb = Db.getDb(ku, Constants.DATASOURCE_METL);
+        metldb = Db.use(ku, Constants.DATASOURCE_METL);
     }
 
     /**

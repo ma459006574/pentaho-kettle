@@ -585,8 +585,8 @@ public class KettleUtils {
         if(dbId!=null){
             return repository.loadDatabaseMeta(dbId, null);
         }else{
-            JSONObject metlDb = Db.getDb(Constants.DATASOURCE_METL).
-                    findOne("select * from metl_database db where db.ocode=?", dbCode);
+            JSONObject metlDb = Db.use(Constants.DATASOURCE_METL).
+                    findFirst("select * from metl_database db where db.ocode=?", dbCode);
             DatabaseMeta dataMeta = new DatabaseMeta(dbCode, CommonUtil.metlDsToKettleDs(metlDb.getString("type")), 
                     "JNDI", null, dbCode, null, null, null);
             //保存转换时会进行该数据库的保存的

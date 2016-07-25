@@ -22,6 +22,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.metl.constants.Constants;
+
 /**
  * 字符处理类
  * 
@@ -318,5 +320,56 @@ public class StringUtil extends StringUtils{
             }
         }
         return sb.toString();
+    }
+    /**
+    * 判断给定的值是true还是false,然后再取反 <br/>
+    * @author jingma@iflytek.com
+    * @param value
+    * @return true：0，false：1
+    */
+    public static String whetherNot(Object value){
+        return Constants.WHETHER_TRUE.equals(whether(value))?
+                Constants.WHETHER_FALSE:Constants.WHETHER_TRUE;
+    }
+    /**
+    * 判断给定的值是true还是false <br/>
+    * @author jingma@iflytek.com
+    * @param value
+    * @return true：1，false：0
+    */
+    public static String whether(Object value){
+        if(value!=null&&!StringUtil.isBlank(value.toString())
+                &&(Boolean.parseBoolean(value.toString())
+                ||"on".equalsIgnoreCase(value.toString())
+                ||"YES".equalsIgnoreCase(value.toString())
+                ||Constants.WHETHER_TRUE.equals(value))){
+            return Constants.WHETHER_TRUE;
+        }else{
+            return Constants.WHETHER_FALSE;
+        }
+    }
+
+    /**
+    * 组建数据库模糊匹配字段<br/>
+    * @author jingma@iflytek.com
+    * @param field
+    * @return
+    */
+    public static String buildDBLike(String field) {
+        if(StringUtil.isBlank(field)){
+            return Constants.BFH;
+        }
+        return Constants.BFH+field+Constants.BFH;
+    }
+
+    /**
+    * 组建数据库字符串 <br/>
+    * 在一般字符串两端加上单引号<br/>
+    * @author jingma@iflytek.com
+    * @param str
+    * @return
+    */
+    public static String buildDBStr(String str) {
+        return Constants.DYH+str+Constants.DYH;
     }
 }

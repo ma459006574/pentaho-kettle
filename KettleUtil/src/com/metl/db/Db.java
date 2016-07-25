@@ -55,13 +55,13 @@ public class Db {
     * @param dbCode
     * @return
     */
-    public static Db getDb(String dbCode) {
+    public static Db use(String dbCode) {
         try {
             DataSource dataSource = ( new DatabaseUtil() ).getNamedDataSource( dbCode );
             JdbcTemplate jt = new JdbcTemplate(dataSource);
             return new Db(jt);
         } catch (KettleException e) {
-            log.error("获取数据库失败", e);
+            log.error("获取数据库失败:"+dbCode, e);
         }
         return null;
     }
@@ -72,16 +72,16 @@ public class Db {
     * @param dbCode
     * @return
     */
-    public static Db getDb(BaseStep ku, String dbCode) {
+    public static Db use(BaseStep ku, String dbCode) {
         try {
             DataSource dataSource = ( new DatabaseUtil() ).getNamedDataSource( dbCode );
             JdbcTemplate jt = new JdbcTemplate(dataSource);
             return new Db(jt);
         } catch (KettleException e) {
             if(ku!=null){
-                ku.logError("获取数据库失败", e);
+                ku.logError("获取数据库失败:"+dbCode, e);
             }else{
-                log.error("获取数据库失败", e);
+                log.error("获取数据库失败:"+dbCode, e);
             }
         }
         return null;
@@ -93,16 +93,16 @@ public class Db {
     * @param dbCode
     * @return
     */
-    public static Db getDb(JobEntryBase jee, String dbCode) {
+    public static Db use(JobEntryBase jee, String dbCode) {
         try {
             DataSource dataSource = ( new DatabaseUtil() ).getNamedDataSource( dbCode );
             JdbcTemplate jt = new JdbcTemplate(dataSource);
             return new Db(jt);
         } catch (KettleException e) {
             if(jee!=null){
-                jee.logError("获取数据库失败", e);
+                jee.logError("获取数据库失败:"+dbCode, e);
             }else{
-                log.error("获取数据库失败", e);
+                log.error("获取数据库失败:"+dbCode, e);
             }
         }
         return null;
@@ -130,8 +130,25 @@ public class Db {
     * @return
     */
     @SuppressWarnings("unchecked")
-    public List<JSONObject> findList(String sql,Object... prarms){
+    public List<JSONObject> find(String sql,Object... prarms){
         return (List<JSONObject>) jdbcTemplate.query(sql, prarms, new ResultSetList());
+    }
+    /**
+    * 获取第一个对象 <br/>
+    * @author jingma@iflytek.com
+    * @param sql 要执行的预编译查询语句
+    * @param prarms 参数
+    * @return
+    */
+    @SuppressWarnings("unchecked")
+    public JSONObject findFirst(String sql,Object... prarms){
+        List<JSONObject> list = (List<JSONObject>) jdbcTemplate.query(sql, 
+                prarms, new ResultSetList());
+        if(list.size()>0){
+            return list.get(0);
+        }else{
+            return new JSONObject();
+        }
     }
     /**
     * 获取对象列表  <br/>
@@ -142,7 +159,7 @@ public class Db {
     * @return
     */
     public Map<String,JSONObject> findMap(String keyName,String sql,Object... prarms){
-        List<JSONObject> list = findList(sql, prarms);
+        List<JSONObject> list = find(sql, prarms);
         Map<String,JSONObject> result = new HashMap<String, JSONObject>();
         for(JSONObject jo:list){
             result.put(jo.getString(keyName), jo);
@@ -150,20 +167,17 @@ public class Db {
         return result;
     }
     /**
-    * 获取第一个对象 <br/>
+    * 查询一般配置 <br/>
     * @author jingma@iflytek.com
     * @param sql 要执行的预编译查询语句
     * @param prarms 参数
-    * @return
     */
-    @SuppressWarnings("unchecked")
-    public JSONObject findOne(String sql,Object... prarms){
-        List<JSONObject> list = (List<JSONObject>) jdbcTemplate.query(sql, 
-                prarms, new ResultSetList());
-        if(list.size()>0){
-            return list.get(0);
+    public String queryStr(String sql,Object... prarms){
+        JSONObject obj = findFirst(sql, prarms);
+        if(obj.size()>0){
+            return obj.values().toArray()[0].toString();
         }else{
-            return new JSONObject();
+            return null;
         }
     }
     /**
@@ -173,7 +187,7 @@ public class Db {
     * @return 具体配置的JSON对象
     */
     public JSONObject findGeneralConfig(String configCode){
-        String expand = findOne(FIND_GENERAL_CONFIG_SQL, configCode,
+        String expand = findFirst(FIND_GENERAL_CONFIG_SQL, configCode,
                 Constants.DICT_CATEGORY_GENERAL_CONFIG).
                 getString(Constants.FIELD_EXPAND);
         if(StringUtil.isNotBlank(expand)){
@@ -189,7 +203,7 @@ public class Db {
     * @return
     */
     public String getCurrentDateStr14(){
-        return findOne("select to_char(sysdate,'yyyymmddhh24miss') as current_date from dual").
+        return findFirst("select to_char(sysdate,'yyyymmddhh24miss') as current_date from dual").
                 getString("current_date");
     }
     /**

@@ -8,7 +8,6 @@ package com.metl.jobrun;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -78,7 +77,7 @@ public class ExecuteDatabill {
     
     static{
         //读取配置信息
-        metldb = Db.getDb(Constants.DATASOURCE_METL);
+        metldb = Db.use(Constants.DATASOURCE_METL);
         JSONObject logConfig = metldb.findGeneralConfig("execute_bill_config").
                 getJSONObject("logConfig");
         isWriteLogFile = logConfig.getBoolean("isWriteLogFile");
@@ -86,7 +85,7 @@ public class ExecuteDatabill {
         //处理之前中断的任务
         //获取所有之前中断的数据账单。
         String sql = "select * from metl_data_bill db where db.state=? and db.is_disable=?";
-        List<JSONObject> list = metldb.findList(sql, Constants.DATA_BILL_STATUS_CURRENT_INPUT,
+        List<JSONObject> list = metldb.find(sql, Constants.DATA_BILL_STATUS_CURRENT_INPUT,
                 Constants.WHETHER_FALSE);
         log.info("之前中断的任务数："+list.size());
         //若对这些数据量要求高精度，则需要将之前入的部分数据删除，重新入。
@@ -164,7 +163,7 @@ public class ExecuteDatabill {
                 writeJobLog(job);
                 try {
                     jobLogStream.get(job).close();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     jee.logBasic("关闭日志输出流失败", e);
                 }
                 jobLogLine.remove(job);
@@ -196,7 +195,7 @@ public class ExecuteDatabill {
         Repository rep = jee.getRepository();
         //获取审核通过且没有禁用的数据账单,用分片开始字段升序执行，确保从旧数据开始入
         String sql = "select * from metl_data_bill db where db.state=? and db.is_disable=? order by db.shard_start asc";
-        List<JSONObject> list = metldb.findList(sql, Constants.DATA_BILL_STATUS_EXAMINE_PASS,
+        List<JSONObject> list = metldb.find(sql, Constants.DATA_BILL_STATUS_EXAMINE_PASS,
                 Constants.WHETHER_FALSE);
         if(list.size()>0){
             jee.logBasic("新增任务数："+list.size());

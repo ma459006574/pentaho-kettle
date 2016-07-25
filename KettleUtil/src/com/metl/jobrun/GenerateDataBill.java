@@ -58,11 +58,11 @@ public class GenerateDataBill {
     public GenerateDataBill(JobEntryEval jobEntryEval) {
         super();
         this.jee = jobEntryEval;
-        metldb = Db.getDb(jee, Constants.DATASOURCE_METL);
+        metldb = Db.use(jee, Constants.DATASOURCE_METL);
         String dataTaskOcode = CommonUtil.getProp(jee,"DATA_TASK_OCODE");
-        this.dataTask = metldb.findOne("select * from metl_data_task dt where dt.ocode=?", 
+        this.dataTask = metldb.findFirst("select * from metl_data_task dt where dt.ocode=?", 
                 dataTaskOcode);
-        this.sourceObj = metldb.findOne("select * from metl_data_object o where o.ocode=?", 
+        this.sourceObj = metldb.findFirst("select * from metl_data_object o where o.ocode=?", 
                 dataTask.getString("source_obj"));
     }
 
@@ -127,20 +127,20 @@ public class GenerateDataBill {
         //这些验证将来需要仔细梳理，系统的做一遍测试
         if(Constants.WHETHER_TRUE.equals(isAdd)){
             String dbCode = sourceObj.getString("database");
-            JSONObject addField = metldb.findOne("select * from metl_data_field t where t.oid=?", 
+            JSONObject addField = metldb.findFirst("select * from metl_data_field t where t.oid=?", 
                     sourceObj.getString("add_field"));
             //增量字段支持的业务类型是：时间、数字
             String dataType = addField.getString("data_type");
             String businessType = addField.getString("business_type");
             //实时从数据库查询抽取标记
-            etlflag = metldb.findOne("select etlflag from metl_data_task t where t.ocode=?", 
+            etlflag = metldb.findFirst("select etlflag from metl_data_task t where t.ocode=?", 
                     dataTask.getString(Constants.FIELD_OCODE)).getString("etlflag");
-            Db sourcedb = Db.getDb(jee, dbCode);
+            Db sourcedb = Db.use(jee, dbCode);
             //如果抽取标记为空，则从来源对象获取增量字段最小值
             JSONObject minObj = null;
             JSONObject maxObj = null;
             if(StringUtils.isBlank(etlflag)){
-                minObj = sourcedb.findOne("select min("+addField.getString(Constants.FIELD_OCODE)
+                minObj = sourcedb.findFirst("select min("+addField.getString(Constants.FIELD_OCODE)
                         +") as etlflag from "+sourceObj.getString("real_name"));
                 //数据类型是date
                 if(Constants.FD_TYPE_DATE.equals(dataType)){
@@ -159,12 +159,12 @@ public class GenerateDataBill {
             //数据类型是date
             if(Constants.FD_TYPE_DATE.equals(dataType)){
                 //获取来源对象中增量字段最大值，小于当前时间
-                maxObj = sourcedb.findOne("select max("+addField.getString(Constants.FIELD_OCODE)
+                maxObj = sourcedb.findFirst("select max("+addField.getString(Constants.FIELD_OCODE)
                         +") as etlflag from "+sourceObj.getString("real_name")+
                         " t where t."+addField.getString(Constants.FIELD_OCODE)+"<sysdate");
             }else{
                 //获取来源对象中增量字段最大值，小于当前时间
-                maxObj = sourcedb.findOne("select max("+addField.getString(Constants.FIELD_OCODE)
+                maxObj = sourcedb.findFirst("select max("+addField.getString(Constants.FIELD_OCODE)
                         +") as etlflag from "+sourceObj.getString("real_name")+
                         " t where t."+addField.getString(Constants.FIELD_OCODE)
                         +"<to_char(sysdate,'yyyymmddhh24miss')");

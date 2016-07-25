@@ -47,7 +47,7 @@ public class JobInitDispose extends KettleUtilRunBase{
             throw new RuntimeException("数据账单主键(DATA_BILL_OID)参数不能为空");
 //            dataBill = StringUtil.getUUIDUpperStr();
         }
-        JSONObject dataBill = metldb.findOne("select * from metl_data_bill db where db.oid=?", dataBillOid);
+        JSONObject dataBill = metldb.findFirst("select * from metl_data_bill db where db.oid=?", dataBillOid);
         JSONObject addField = null;
         //将数据账单主键作为批次标记
         outputRow[getFieldIndex("BATCH")] = dataBillOid;
@@ -56,7 +56,7 @@ public class JobInitDispose extends KettleUtilRunBase{
         outputRow[getFieldIndex("JOB_XDLJ")] = dataBill.getString("source_task");
         //分片字段
         if(dataBill.getString("shard_field")!=null){
-            addField = metldb.findOne("select * from metl_data_field df where df.oid=?", 
+            addField = metldb.findFirst("select * from metl_data_field df where df.oid=?", 
                     dataBill.getString("shard_field"));
             outputRow[getFieldIndex("SHARD_FIELD")] = addField.getString(Constants.FIELD_OCODE);
         }
