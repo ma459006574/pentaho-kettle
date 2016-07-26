@@ -270,9 +270,8 @@ public class GenerateDataBill {
             }
             etlflag = tempEtlflag;
             //更新抽取标记
-            String sql = "update METL_DATA_TASK t set t.etlflag='"
-            +etlflag+"' where t.oid='"+dataTask.getString(Constants.FIELD_OID)+"'";
-            metldb.execute(sql);
+            String sql = "update METL_DATA_TASK t set t.etlflag=? where t.oid=?";
+            metldb.update(sql,etlflag,dataTask.getString(Constants.FIELD_OID));
         }else{
             //否则就不是增量
             

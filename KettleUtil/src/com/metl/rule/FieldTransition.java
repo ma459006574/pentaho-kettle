@@ -60,6 +60,7 @@ public class FieldTransition {
                 //没有成功解析为时间的则保留原始值
                 result = value;
             }else if("date".equals(format)){
+                //指定的格式是：date时则返回dete对象
                 result = val;
             }else{
                 result = DateUtil.doFormatDate(val,format);

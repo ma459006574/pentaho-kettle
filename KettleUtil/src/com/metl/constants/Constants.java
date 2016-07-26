@@ -18,6 +18,14 @@ import java.util.List;
  * @version 
  */
 public interface Constants {
+    /**
+    * eova数据源
+    */
+    String DATASOURCE_EOVA = "eova";
+    /**
+    * main数据源
+    */
+    String DATASOURCE_MAIN = "main";
 	/**
 	* metl数据源
 	*/
@@ -30,6 +38,13 @@ public interface Constants {
     * kettle资源库数据源
     */
     String DATASOURCE_KETTLE = "kettle";
+    /**
+    * 禁止页面编辑的数据源
+    */
+    List<String> DISABLE_EDIT_DS = new ArrayList<String>(
+            Arrays.asList(DATASOURCE_METL,
+                    DATASOURCE_MAIN,DATASOURCE_EOVA));
+    
     /**
     * 空字符串
     */
