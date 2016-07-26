@@ -15,7 +15,6 @@ import org.pentaho.di.trans.step.StepMeta;
 
 import com.metl.constants.Constants;
 import com.metl.kettleutil.KettleUtilRunBase;
-import com.metl.util.CommonUtil;
 import com.metl.util.DateUtil;
 import com.metl.util.StringUtil;
 
@@ -41,10 +40,10 @@ public class DisposeLog extends KettleUtilRunBase{
         }
         Object[] outputRow = RowDataUtil.createResizedCopy( r, data.outputRowMeta.size());
         
-        outputRow[getFieldIndex("INPUT_COUNT")] = StringUtil.parseLong(CommonUtil.getProp(ku, "INPUT_COUNT"));
-        outputRow[getFieldIndex("REPEAT_COUNT")] = StringUtil.parseLong(CommonUtil.getProp(ku, "REPEAT_COUNT"));
-        outputRow[getFieldIndex("ADD_COUNT")] = StringUtil.parseLong(CommonUtil.getProp(ku, "ADD_COUNT"));
-        outputRow[getFieldIndex("INVALID_COUNT")] = StringUtil.parseLong(CommonUtil.getProp(ku, "INVALID_COUNT"));
+        outputRow[getFieldIndex("INPUT_COUNT")] = StringUtil.parseLong(getVariavle("INPUT_COUNT"));
+        outputRow[getFieldIndex("REPEAT_COUNT")] = StringUtil.parseLong(getVariavle("REPEAT_COUNT"));
+        outputRow[getFieldIndex("ADD_COUNT")] = StringUtil.parseLong(getVariavle("ADD_COUNT"));
+        outputRow[getFieldIndex("INVALID_COUNT")] = StringUtil.parseLong(getVariavle("INVALID_COUNT"));
         outputRow[getFieldIndex("END_TIME")] = DateUtil.getGabDate();
         String state = Constants.DATA_BILL_STATUS_INPUT_SUCCESS;
         if(!Constants.SUCCESS_FAILED_SUCCESS.equals(outputRow[getFieldIndex("RESULT")])){

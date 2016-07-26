@@ -126,6 +126,10 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
     * 转换中的错误信息
     */
     private JSONObject transitionErrorInfo;
+    /**
+    * 无效记录数
+    */
+    private Integer invalidCount = 0;
     static{
     }
     /**
@@ -201,8 +205,7 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
         Object[] r = ku.getRow(); // get row, blocks when needed!
         if (r == null) // no more input to be expected...
         {
-            ku.setOutputDone();
-            return false;
+            return end();
         }
         init();
         //创建输出记录
@@ -218,6 +221,12 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
         //将该记录设置到下一步骤的读取序列中
         ku.putRow(data.outputRowMeta, outputRow); // copy row to possible alternate rowset(s)
         return true;
+    }
+    public boolean end() {
+        ku.setOutputDone();
+        //设置无效记录数据变量，以备后续记录日志
+        setVariableRootJob("INVALID_COUNT", invalidCount.toString());
+        return false;
     }
 
     /**
@@ -457,6 +466,8 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
         if(validateResult.size()>0){
             //任务要求执行验证规则，则必须存在验证字段
             outputRow[idx] = validateResult.toJSONString();
+            //新增一条无效记录
+            invalidCount++;
         }
         
     }

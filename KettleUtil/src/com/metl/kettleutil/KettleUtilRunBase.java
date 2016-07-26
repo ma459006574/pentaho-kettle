@@ -12,12 +12,15 @@ import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.variables.VariableSpace;
+import org.pentaho.di.job.Job;
+import org.pentaho.di.trans.Trans;
 import org.pentaho.di.trans.step.StepMeta;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.metl.constants.Constants;
 import com.metl.db.Db;
+import com.metl.util.CommonUtil;
 
 /**
  * kettleUtil插件扩展基础类 <br/>
@@ -113,6 +116,36 @@ public abstract class KettleUtilRunBase {
     */
     public int getFieldIndex(String field){
         return data.outputRowMeta.indexOfValue(field.toUpperCase());
+    }
+    
+    /**
+    * 设置变量到根作业 <br/>
+    * @author jingma@iflytek.com
+    * @param variableName 变量名
+    * @param variableValue 变量值
+    */
+    public void setVariableRootJob(String variableName,String variableValue){
+        ku.setVariable(variableName, variableValue);
+        Trans trans = ku.getTrans();
+        while(trans.getParentTrans()!=null){
+            trans.setVariable(variableName, variableValue);
+            trans = trans.getParentTrans();
+        }
+        trans.setVariable(variableName, variableValue);
+        Job job = trans.getParentJob();
+        while(job!=null){
+            job.setVariable(variableName, variableValue);
+            job = job.getParentJob();
+        }
+    }
+    /**
+    * 从根job获取变量 <br/>
+    * @author jingma@iflytek.com
+    * @param variableName 变量名
+    * @return 变量值
+    */
+    public String getVariavle(String variableName){
+        return CommonUtil.getProp(ku,variableName);
     }
 
     /**

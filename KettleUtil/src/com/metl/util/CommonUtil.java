@@ -45,7 +45,12 @@ public class CommonUtil {
     * @return 值
     */
     public static JSONObject getPropJSONObject(VariableSpace vs, String key){
-        return JSON.parseObject(getProp(vs, key));
+        String value = getProp(vs, key);
+        if(StringUtil.isNotBlank(value)){
+            return JSON.parseObject(value);
+        }else{
+            return null;
+        }
     }
     /**
     * 获取根job <br/>
