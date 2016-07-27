@@ -4,9 +4,11 @@
 * Copyright (c) 2016, jingma@iflytek.com All Rights Reserved.
 */
 
-package com.metl.util;
+package com.metl.kettleutil.util;
 
 import java.util.List;
+
+import net.oschina.mytuils.StringUtil;
 
 import com.alibaba.fastjson.JSONObject;
 import com.metl.constants.Constants;

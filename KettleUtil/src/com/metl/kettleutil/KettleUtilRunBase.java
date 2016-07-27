@@ -6,6 +6,8 @@
 
 package com.metl.kettleutil;
 
+import net.oschina.mytuils.KettleUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.row.RowMetaInterface;
@@ -20,7 +22,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.metl.constants.Constants;
 import com.metl.db.Db;
-import com.metl.util.CommonUtil;
 
 /**
  * kettleUtil插件扩展基础类 <br/>
@@ -145,7 +146,7 @@ public abstract class KettleUtilRunBase {
     * @return 变量值
     */
     public String getVariavle(String variableName){
-        return CommonUtil.getProp(ku,variableName);
+        return KettleUtils.getProp(ku,variableName);
     }
 
     /**

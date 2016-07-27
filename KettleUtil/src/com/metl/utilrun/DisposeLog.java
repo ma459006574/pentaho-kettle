@@ -6,6 +6,9 @@
 
 package com.metl.utilrun;
 
+import net.oschina.mytuils.DateUtil;
+import net.oschina.mytuils.StringUtil;
+
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.row.RowDataUtil;
 import org.pentaho.di.core.row.RowMetaInterface;
@@ -15,8 +18,6 @@ import org.pentaho.di.trans.step.StepMeta;
 
 import com.metl.constants.Constants;
 import com.metl.kettleutil.KettleUtilRunBase;
-import com.metl.util.DateUtil;
-import com.metl.util.StringUtil;
 
 /**
  * 处理日志相关操作 <br/>

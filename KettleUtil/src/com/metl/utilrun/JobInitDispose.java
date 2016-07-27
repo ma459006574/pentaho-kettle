@@ -6,6 +6,10 @@
 
 package com.metl.utilrun;
 
+import net.oschina.mytuils.DateUtil;
+import net.oschina.mytuils.KettleUtils;
+import net.oschina.mytuils.StringUtil;
+
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.core.row.RowMetaInterface;
@@ -16,9 +20,6 @@ import org.pentaho.di.trans.step.StepMeta;
 import com.alibaba.fastjson.JSONObject;
 import com.metl.constants.Constants;
 import com.metl.kettleutil.KettleUtilRunBase;
-import com.metl.util.CommonUtil;
-import com.metl.util.DateUtil;
-import com.metl.util.StringUtil;
 
 /**
  * job初始化操作 <br/>
@@ -41,7 +42,7 @@ public class JobInitDispose extends KettleUtilRunBase{
         Object[] outputRow = new Object[data.outputRowMeta.size()];
         
         //获取数据账单主键
-        String dataBillOid = CommonUtil.getProp(ku,Constants.KETTLE_PARAM_DATA_BILL_OID);
+        String dataBillOid = KettleUtils.getProp(ku,Constants.KETTLE_PARAM_DATA_BILL_OID);
         //若数据账单为空则生成随机uuid值
         if(StringUtil.isBlank(dataBillOid)){
             throw new RuntimeException("数据账单主键(DATA_BILL_OID)参数不能为空");
@@ -62,11 +63,11 @@ public class JobInitDispose extends KettleUtilRunBase{
         }
         outputRow[getFieldIndex("SHARD_START")] = dataBill.getString("shard_start");
         outputRow[getFieldIndex("SHARD_END")] = dataBill.getString("shard_end");
-        outputRow[getFieldIndex("JOB_NAME")] = CommonUtil.getRootJobName(ku);
-        outputRow[getFieldIndex("ID_JOB")] = CommonUtil.getRootJobId(ku);
+        outputRow[getFieldIndex("JOB_NAME")] = KettleUtils.getRootJobName(ku);
+        outputRow[getFieldIndex("ID_JOB")] = KettleUtils.getRootJobId(ku);
         outputRow[getFieldIndex("START_TIME")] = DateUtil.getGabDate();
         //设置临时表变量
-        String tempTable = CommonUtil.getProp(ku,Constants.TEMP_TABLE);
+        String tempTable = KettleUtils.getProp(ku,Constants.TEMP_TABLE);
         //临时表变量为空
         if(StringUtil.isBlank(tempTable)){
             String sourceTask = dataBill.getString("source_task").toUpperCase();
@@ -77,7 +78,7 @@ public class JobInitDispose extends KettleUtilRunBase{
         }
         outputRow[getFieldIndex(Constants.TEMP_TABLE)] = tempTable;
         //设置kettle日志主键变量
-        String kettleLogOid = CommonUtil.getProp(ku,Constants.KETTLE_PARAM_KETTLE_LOG_OID);
+        String kettleLogOid = KettleUtils.getProp(ku,Constants.KETTLE_PARAM_KETTLE_LOG_OID);
         //kettle日志主键变量为空
         if(StringUtil.isBlank(kettleLogOid)){
             kettleLogOid = StringUtil.getUUIDUpperStr();

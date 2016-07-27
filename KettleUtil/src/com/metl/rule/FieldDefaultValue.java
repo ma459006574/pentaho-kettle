@@ -6,9 +6,9 @@
 
 package com.metl.rule;
 
+import net.oschina.mytuils.DateUtil;
+
 import com.alibaba.fastjson.JSONObject;
-import com.metl.util.CommonUtil;
-import com.metl.util.DateUtil;
 import com.metl.utilrun.ExecuteDataEtlRule;
 
 /**
@@ -35,7 +35,7 @@ public class FieldDefaultValue {
     */
     public String batch(JSONObject field){
         //从变量中获取批次标记
-        String batch = CommonUtil.getProp(eder.getKu(), "BATCH");
+        String batch = eder.getVariavle("BATCH");
         return batch;
     }
     /**

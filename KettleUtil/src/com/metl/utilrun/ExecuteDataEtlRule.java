@@ -13,6 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.oschina.mytuils.DateUtil;
+import net.oschina.mytuils.KettleUtils;
+import net.oschina.mytuils.MD5Util;
+import net.oschina.mytuils.StringUtil;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.pentaho.di.core.exception.KettleException;
@@ -26,14 +31,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.metl.constants.Constants;
 import com.metl.db.Db;
 import com.metl.kettleutil.KettleUtilRunBase;
+import com.metl.kettleutil.util.Dict;
 import com.metl.rule.FieldDefaultValue;
 import com.metl.rule.FieldTransition;
 import com.metl.rule.FieldValidate;
-import com.metl.util.CommonUtil;
-import com.metl.util.DateUtil;
-import com.metl.util.Dict;
-import com.metl.util.MD5Util;
-import com.metl.util.StringUtil;
 
 /**
  * 执行数据对象定义的验证转换默认值等规则 <br/>
@@ -241,7 +242,7 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
         initMethod();
         //克隆输入记录的元数据
         data.outputRowMeta = (RowMetaInterface) ku.getInputRowMeta().clone();
-        dataBill = CommonUtil.getPropJSONObject(ku, "DATA_BILL");
+        dataBill = KettleUtils.getPropJSONObject(ku, "DATA_BILL");
         dataTask = metldb.findFirst("select * from metl_data_task dt where dt.ocode=?", 
                 dataBill.getString("source_task"));
         targetObj = metldb.findFirst("select * from metl_data_object t where t.ocode=?", 
@@ -527,10 +528,10 @@ public class ExecuteDataEtlRule extends KettleUtilRunBase{
     * @see com.metl.kettleutil.KettleUtilRunBase#getFields(org.pentaho.di.core.row.RowMetaInterface, java.lang.String, org.pentaho.di.core.row.RowMetaInterface[], org.pentaho.di.trans.step.StepMeta, org.pentaho.di.core.variables.VariableSpace)
     */
     public void getFields(RowMetaInterface r, String origin, RowMetaInterface[] info, StepMeta nextStep, VariableSpace space) {
-        if(StringUtil.isBlank(CommonUtil.getProp(space, "DATA_BILL"))){
+        if(StringUtil.isBlank(KettleUtils.getProp(space, "DATA_BILL"))){
             return;
         }
-        dataBill = CommonUtil.getPropJSONObject(space, "DATA_BILL");
+        dataBill = KettleUtils.getPropJSONObject(space, "DATA_BILL");
         //查询目标对象有默认值的字段
         List<JSONObject> defFields = metldb.find(
                 "select * from metl_data_field df where df.data_object=? and df.default_value is not null", 

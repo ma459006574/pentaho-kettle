@@ -6,6 +6,8 @@
 
 package com.metl;
 
+import net.oschina.mytuils.KettleUtils;
+
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.trans.step.StepDataInterface;
 import org.pentaho.di.trans.step.StepMetaInterface;
@@ -17,7 +19,6 @@ import org.pentaho.di.trans.steps.userdefinedjavaclass.UserDefinedJavaClassMeta;
 
 import com.metl.constants.Constants;
 import com.metl.db.Db;
-import com.metl.util.CommonUtil;
 
 /**
  * 执行数据对象定义的验证转换默认值等规则 <br/>
@@ -85,7 +86,7 @@ public class ExecuteRule {
         // 获取输出字段
         Object[] rOut = tcb.createOutputRow(rIn, data.outputRowMeta.size());
 
-        String batch = CommonUtil.getProp(udjc, "BATCH");
+        String batch = KettleUtils.getProp(udjc, "BATCH");
         tcb.get(Fields.Out, "BATCH").setValue(rOut, batch);
 
         udjc.putRow(data.outputRowMeta, rOut);

@@ -12,14 +12,15 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Calendar;
 
+import net.oschina.mytuils.DateUtil;
+import net.oschina.mytuils.KettleUtils;
+
 import org.apache.commons.lang3.StringUtils;
 import org.pentaho.di.job.entries.eval.JobEntryEval;
 
 import com.alibaba.fastjson.JSONObject;
 import com.metl.constants.Constants;
 import com.metl.db.Db;
-import com.metl.util.CommonUtil;
-import com.metl.util.DateUtil;
 
 /**
  * 生成数据账单 <br/>
@@ -59,7 +60,7 @@ public class GenerateDataBill {
         super();
         this.jee = jobEntryEval;
         metldb = Db.use(jee, Constants.DATASOURCE_METL);
-        String dataTaskOcode = CommonUtil.getProp(jee,"DATA_TASK_OCODE");
+        String dataTaskOcode = KettleUtils.getProp(jee,"DATA_TASK_OCODE");
         this.dataTask = metldb.findFirst("select * from metl_data_task dt where dt.ocode=?", 
                 dataTaskOcode);
         this.sourceObj = metldb.findFirst("select * from metl_data_object o where o.ocode=?", 
@@ -101,7 +102,7 @@ public class GenerateDataBill {
             conn = metldb.getConn();
             ps = conn.prepareStatement(sql);
             ps.setString(1, dataTask.getString("create_user"));
-            ps.setString(2, CommonUtil.getRootJobId(jee));
+            ps.setString(2, KettleUtils.getRootJobId(jee));
             ps.setString(3, start);
             ps.setString(4, metldb.getCurrentDateStr14());
             ps.setString(5, etlflag);
@@ -299,7 +300,7 @@ public class GenerateDataBill {
             insert.setString(2, dataTask.getString(Constants.FIELD_OCODE));
             insert.setString(3, dataTask.getString("source_obj"));
             insert.setString(4, dataTask.getString("target_obj"));
-            insert.setString(5, CommonUtil.getRootJobId(jee));
+            insert.setString(5, KettleUtils.getRootJobId(jee));
             insert.setString(6, sourceObj.getString("database"));
             insert.setString(7, sourceObj.getString("real_name"));
             insert.setString(8, sourceObj.getString("add_field"));

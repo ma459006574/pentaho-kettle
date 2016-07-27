@@ -14,6 +14,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.oschina.mytuils.DateUtil;
+import net.oschina.mytuils.KettleUtils;
+import net.oschina.mytuils.StringUtil;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.pentaho.di.core.logging.KettleLogStore;
@@ -25,10 +29,6 @@ import org.pentaho.di.repository.Repository;
 import com.alibaba.fastjson.JSONObject;
 import com.metl.constants.Constants;
 import com.metl.db.Db;
-import com.metl.util.CommonUtil;
-import com.metl.util.DateUtil;
-import com.metl.util.KettleUtils;
-import com.metl.util.StringUtil;
 
 /**
  * 执行数据账单中的任务 <br/>
@@ -137,7 +137,7 @@ public class ExecuteDatabill {
         //记录日志到数据库，便于监控。还需要将Kettle本身的运行日志记录到文件中，文件分天存放，每次一个文件
         String sql = "insert into metl_kettle_log"
                 + "(job,start_time,end_time,input_count,add_count,result)values(?,?,?,?,?,?)";
-        metldb.update(sql, CommonUtil.getRootJobId(jee),start,
+        metldb.update(sql, KettleUtils.getRootJobId(jee),start,
                 metldb.getCurrentDateStr14(),inputCount,addCount,result);
     }
 
