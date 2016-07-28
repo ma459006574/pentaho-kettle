@@ -6,7 +6,7 @@
    description="kettle工具"
    tooltip="用java实现复杂业务逻辑，然后在Kettle的脚本中引用。"
    category="i18n:org.pentaho.di.trans.step:BaseStep.Category.Experimental"
-   classname="com.metl.kettleutil.KettleUtilMeta">
+   classname="net.oschina.kettleutil.KettleUtilMeta">
 		
 		<libraries>
     		<library name="KettleUtil.jar"/>
