@@ -651,7 +651,7 @@ public class TextFileOutput extends BaseStep implements StepInterface {
         }
       }
     } catch ( Exception e ) {
-      throw new KettleException( "Error opening new file : " + e.toString() );
+      throw new KettleException( "Error opening new file : " + e.toString(),e );
     }
 
     data.splitnr++;

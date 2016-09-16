@@ -321,6 +321,9 @@ public class Job extends Thread implements VariableSpace, NamedParams, HasLogCha
     this.rep = repository;
     this.jobMeta = jobMeta;
     this.parentLoggingObject = parentLogging;
+    if ( jobMeta.getName() != null ) {
+        setName( jobMeta.getName() + " (" + super.getName() + ")" );
+    }
 
     init();
 
