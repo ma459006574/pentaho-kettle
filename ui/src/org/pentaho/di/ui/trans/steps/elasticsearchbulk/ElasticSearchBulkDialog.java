@@ -935,6 +935,7 @@ public class ElasticSearchBulkDialog extends BaseStepDialog implements StepDialo
           break;
       }
     } catch ( NoNodeAvailableException e ) {
+      e.printStackTrace();
       showError( BaseMessages.getString( PKG, "ElasticSearchBulkDialog.Error.NoNodesFound" ) );
     } catch ( MasterNotDiscoveredException e ) {
       showError( BaseMessages.getString( PKG, "ElasticSearchBulkDialog.Error.NoNodesFound" ) );

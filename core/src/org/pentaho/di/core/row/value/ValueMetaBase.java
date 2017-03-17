@@ -1794,7 +1794,7 @@ public class ValueMetaBase implements ValueMetaInterface {
       case TYPE_BIGNUMBER:
         switch ( storageType ) {
           case STORAGE_TYPE_NORMAL:
-            return (BigDecimal) object;
+            return BigDecimal.valueOf(Long.parseLong(object.toString()));
           case STORAGE_TYPE_BINARY_STRING:
             return (BigDecimal) convertBinaryStringToNativeType( (byte[]) object );
           case STORAGE_TYPE_INDEXED:

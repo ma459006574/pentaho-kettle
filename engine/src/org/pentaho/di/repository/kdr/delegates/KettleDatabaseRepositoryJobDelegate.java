@@ -383,11 +383,13 @@ public class KettleDatabaseRepositoryJobDelegate extends KettleDatabaseRepositor
 
           // Load all the log tables for the job...
           //
+          Date start = new Date();
           RepositoryAttributeInterface attributeInterface =
             new KettleDatabaseRepositoryJobAttribute( repository.connectionDelegate, jobMeta.getObjectId() );
           for ( LogTableInterface logTable : jobMeta.getLogTables() ) {
             logTable.loadFromRepository( attributeInterface );
           }
+          System.out.println("加载作业附加属性："+(new Date().getTime()-start.getTime()));
 
           if ( monitor != null ) {
             monitor.worked( 1 );
@@ -446,6 +448,7 @@ public class KettleDatabaseRepositoryJobDelegate extends KettleDatabaseRepositor
           if ( log.isDetailed() ) {
             log.logDetailed( "Loading " + jecids.length + " job entries" );
           }
+          start = new Date();
           for ( int i = 0; i < jecids.length; i++ ) {
             if ( monitor != null ) {
               monitor.subTask( BaseMessages.getString( PKG, "JobMeta.Monitor.ReadingJobEntryNr" )
@@ -481,6 +484,7 @@ public class KettleDatabaseRepositoryJobDelegate extends KettleDatabaseRepositor
               monitor.worked( 1 );
             }
           }
+          System.out.println("加载作业组件："+(new Date().getTime()-start.getTime()));
 
           // Load the hops...
           if ( log.isDetailed() ) {
