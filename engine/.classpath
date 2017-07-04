@@ -5,6 +5,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Kettle Core"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/kettle5.4"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/druid"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/kmlib"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
