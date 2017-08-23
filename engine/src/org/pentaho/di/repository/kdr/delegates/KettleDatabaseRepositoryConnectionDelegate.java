@@ -1555,7 +1555,7 @@ public class KettleDatabaseRepositoryConnectionDelegate extends KettleDatabaseRe
     }
   }
 
-  public ObjectId[] getIDs( String sql, ObjectId... objectId ) throws KettleException {
+  public synchronized ObjectId[] getIDs( String sql, ObjectId... objectId ) throws KettleException {
     // Get the prepared statement
     //
     try {
@@ -1602,7 +1602,7 @@ public class KettleDatabaseRepositoryConnectionDelegate extends KettleDatabaseRe
     return ids;
   }
 
-  public String[] getStrings( String sql, ObjectId... objectId ) throws KettleException {
+  public synchronized String[] getStrings( String sql, ObjectId... objectId ) throws KettleException {
     // Get the prepared statement
     //
     PreparedStatement ps = sqlMap.get( sql );
@@ -1809,7 +1809,7 @@ public class KettleDatabaseRepositoryConnectionDelegate extends KettleDatabaseRe
     return null;
   }
  
-  public List<RowMetaAndData> getRows( String schemaAndTable ) throws KettleException {
+  public synchronized List<RowMetaAndData> getRows( String schemaAndTable ) throws KettleException {
 	List<RowMetaAndData> list = new ArrayList<RowMetaAndData>();
     String sql = "SELECT * FROM " + schemaAndTable;
 
@@ -1848,7 +1848,7 @@ public class KettleDatabaseRepositoryConnectionDelegate extends KettleDatabaseRe
   /**
    * This method should be called WITH AN ALREADY QUOTED schema and table
    */
-  public RowMetaAndData getOneRow( String schemaAndTable, String keyfield, ObjectId id ) throws KettleException {
+  public synchronized RowMetaAndData getOneRow( String schemaAndTable, String keyfield, ObjectId id ) throws KettleException {
     String sql = "SELECT * FROM " + schemaAndTable + " WHERE " + keyfield + " = ?";
 
     // Get the prepared statement
@@ -1884,11 +1884,11 @@ public class KettleDatabaseRepositoryConnectionDelegate extends KettleDatabaseRe
     }
   }
 
-  public RowMetaAndData getOneRow( String sql ) throws KettleDatabaseException {
+  public synchronized RowMetaAndData getOneRow( String sql ) throws KettleDatabaseException {
     return database.getOneRow( sql );
   }
 
-  public RowMetaAndData getOneRow( String sql, RowMetaInterface rowMeta, Object[] rowData ) throws KettleDatabaseException {
+  public synchronized RowMetaAndData getOneRow( String sql, RowMetaInterface rowMeta, Object[] rowData ) throws KettleDatabaseException {
     return database.getOneRow( sql, rowMeta, rowData );
   }
 
@@ -1903,11 +1903,11 @@ public class KettleDatabaseRepositoryConnectionDelegate extends KettleDatabaseRe
     return null;
   }
 
-  public List<Object[]> getRows( String sql, int limit ) throws KettleDatabaseException {
+  public synchronized List<Object[]> getRows( String sql, int limit ) throws KettleDatabaseException {
     return database.getRows( sql, limit );
   }
 
-  public RowMetaInterface getReturnRowMeta() throws KettleDatabaseException {
+  public synchronized RowMetaInterface getReturnRowMeta() throws KettleDatabaseException {
     return database.getReturnRowMeta();
   }
 
@@ -1918,7 +1918,7 @@ public class KettleDatabaseRepositoryConnectionDelegate extends KettleDatabaseRe
     database.closeInsert();
   }
 
-  public Collection<RowMetaAndData> getDatabaseAttributes( ObjectId id_database ) throws KettleDatabaseException,
+  public synchronized Collection<RowMetaAndData> getDatabaseAttributes( ObjectId id_database ) throws KettleDatabaseException,
     KettleValueException {
 
     String sql =
