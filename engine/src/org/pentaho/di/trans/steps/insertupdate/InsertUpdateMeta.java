@@ -34,6 +34,7 @@ import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleStepException;
 import org.pentaho.di.core.exception.KettleXMLException;
 import org.pentaho.di.core.row.RowMetaInterface;
+import org.pentaho.di.core.row.ValueMeta;
 import org.pentaho.di.core.row.ValueMetaInterface;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.xml.XMLHandler;
@@ -58,7 +59,12 @@ import org.w3c.dom.Node;
  *
  */
 public class InsertUpdateMeta extends BaseStepMeta implements StepMetaInterface {
-  private static Class<?> PKG = InsertUpdateMeta.class; // for i18n purposes, needed by Translator2!!
+  /**
+    * 
+    */
+    public static final String DISPOSE_WAY = "DISPOSE_WAY";
+
+private static Class<?> PKG = InsertUpdateMeta.class; // for i18n purposes, needed by Translator2!!
 
   /** what's the lookup schema? */
   private String schemaName;
@@ -503,9 +509,18 @@ public class InsertUpdateMeta extends BaseStepMeta implements StepMetaInterface 
     }
   }
 
-  public void getFields( RowMetaInterface rowMeta, String origin, RowMetaInterface[] info, StepMeta nextStep,
+  @SuppressWarnings("deprecation")
+public void getFields( RowMetaInterface rowMeta, String origin, RowMetaInterface[] info, StepMeta nextStep,
     VariableSpace space, Repository repository, IMetaStore metaStore ) throws KettleStepException {
     // Default: nothing changes to rowMeta
+      //jingma 添加字段告诉下一步本条记录是新增还更新
+      ValueMetaInterface v = new ValueMeta();
+      v.setName(DISPOSE_WAY);
+      v.setType(ValueMeta.TYPE_STRING);
+      v.setTrimType(ValueMeta.TRIM_TYPE_BOTH);
+      v.setOrigin(origin);
+      v.setComments("本条记录是新增还更新");
+      rowMeta.addValueMeta(v);
   }
 
   public void check( List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta,

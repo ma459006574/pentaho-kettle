@@ -87,6 +87,8 @@ public class InsertUpdate extends BaseStep implements StepInterface {
     }
     Object[] add = data.db.getLookup( data.prepStatementLookup );
     incrementLinesInput();
+    
+    String disposeWay = "insert";
 
     if ( add == null ) {
       /*
@@ -113,6 +115,7 @@ public class InsertUpdate extends BaseStep implements StepInterface {
       data.db.insertRow();
 
       incrementLinesOutput();
+      
     } else {
       if ( !meta.isUpdateBypassed() ) {
         if ( log.isRowLevel() ) {
@@ -141,6 +144,7 @@ public class InsertUpdate extends BaseStep implements StepInterface {
           }
         }
         if ( update ) {
+            disposeWay = "update";
           // Create the update row...
           Object[] updateRow = new Object[data.updateParameterRowMeta.size()];
           int j = 0;
@@ -163,6 +167,7 @@ public class InsertUpdate extends BaseStep implements StepInterface {
           data.db.insertRow( data.prepStatementUpdate );
           incrementLinesUpdated();
         } else {
+          disposeWay = "skipped";
           incrementLinesSkipped();
         }
       } else {
@@ -172,6 +177,7 @@ public class InsertUpdate extends BaseStep implements StepInterface {
         incrementLinesSkipped();
       }
     }
+    row[data.outputRowMeta.indexOfValue(InsertUpdateMeta.DISPOSE_WAY)] = disposeWay;
   }
 
   public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
