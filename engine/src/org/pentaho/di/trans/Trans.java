@@ -23,6 +23,32 @@
 
 package org.pentaho.di.trans;
 
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs.FileName;
 import org.apache.commons.vfs.FileObject;
@@ -116,32 +142,6 @@ import org.pentaho.di.www.SocketRepository;
 import org.pentaho.di.www.StartExecutionTransServlet;
 import org.pentaho.di.www.WebResult;
 import org.pentaho.metastore.api.IMetaStore;
-
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * This class represents the information and operations associated with the concept of a Transformation. It loads,
@@ -1346,7 +1346,7 @@ public class Trans implements VariableSpace, NamedParams, HasLogChannelInterface
           final StepMetaDataCombi combi = steps.get( i );
           RunThread runThread = new RunThread( combi );
           Thread thread = new Thread( runThread );
-          thread.setName( getName() + " - " + combi.stepname );
+          thread.setName( getRootJobName(combi.step) + " - " + getName() + " - " + combi.stepname );
           ExtensionPointHandler.callExtensionPoint( log, KettleExtensionPoint.StepBeforeStart.id, combi );
           // Call an extension point at the end of the step
           //
@@ -1449,6 +1449,43 @@ public class Trans implements VariableSpace, NamedParams, HasLogChannelInterface
     }
   }
 
+  /**
+  * 获取根job的名称 <br/>
+  * @author jingma
+  * @param si 
+  * @return
+  */
+  public static String getRootJobName(StepInterface si) {
+      Job rootjob = getRootJob(si);
+      if(rootjob!=null){
+          return rootjob.getObjectName();
+      }else{
+          return null;
+      }
+  }
+  /**
+  * 获取根job <br/>
+  * @author jingma
+  * @param si 
+  * @return
+  */
+  public static Job getRootJob(StepInterface si) {
+      Job rootjob = si.getTrans().getParentJob();
+      return getRootJob(rootjob);
+  }
+
+  /**
+  * 获取根job <br/>
+  * @author jingma
+  * @param rootjob 
+  * @return
+  */
+  public static Job getRootJob(Job rootjob) {
+      while(rootjob!=null&&rootjob.getParentJob()!=null){
+          rootjob = rootjob.getParentJob();
+      }
+      return rootjob;
+  }
   /**
    * Make attempt to fire all registered listeners if possible.
    *
