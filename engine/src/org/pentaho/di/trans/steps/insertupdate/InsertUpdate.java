@@ -32,6 +32,7 @@ import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleDatabaseException;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleStepException;
+import org.pentaho.di.core.row.RowDataUtil;
 import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMetaInterface;
@@ -302,6 +303,8 @@ public class InsertUpdate extends BaseStep implements StepInterface {
         prepareUpdate( getInputRowMeta() );
       }
     }
+    //创建输出记录
+    r = RowDataUtil.createResizedCopy( r, data.outputRowMeta.size() );
 
     try {
       lookupValues( getInputRowMeta(), r ); // add new values to the row in rowset[0].
