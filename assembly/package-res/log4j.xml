@@ -13,7 +13,7 @@
 		</filter>
 	</appender>
 	<appender name="debug" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="/tmp/metl/logs/kettle_log4j/debug.log" />  
+		<param name="File" value="/tmp/logs/kettle_log4j/debug.log" />  
         <param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
 		<param name="Append" value="true" />  
 		<param name="Encoding" value="UTF-8" />
@@ -30,7 +30,7 @@
 		</filter>
 	</appender>
 	<appender name="info" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="/tmp/metl/logs/kettle_log4j/info.log" />  
+		<param name="File" value="/tmp/logs/kettle_log4j/info.log" />  
         <param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
 		<param name="Append" value="true" />  
 		<param name="Encoding" value="UTF-8" />
@@ -48,7 +48,7 @@
 	</appender>
 	
 	<appender name="error" class="org.apache.log4j.RollingFileAppender">
-		<param name="File" value="/tmp/metl/logs/kettle_log4j/error.log" />  
+		<param name="File" value="/tmp/logs/kettle_log4j/error.log" />  
         <param name="DatePattern" value="'.'yyyy-MM-dd'.log'" />
 		<param name="Append" value="true" />  
 		<param name="Encoding" value="UTF-8" />

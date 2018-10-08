@@ -24,11 +24,11 @@ package org.pentaho.di.core.logging;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,8 +42,15 @@ public class LoggingRegistry {
   private Date lastModificationTime;
   private int maxSize;
   private final int DEFAULT_MAX_SIZE = 10000;
+  private int step = 5;
+  private int timeout = 30;
+  private int cutCount = 1000;
 
-  private Object syncObject = new Object();
+  public Object syncObject = new Object();
+  /**
+  * 清理日志管道的时间
+  */
+  public static Date clearLogRegTime = new Date();
 
   private LoggingRegistry() {
     this.map = new ConcurrentHashMap<String, LoggingObjectInterface>();
@@ -51,6 +58,9 @@ public class LoggingRegistry {
 
     this.lastModificationTime = new Date();
     this.maxSize = Const.toInt( EnvUtil.getSystemProperty( "KETTLE_MAX_LOGGING_REGISTRY_SIZE" ), DEFAULT_MAX_SIZE );
+    step = Const.toInt( EnvUtil.getSystemProperty( "KETTLE_MAX_LOGGING_REGISTRY_REMOVE_STEP" ), 5 );
+    timeout = Const.toInt( EnvUtil.getSystemProperty( "KETTLE_MAX_LOGGING_REGISTRY_TIMEOUT" ), 30 );
+    cutCount = Const.toInt( EnvUtil.getSystemProperty( "KETTLE_MAX_LOGGING_REGISTRY_CUT_COUNT" ), maxSize/5 );
   }
 
   public static LoggingRegistry getInstance() {
@@ -97,36 +107,54 @@ public class LoggingRegistry {
       loggingSource.setRegistrationDate( this.lastModificationTime );
 
       if ( ( this.maxSize > 0 ) && ( this.map.size() > this.maxSize ) ) {
-        List<LoggingObjectInterface> all = new ArrayList<LoggingObjectInterface>( this.map.values() );
-        Collections.sort( all, new Comparator<LoggingObjectInterface>() {
-          @Override
-          public int compare( LoggingObjectInterface o1, LoggingObjectInterface o2 ) {
-            if ( ( o1 == null ) && ( o2 != null ) ) {
-              return -1;
-            }
-            if ( ( o1 != null ) && ( o2 == null ) ) {
-              return 1;
-            }
-            if ( ( o1 == null ) && ( o2 == null ) ) {
-              return 0;
-            }
-            if ( o1.getRegistrationDate() == null && o2.getRegistrationDate() != null ) {
-              return -1;
-            }
-            if ( o1.getRegistrationDate() != null && o2.getRegistrationDate() == null ) {
-              return 1;
-            }
-            if ( o1.getRegistrationDate() == null && o2.getRegistrationDate() == null ) {
-              return 0;
-            }
-            return ( o1.getRegistrationDate().compareTo( o2.getRegistrationDate() ) );
+//        List<LoggingObjectInterface> all = new ArrayList<LoggingObjectInterface>( this.map.values() );
+//        Collections.sort( all, new Comparator<LoggingObjectInterface>() {
+//          @Override
+//          public int compare( LoggingObjectInterface o1, LoggingObjectInterface o2 ) {
+//            if ( ( o1 == null ) && ( o2 != null ) ) {
+//              return -1;
+//            }
+//            if ( ( o1 != null ) && ( o2 == null ) ) {
+//              return 1;
+//            }
+//            if ( ( o1 == null ) && ( o2 == null ) ) {
+//              return 0;
+//            }
+//            if ( o1.getRegistrationDate() == null && o2.getRegistrationDate() != null ) {
+//              return -1;
+//            }
+//            if ( o1.getRegistrationDate() != null && o2.getRegistrationDate() == null ) {
+//              return 1;
+//            }
+//            if ( o1.getRegistrationDate() == null && o2.getRegistrationDate() == null ) {
+//              return 0;
+//            }
+//            return ( o1.getRegistrationDate().compareTo( o2.getRegistrationDate() ) );
+//          }
+//        } );
+//        int cutCount = this.maxSize < 1000 ? this.maxSize : 1000;
+//        for ( int i = 0; i < cutCount; i++ ) {
+//          LoggingObjectInterface toRemove = all.get( i );
+//          this.map.remove( toRemove.getLogChannelId() );
+//        }
+          //排序很影响性能，改为直接移除超出时间范围的日志
+          int num = 0;
+          clearLogRegTime = new Date();
+          timeout += step;
+          while((num<cutCount||this.map.size() > this.maxSize )&&timeout>step){
+              timeout -= step;
+              long t = clearLogRegTime.getTime() - timeout*60*1000;
+              for(Iterator<Entry<String, LoggingObjectInterface>> it = this.map.entrySet().iterator();
+                      it.hasNext();){
+                  Entry<String, LoggingObjectInterface> e = it.next();
+                  //移除超过20分钟的日志管道
+                  if(e.getValue().getRegistrationDate().getTime()<t){
+                      it.remove();
+                      num++;
+                  }
+              }
           }
-        } );
-        int cutCount = this.maxSize < 1000 ? this.maxSize : 1000;
-        for ( int i = 0; i < cutCount; i++ ) {
-          LoggingObjectInterface toRemove = all.get( i );
-          this.map.remove( toRemove.getLogChannelId() );
-        }
+          System.err.println(clearLogRegTime+"--"+timeout+"--"+"移除日志管道数："+num);
         removeOrphans();
       }
       return logChannelId;
@@ -151,8 +179,15 @@ public class LoggingRegistry {
   public Map<String, LoggingObjectInterface> getMap() {
     return this.map;
   }
+  
+    /**
+     * @return childrenMap 
+     */
+    public Map<String, List<String>> getChildrenMap() {
+        return childrenMap;
+    }
 
-  public List<String> getLogChannelChildren( String parentLogChannelId ) {
+public List<String> getLogChannelChildren( String parentLogChannelId ) {
     if ( parentLogChannelId == null ) {
       return null;
     }
