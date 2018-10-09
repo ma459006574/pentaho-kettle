@@ -107,40 +107,11 @@ public class LoggingRegistry {
       loggingSource.setRegistrationDate( this.lastModificationTime );
 
       if ( ( this.maxSize > 0 ) && ( this.map.size() > this.maxSize ) ) {
-//        List<LoggingObjectInterface> all = new ArrayList<LoggingObjectInterface>( this.map.values() );
-//        Collections.sort( all, new Comparator<LoggingObjectInterface>() {
-//          @Override
-//          public int compare( LoggingObjectInterface o1, LoggingObjectInterface o2 ) {
-//            if ( ( o1 == null ) && ( o2 != null ) ) {
-//              return -1;
-//            }
-//            if ( ( o1 != null ) && ( o2 == null ) ) {
-//              return 1;
-//            }
-//            if ( ( o1 == null ) && ( o2 == null ) ) {
-//              return 0;
-//            }
-//            if ( o1.getRegistrationDate() == null && o2.getRegistrationDate() != null ) {
-//              return -1;
-//            }
-//            if ( o1.getRegistrationDate() != null && o2.getRegistrationDate() == null ) {
-//              return 1;
-//            }
-//            if ( o1.getRegistrationDate() == null && o2.getRegistrationDate() == null ) {
-//              return 0;
-//            }
-//            return ( o1.getRegistrationDate().compareTo( o2.getRegistrationDate() ) );
-//          }
-//        } );
-//        int cutCount = this.maxSize < 1000 ? this.maxSize : 1000;
-//        for ( int i = 0; i < cutCount; i++ ) {
-//          LoggingObjectInterface toRemove = all.get( i );
-//          this.map.remove( toRemove.getLogChannelId() );
-//        }
           //排序很影响性能，改为直接移除超出时间范围的日志
           int num = 0;
           clearLogRegTime = new Date();
           timeout += step;
+          LoggingBuffer ap = KettleLogStore.getAppender();
           while((num<cutCount||this.map.size() > this.maxSize )&&timeout>step){
               timeout -= step;
               long t = clearLogRegTime.getTime() - timeout*60*1000;
@@ -149,6 +120,7 @@ public class LoggingRegistry {
                   Entry<String, LoggingObjectInterface> e = it.next();
                   //移除超过20分钟的日志管道
                   if(e.getValue().getRegistrationDate().getTime()<t){
+                      ap.removeChannelFromBuffer(e.getKey());
                       it.remove();
                       num++;
                   }
