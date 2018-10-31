@@ -23,7 +23,10 @@
 package org.pentaho.di.core.logging;
 
 import java.io.PrintStream;
+import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.pentaho.di.core.Const;
@@ -37,6 +40,8 @@ public class KettleLogStore {
   private static KettleLogStore store;
 
   private LoggingBuffer appender;
+
+  private Timer logCleanerTimer;
 
   private static AtomicBoolean initialized = new AtomicBoolean( false );
 
@@ -60,6 +65,7 @@ public class KettleLogStore {
    */
   private KettleLogStore( int maxSize, int maxLogTimeoutMinutes, boolean redirectStdOut, boolean redirectStdErr ) {
     this.appender = new LoggingBuffer( maxSize );
+    replaceLogCleaner( maxLogTimeoutMinutes );
 
     if ( redirectStdOut ) {
       System.setOut( new LoggingPrintStream( OriginalSystemOut ) );
@@ -68,6 +74,36 @@ public class KettleLogStore {
     if ( redirectStdErr ) {
       System.setErr( new LoggingPrintStream( OriginalSystemErr ) );
     }
+  }
+
+  public void replaceLogCleaner( final int maxLogTimeoutMinutes ) {
+    if ( logCleanerTimer != null ) {
+      logCleanerTimer.cancel();
+    }
+    logCleanerTimer = new Timer( true );
+
+    TimerTask timerTask = new TimerTask() {
+      @Override
+      public void run() {
+
+        if ( maxLogTimeoutMinutes > 0 ) {
+          long minTimeBoundary = new Date().getTime() - maxLogTimeoutMinutes * 60 * 1000;
+
+          // Get the old lines to be removed
+          //
+          List<BufferLine> linesToRemove = appender.getBufferLinesBefore( minTimeBoundary );
+
+          // Remove all lines at once to prevent concurrent modification problems.
+          //
+          appender.removeBufferLines( linesToRemove );
+        }
+      }
+    };
+
+    // Clean out the rows every 10 seconds to get a nice steady purge operation...
+    //
+    logCleanerTimer.schedule( timerTask, 10000, 10000 );
+
   }
 
   /**
@@ -137,6 +173,7 @@ public class KettleLogStore {
     if ( store != null ) {
       // CentralLogStore already initialized. Just update the values.
       store.appender.setMaxNrLines( maxSize );
+      store.replaceLogCleaner( maxLogTimeoutMinutes );
     } else {
       store = new KettleLogStore( maxSize, maxLogTimeoutMinutes, redirectStdOut, redirectStdErr );
     }

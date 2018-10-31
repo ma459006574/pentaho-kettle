@@ -127,7 +127,7 @@ public class LogChannel implements LogChannelInterface {
     println( message, channelLogLevel );
 
     String stackTrace = Const.getStackTracker( e );
-    LogMessage traceMessage = new LogMessage( stackTrace, message.getLogChannelId(), new Object[]{e}, LogLevel.ERROR );
+    LogMessage traceMessage = new LogMessage( stackTrace, message.getLogChannelId(), new Object[]{e}, channelLogLevel );
     println( traceMessage, channelLogLevel );
   }
 

@@ -29,6 +29,8 @@ public class KettleLoggingEvent {
   public long timeStamp;
 
   private LogLevel level;
+  
+  public StringBuffer gcsj = new StringBuffer();
 
   public KettleLoggingEvent() {
     this( null, System.currentTimeMillis(), LogLevel.BASIC );
