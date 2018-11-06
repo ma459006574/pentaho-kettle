@@ -873,8 +873,9 @@ public class JobEntryJob extends JobEntryBase implements Cloneable, JobEntryInte
           // added UUID to thread name, otherwise threads do share names if jobs entries are executed in parallel in a
           // parent job
           // if that happens, contained transformations start closing each other's connections
-          jobRunnerThread.setName( Const.NVL( job.getJobMeta().getName(), job.getJobMeta().getFilename() )
-            + " UUID: " + UUID.randomUUID().toString() );
+          jobRunnerThread.setName(getRootJob(this.getParentJob()).getJobMeta().getName() +" - "
+                  +Const.NVL( job.getJobMeta().getName(), job.getJobMeta().getFilename() )
+                  + " UUID: " + UUID.randomUUID().toString() );
           jobRunnerThread.start();
 
           // Keep running until we're done.
@@ -1047,6 +1048,12 @@ public class JobEntryJob extends JobEntryBase implements Cloneable, JobEntryInte
     }
 
     return result;
+  }
+  public static Job getRootJob(Job rootjob) {
+      while(rootjob!=null&&rootjob.getParentJob()!=null){
+          rootjob = rootjob.getParentJob();
+      }
+      return rootjob;
   }
 
   private boolean createParentFolder( String filename ) {

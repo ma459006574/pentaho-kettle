@@ -112,6 +112,7 @@ import org.pentaho.di.core.xml.XMLHandler;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.job.DelegationListener;
 import org.pentaho.di.job.Job;
+import org.pentaho.di.job.entries.job.JobEntryJob;
 import org.pentaho.di.partition.PartitionSchema;
 import org.pentaho.di.repository.ObjectId;
 import org.pentaho.di.repository.ObjectRevision;
@@ -1066,7 +1067,7 @@ public class Trans implements VariableSpace, NamedParams, HasLogChannelInterface
       // Put it in a separate thread!
       //
       threads[i] = new Thread( initThreads[i] );
-      threads[i].setName( "init of " + sid.stepname + "." + sid.copy + " (" + threads[i].getName() + ")" );
+      threads[i].setName( JobEntryJob.getRootJob(this.getParentJob())+" - " + sid.stepname + "." + sid.copy + " - " + threads[i].getName() );
 
       ExtensionPointHandler.callExtensionPoint( log, KettleExtensionPoint.StepBeforeInitialize.id, initThreads[i] );
 
@@ -1346,7 +1347,7 @@ public class Trans implements VariableSpace, NamedParams, HasLogChannelInterface
           final StepMetaDataCombi combi = steps.get( i );
           RunThread runThread = new RunThread( combi );
           Thread thread = new Thread( runThread );
-          thread.setName( getRootJobName(combi.step) + " - " + getName() + " - " + combi.stepname );
+          thread.setName( JobEntryJob.getRootJob(this.getParentJob()) + " - " + getName() + " - " + combi.stepname );
           ExtensionPointHandler.callExtensionPoint( log, KettleExtensionPoint.StepBeforeStart.id, combi );
           // Call an extension point at the end of the step
           //
@@ -1449,43 +1450,6 @@ public class Trans implements VariableSpace, NamedParams, HasLogChannelInterface
     }
   }
 
-  /**
-  * 获取根job的名称 <br/>
-  * @author jingma
-  * @param si 
-  * @return
-  */
-  public static String getRootJobName(StepInterface si) {
-      Job rootjob = getRootJob(si);
-      if(rootjob!=null){
-          return rootjob.getObjectName();
-      }else{
-          return null;
-      }
-  }
-  /**
-  * 获取根job <br/>
-  * @author jingma
-  * @param si 
-  * @return
-  */
-  public static Job getRootJob(StepInterface si) {
-      Job rootjob = si.getTrans().getParentJob();
-      return getRootJob(rootjob);
-  }
-
-  /**
-  * 获取根job <br/>
-  * @author jingma
-  * @param rootjob 
-  * @return
-  */
-  public static Job getRootJob(Job rootjob) {
-      while(rootjob!=null&&rootjob.getParentJob()!=null){
-          rootjob = rootjob.getParentJob();
-      }
-      return rootjob;
-  }
   /**
    * Make attempt to fire all registered listeners if possible.
    *

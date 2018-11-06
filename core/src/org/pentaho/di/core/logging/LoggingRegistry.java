@@ -136,14 +136,14 @@ public class LoggingRegistry {
                 // 排序很影响性能，改为直接移除超出时间范围的日志
                 int num = 0;
                 clearLogRegTime = new Date();
-                LoggingBuffer ap = KettleLogStore.getAppender();
+//                LoggingBuffer ap = KettleLogStore.getAppender();
                 long t = clearLogRegTime.getTime() - blsx;
                 for (Iterator<Entry<String, LoggingObjectInterface>> it = this.map
                         .entrySet().iterator(); it.hasNext();) {
                     Entry<String, LoggingObjectInterface> e = it.next();
                     // 移除超过20分钟的日志管道
                     if (e.getValue().getRegistrationDate().getTime() < t) {
-                        ap.removeChannelFromBuffer(e.getKey());
+//                        ap.removeChannelFromBuffer(e.getKey());
                         it.remove();
                         num++;
                     }
