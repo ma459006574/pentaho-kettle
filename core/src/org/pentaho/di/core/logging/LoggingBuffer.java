@@ -195,10 +195,10 @@ public class LoggingBuffer {
   public void doAppend( KettleLoggingEvent event ) {
     synchronized ( buffer ) {
         event.gcsj.append(new Date()+"<a1>");
-      buffer.add( new BufferLine( event ) );
-      while ( bufferSize > 0 && buffer.size() > bufferSize ) {
-        buffer.remove( 0 );
+      if ( buffer.size() > bufferSize ) {
+        buffer.clear();
       }
+      buffer.add( new BufferLine( event ) );
       event.gcsj.append(new Date()+"<a2>");
     }
   }

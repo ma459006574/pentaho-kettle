@@ -322,7 +322,7 @@ public class Job extends Thread implements VariableSpace, NamedParams, HasLogCha
     this.jobMeta = jobMeta;
     this.parentLoggingObject = parentLogging;
     if ( jobMeta.getName() != null ) {
-        setName( jobMeta.getName() + " (" + super.getName() + ")" );
+        setName( jobMeta.getName() + " - " + super.getName() );
     }
 
     init();
