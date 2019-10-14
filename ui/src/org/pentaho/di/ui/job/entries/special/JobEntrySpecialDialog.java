@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.Text;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.job.JobMeta;
@@ -68,6 +69,8 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
   private static final String WEEKLY = BaseMessages.getString( PKG, "JobSpecial.Type.Weekly" );
 
   private static final String MONTHLY = BaseMessages.getString( PKG, "JobSpecial.Type.Monthly" );
+  
+  private static final String CRON = "cron";
 
   private Button wOK, wCancel;
 
@@ -85,6 +88,8 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
 
   private Button wRepeat;
 
+  private Button wInitStart;
+
   private Spinner wIntervalSeconds, wIntervalMinutes;
 
   private CCombo wType;
@@ -96,6 +101,8 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
   private CCombo wDayOfWeek;
 
   private Spinner wDayOfMonth;
+  
+  private Text wCron;
 
   public JobEntrySpecialDialog( Shell parent, JobEntryInterface jobEntryInt, Repository rep, JobMeta jobMeta ) {
     super( parent, jobEntryInt, rep, jobMeta );
@@ -134,6 +141,14 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
       }
     } );
     placeControl( shell, BaseMessages.getString( PKG, "JobSpecial.Repeat.Label" ), wRepeat, null );
+    
+    wInitStart = new Button( shell, SWT.CHECK );
+    wInitStart.addListener( SWT.Selection, new Listener() {
+      public void handleEvent( Event arg0 ) {
+        enableDisableControls();
+      }
+    } );
+    placeControl( shell, BaseMessages.getString( PKG, "JobSpecial.InitStart.Label" ), wInitStart, wRepeat );
 
     wType = new CCombo( shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
     wType.addModifyListener( lsMod );
@@ -147,9 +162,10 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
     wType.add( DAILY );
     wType.add( WEEKLY );
     wType.add( MONTHLY );
+    wType.add( CRON );
     wType.setEditable( false );
     wType.setVisibleItemCount( wType.getItemCount() );
-    placeControl( shell, BaseMessages.getString( PKG, "JobSpecial.Type.Label" ), wType, wRepeat );
+    placeControl( shell, BaseMessages.getString( PKG, "JobSpecial.Type.Label" ), wType, wInitStart );
 
     wIntervalSeconds = new Spinner( shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
     wIntervalSeconds.setMinimum( 0 );
@@ -193,13 +209,17 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
     wDayOfMonth.setMaximum( 30 );
     placeControl( shell, BaseMessages.getString( PKG, "JobSpecial.DayOfMonth.Label" ), wDayOfMonth, wDayOfWeek );
 
+    wCron = new Text( shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
+    wCron.addModifyListener( lsMod );
+    placeControl( shell, BaseMessages.getString( PKG, "JobSpecial.cron.Label" ), wCron, wDayOfMonth );
+
     // Some buttons
     wOK = new Button( shell, SWT.PUSH );
     wOK.setText( BaseMessages.getString( PKG, "System.Button.OK" ) );
     wCancel = new Button( shell, SWT.PUSH );
     wCancel.setText( BaseMessages.getString( PKG, "System.Button.Cancel" ) );
 
-    BaseStepDialog.positionBottomButtons( shell, new Button[] { wOK, wCancel }, margin, wDayOfMonth );
+    BaseStepDialog.positionBottomButtons( shell, new Button[] { wOK, wCancel }, margin, wCron );
 
     // Add listeners
     lsCancel = new Listener() {
@@ -253,6 +273,7 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
 
   public void getData() {
     wRepeat.setSelection( jobEntry.isRepeat() );
+    wInitStart.setSelection( jobEntry.isInitStart() );
     wType.select( jobEntry.getSchedulerType() );
     wIntervalSeconds.setSelection( jobEntry.getIntervalSeconds() );
     wIntervalMinutes.setSelection( jobEntry.getIntervalMinutes() );
@@ -260,6 +281,7 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
     wMinutes.setSelection( jobEntry.getMinutes() );
     wDayOfWeek.select( jobEntry.getWeekDay() );
     wDayOfMonth.setSelection( jobEntry.getDayOfMonth() );
+    wCron.setText(jobEntry.getCron());
     wType.addSelectionListener( lsDef );
   }
 
@@ -272,6 +294,7 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
 
   private void ok() {
     jobEntry.setRepeat( wRepeat.getSelection() );
+    jobEntry.setInitStart( wInitStart.getSelection() );
     jobEntry.setSchedulerType( wType.getSelectionIndex() );
     jobEntry.setIntervalSeconds( wIntervalSeconds.getSelection() );
     jobEntry.setIntervalMinutes( wIntervalMinutes.getSelection() );
@@ -279,6 +302,7 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
     jobEntry.setMinutes( wMinutes.getSelection() );
     jobEntry.setWeekDay( wDayOfWeek.getSelectionIndex() );
     jobEntry.setDayOfMonth( wDayOfMonth.getSelection() );
+    jobEntry.setCron( wCron.getText() );
     dispose();
   }
 
@@ -320,6 +344,7 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
       wDayOfMonth.setEnabled( false );
       wHour.setEnabled( false );
       wMinutes.setEnabled( false );
+      wCron.setEnabled( false );
     } else if ( INTERVAL.equals( wType.getText() ) ) {
       wIntervalSeconds.setEnabled( true );
       wIntervalMinutes.setEnabled( true );
@@ -327,6 +352,7 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
       wDayOfMonth.setEnabled( false );
       wHour.setEnabled( false );
       wMinutes.setEnabled( false );
+      wCron.setEnabled( false );
     } else if ( DAILY.equals( wType.getText() ) ) {
       wIntervalSeconds.setEnabled( false );
       wIntervalMinutes.setEnabled( false );
@@ -334,6 +360,7 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
       wDayOfMonth.setEnabled( false );
       wHour.setEnabled( true );
       wMinutes.setEnabled( true );
+      wCron.setEnabled( false );
     } else if ( WEEKLY.equals( wType.getText() ) ) {
       wIntervalSeconds.setEnabled( false );
       wIntervalMinutes.setEnabled( false );
@@ -341,6 +368,7 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
       wDayOfMonth.setEnabled( false );
       wHour.setEnabled( true );
       wMinutes.setEnabled( true );
+      wCron.setEnabled( false );
     } else if ( MONTHLY.equals( wType.getText() ) ) {
       wIntervalSeconds.setEnabled( false );
       wIntervalMinutes.setEnabled( false );
@@ -348,6 +376,15 @@ public class JobEntrySpecialDialog extends JobEntryDialog implements JobEntryDia
       wDayOfMonth.setEnabled( true );
       wHour.setEnabled( true );
       wMinutes.setEnabled( true );
+      wCron.setEnabled( false );
+    } else if ( CRON.equals( wType.getText() ) ) {
+        wIntervalSeconds.setEnabled( false );
+        wIntervalMinutes.setEnabled( false );
+        wDayOfWeek.setEnabled( false );
+        wDayOfMonth.setEnabled( false );
+        wHour.setEnabled( false );
+        wMinutes.setEnabled( false );
+        wCron.setEnabled( true );
     }
     // } else {
     // wType.setEnabled(false);
