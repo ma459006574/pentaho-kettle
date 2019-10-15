@@ -453,6 +453,9 @@ public class JobEntrySpecial extends JobEntryBase implements Cloneable,
      * @return cron
      */
     public String getCron() {
+        if(cron==null){
+            cron = "";
+        }
         return cron;
     }
 
