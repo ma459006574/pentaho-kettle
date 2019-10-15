@@ -628,6 +628,7 @@ public class SwingGC implements GCInterface {
 
   private Stroke createStroke() {
     float[] dash;
+    //SOLID, DASHDOT, DOT, PARALLEL, DASH
     switch ( lineStyle ) {
       case SOLID:
         dash = null;
@@ -641,6 +642,9 @@ public class SwingGC implements GCInterface {
       case PARALLEL:
         dash = new float[] { 10, 5, 10, 5, };
         break;
+      case DASH:
+          dash = new float[] { 10, 5, 10, 5, };
+          break;
       default:
         throw new RuntimeException( "Unhandled line style!" );
     }
