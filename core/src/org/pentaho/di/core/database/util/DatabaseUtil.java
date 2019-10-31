@@ -22,19 +22,21 @@
 
 package org.pentaho.di.core.database.util;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.database.DataSourceNamingException;
 import org.pentaho.di.core.database.DataSourceProviderInterface;
 import org.pentaho.di.core.database.Database;
 import org.pentaho.di.i18n.BaseMessages;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import cn.benma666.kettle.mytuils.Db;
 
 /**
  * Provides default implementation for looking data sources up in JNDI.
@@ -61,7 +63,7 @@ public class DatabaseUtil implements DataSourceProviderInterface {
    * @return DataSource if there is one bound in JNDI
    * @throws NamingException
    */
-  protected static DataSource getDataSourceFromJndi( String dsName, Context ctx ) throws NamingException {
+  public static DataSource getDataSourceFromJndi( String dsName, Context ctx ) throws NamingException {
     if ( Const.isEmpty( dsName ) ) {
       throw new NamingException( BaseMessages.getString( PKG, "DatabaseUtil.DSNotFound", String.valueOf( dsName ) ) );
     }
@@ -127,10 +129,8 @@ public class DatabaseUtil implements DataSourceProviderInterface {
    */
   @Override
   public DataSource getNamedDataSource( String datasourceName ) throws DataSourceNamingException {
-    try {
-      return DatabaseUtil.getDataSourceFromJndi( datasourceName, new InitialContext() );
-    } catch ( NamingException ex ) {
-      throw new DataSourceNamingException( ex );
-    }
+        //读取myservice中的数据源
+        Db db = Db.use(datasourceName);
+        return db.getDs();
   }
 }
