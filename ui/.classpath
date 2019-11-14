@@ -8,5 +8,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/Kettle Engine"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/kettle5.4"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

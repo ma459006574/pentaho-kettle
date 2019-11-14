@@ -6,6 +6,8 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/Kettle Core"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/kettle5.4"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/kmlib"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/myutils"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/myutils"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

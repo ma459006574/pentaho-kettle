@@ -361,6 +361,8 @@ private synchronized ObjectId insertDirectory( ObjectId id_directory_parent, Rep
       ObjectId id_directory_parent = null;
       if ( dir.getParent() != null ) {
         id_directory_parent = dir.getParent().getObjectId();
+      }else{
+        id_directory_parent = new LongObjectId(0);
       }
 
       dir.setObjectId( insertDirectory( id_directory_parent, dir ) );
