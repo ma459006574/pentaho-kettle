@@ -4712,20 +4712,20 @@ public class Database implements VariableSpace, LoggingObjectInterface {
     // JNDI name. See also [PDI-13633], [SP-1776].
     // We will first try to find the connection in the named datasources. If we can't find it there,
     // we will connect using the class.
-    try {
-      if ( log.isDetailed() ) {
-        log.logDetailed( "Attempting to find connection in Named Datasources" );
-      }
-      connectUsingNamedDataSource( environmentSubstitute( databaseMeta.getDatabaseName() ) );
-    } catch ( KettleDatabaseException kde ) {
-      if ( log.isDetailed() ) {
-        log.logDetailed( "Unable to find datasource in Named Datasources."
-          + " Finally will try to attempt connecting using class " );
-      }
+//    try {
+//      if ( log.isDetailed() ) {
+//        log.logDetailed( "Attempting to find connection in Named Datasources" );
+//      }
+//      connectUsingNamedDataSource( environmentSubstitute( databaseMeta.getDatabaseName() ) );
+//    } catch ( KettleDatabaseException kde ) {
+//      if ( log.isDetailed() ) {
+//        log.logDetailed( "Unable to find datasource in Named Datasources."
+//          + " Finally will try to attempt connecting using class " );
+//      }
       connectUsingClass( databaseMeta.getDriverClass(), partitionId );
-    }
-    if ( log.isDetailed() ) {
-      log.logDetailed( "Connected to database." );
-    }
+//    }
+//    if ( log.isDetailed() ) {
+//      log.logDetailed( "Connected to database." );
+//    }
   }
 }

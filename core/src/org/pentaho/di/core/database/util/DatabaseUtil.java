@@ -130,7 +130,11 @@ public class DatabaseUtil implements DataSourceProviderInterface {
   @Override
   public DataSource getNamedDataSource( String datasourceName ) throws DataSourceNamingException {
         //读取myservice中的数据源
-        Db db = Db.use(datasourceName);
-        return db.getDs();
+        try {
+            Db db = Db.use(datasourceName);
+            return db.getDs();
+        } catch (Exception e) {
+            throw new DataSourceNamingException("通过jndi获取数据源失败", e);
+        }
   }
 }
