@@ -206,6 +206,7 @@ import org.pentaho.di.pan.CommandLineOption;
 import org.pentaho.di.partition.PartitionSchema;
 import org.pentaho.di.pkg.JarfileGenerator;
 import org.pentaho.di.repository.KettleRepositoryLostException;
+import org.pentaho.di.repository.LongObjectId;
 import org.pentaho.di.repository.ObjectId;
 import org.pentaho.di.repository.RepositoriesMeta;
 import org.pentaho.di.repository.Repository;
@@ -5552,7 +5553,8 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
     SelectDirectoryDialog sdd = new SelectDirectoryDialog( shell, SWT.NONE, rep );
     RepositoryDirectoryInterface baseDirectory = sdd.open();
     if ( baseDirectory == null ) {
-      return;
+        baseDirectory = new RepositoryDirectory(null, "/");
+        baseDirectory.setObjectId(new LongObjectId(0));
     }
 
     // Finally before importing, ask for a version comment (if applicable)
