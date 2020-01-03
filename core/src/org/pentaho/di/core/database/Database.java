@@ -645,19 +645,24 @@ public class Database implements VariableSpace, LoggingObjectInterface {
         }
       }
 
-      closeConnectionOnly();
-
       try {
         ExtensionPointHandler.callExtensionPoint( log, KettleExtensionPoint.DatabaseDisconnected.id, this );
       } catch ( KettleException e ) {
         throw new KettleDatabaseException( e );
       }
     } catch ( SQLException ex ) {
-      log.logError( "Error disconnecting from database:" + Const.CR + ex.getMessage() );
-      log.logError( Const.getStackTracker( ex ) );
+      log.logBasic( "Error disconnecting from database:" + Const.CR + ex.getMessage() );
+      log.logBasic( Const.getStackTracker( ex ) );
     } catch ( KettleDatabaseException dbe ) {
-      log.logError( "Error disconnecting from database:" + Const.CR + dbe.getMessage() );
-      log.logError( Const.getStackTracker( dbe ) );
+      log.logBasic( "Error disconnecting from database:" + Const.CR + dbe.getMessage() );
+      log.logBasic( Const.getStackTracker( dbe ) );
+    }finally{
+        try {
+            closeConnectionOnly();
+        } catch (KettleDatabaseException e) {
+            log.logError( "关闭连接失败:" + Const.CR + e.getMessage() );
+            log.logError( Const.getStackTracker( e ) );
+        }
     }
   }
 
