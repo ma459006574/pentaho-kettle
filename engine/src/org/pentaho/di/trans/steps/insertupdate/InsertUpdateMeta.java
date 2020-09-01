@@ -519,7 +519,7 @@ public void getFields( RowMetaInterface rowMeta, String origin, RowMetaInterface
       v.setType(ValueMeta.TYPE_STRING);
       v.setTrimType(ValueMeta.TRIM_TYPE_BOTH);
       v.setOrigin(origin);
-      v.setComments("本条记录是新增还更新");
+      v.setComments("本条记录是新增还更新，分别为：updated、skipped、ouput");
       rowMeta.addValueMeta(v);
   }
 

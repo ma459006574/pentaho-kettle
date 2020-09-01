@@ -1157,13 +1157,13 @@ public class JobEntryFTP extends JobEntryBase implements Cloneable, JobEntryInte
       if ( !successConditionBroken && !exitjobentry ) {
         updateErrors();
       }
-      logError( BaseMessages.getString( PKG, "JobEntryFTP.ErrorGetting", e.getMessage() ) );
+      logError( BaseMessages.getString( PKG, "JobEntryFTP.ErrorGetting", e.getMessage() ) ,e);
     } finally {
       if ( ftpclient != null ) {
         try {
           ftpclient.quit();
         } catch ( Exception e ) {
-          logError( BaseMessages.getString( PKG, "JobEntryFTP.ErrorQuitting", e.getMessage() ) );
+          logError( BaseMessages.getString( PKG, "JobEntryFTP.ErrorQuitting", e.getMessage() ) ,e);
         }
       }
       FTPClient.clearSOCKS();
